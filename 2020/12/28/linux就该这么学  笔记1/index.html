@@ -20,15 +20,15 @@
     var CONFIG = {"hostname":"zhuxiaowei0924.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="1.命令格式格式要求： 命令名称 [命令参数]  [命令对象]注意：（1）命令名称、命令参数、命令对象之间需用空格键分隔；（2）多个参数之间也要有空格，参数有长格式和短格式之分，分别用- -和-作为前缀；长格式和长格式之间、长格式和短格式之间不能合并，短格式和短格式之间可以合并，共用一个空格，合并后仅保留一个-即可。">
+  <meta name="description" content="1.命令格式格式要求： 命令名称 [命令参数]  [命令对象]注意：（1）命令名称、命令参数、命令对象之间需用空格键分隔；（2）多个参数之间也要有空格，参数有长格式和短格式之分，分别用（–）和（-）作为前缀；长格式和长格式之间、长格式和短格式之间不能合并，短格式和短格式之间可以合并，共用一个空格，合并后仅保留一个-即可。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="linux就该这么学——笔记1">
 <meta property="og:url" content="https://zhuxiaowei0924.github.io/2020/12/28/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%20%20%E7%AC%94%E8%AE%B01/index.html">
 <meta property="og:site_name" content="随笔&amp;博客">
-<meta property="og:description" content="1.命令格式格式要求： 命令名称 [命令参数]  [命令对象]注意：（1）命令名称、命令参数、命令对象之间需用空格键分隔；（2）多个参数之间也要有空格，参数有长格式和短格式之分，分别用- -和-作为前缀；长格式和长格式之间、长格式和短格式之间不能合并，短格式和短格式之间可以合并，共用一个空格，合并后仅保留一个-即可。">
+<meta property="og:description" content="1.命令格式格式要求： 命令名称 [命令参数]  [命令对象]注意：（1）命令名称、命令参数、命令对象之间需用空格键分隔；（2）多个参数之间也要有空格，参数有长格式和短格式之分，分别用（–）和（-）作为前缀；长格式和长格式之间、长格式和短格式之间不能合并，短格式和短格式之间可以合并，共用一个空格，合并后仅保留一个-即可。">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2020-12-28T14:08:21.000Z">
-<meta property="article:modified_time" content="2020-12-28T14:45:38.679Z">
+<meta property="article:modified_time" content="2021-01-05T14:32:25.012Z">
 <meta property="article:author" content="晓">
 <meta property="article:tag" content="第2章节">
 <meta name="twitter:card" content="summary">
@@ -218,10 +218,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-12-28 22:08:21 / 修改时间：22:45:38" itemprop="dateCreated datePublished" datetime="2020-12-28T22:08:21+08:00">2020-12-28</time>
+              <time title="创建时间：2020-12-28 22:08:21" itemprop="dateCreated datePublished" datetime="2020-12-28T22:08:21+08:00">2020-12-28</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-01-05 22:32:25" itemprop="dateModified" datetime="2021-01-05T22:32:25+08:00">2021-01-05</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -245,14 +251,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>154</span>
+              <span>2.1k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>1 分钟</span>
+              <span>2 分钟</span>
             </span>
 
         </div>
@@ -264,7 +270,45 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="1-命令格式"><a href="#1-命令格式" class="headerlink" title="1.命令格式"></a>1.命令格式</h2><p>格式要求： 命令名称 [命令参数]  [命令对象]<br>注意：<br>（1）命令名称、命令参数、命令对象之间需用空格键分隔；<br>（2）多个参数之间也要有空格，参数有长格式和短格式之分，分别用- -和-作为前缀；长格式和长格式之间、长格式和短格式之间不能合并，短格式和短格式之间可以合并，共用一个空格，合并后仅保留一个-即可。</p>
+        <h2 id="1-命令格式"><a href="#1-命令格式" class="headerlink" title="1.命令格式"></a>1.命令格式</h2><p>格式要求： 命令名称 [命令参数]  [命令对象]<br>注意：<br>（1）命令名称、命令参数、命令对象之间需用空格键分隔；<br>（2）多个参数之间也要有空格，参数有长格式和短格式之分，分别用（–）和（-）作为前缀；长格式和长格式之间、长格式和短格式之间不能合并，短格式和短格式之间可以合并，共用一个空格，合并后仅保留一个-即可。</p>
+<a id="more"></a>
+<p>在命令行终端中输入<em>man 命令</em>来查看命令自身的帮助信息，在命令帮助信息的界面中，常用操作按键如下所示：<br>空格键：向下翻一页                PaGe down:向下翻一页<br>PaGe up：向上翻一页            home：直接前往首页<br>end：直接前往尾页                /：从上往下搜索某个关键词，如“/linux”<br>？：从下往上搜索某个关键词        n:定位到下一个搜索到的关键词<br>N：定位到上一个搜索到的关键词    q：退出帮助文档</p>
+<h2 id="2-常用的工作命令"><a href="#2-常用的工作命令" class="headerlink" title="2.常用的工作命令"></a>2.常用的工作命令</h2><ol>
+<li>echo：用于在终端输出字符串或变量提取后的值，如： echo 字符串/$变量</li>
+<li>date：用于显示及设置系统的时间或日期；<br> 直接输入date命令用于查看当前系统时间；<br> date “+%Y-%m-%d %H:%M:%S”:按照“年-月-日 小时:分钟:秒”的格式查看当前系统时间；<br> date -s “20200105 8:30:00”：将系统时间设置为2020年1月5日8点30分；<br> date “+%j”:用于查看今天是当年中的第几天；</li>
+<li>reboot：用于重启系统；</li>
+<li>poweroff：用于系统关机；</li>
+<li>wget命令：用于在终端中下载网络文件（需连接网络才可以下载），如：wget http：//<a target="_blank" rel="noopener" href="http://www.linuxprobe.com/docs/linuxprobe.pdf%EF%BC%9B">www.linuxprobe.com/docs/linuxprobe.pdf；</a><br> 参数            作用<br> -b            后台下载模式<br> -P            下载到指定目录<br> -t            最大尝试次数<br> -c            断点续传<br> -p            下载页面内的所有资源，包括图片、视频<br> -r            递归下载</li>
+<li>ps:用于查看系统中的进程状态；<br> 参数            作用<br> -a            显示所有进程（包括其他用户）<br> -u            用户及其他详细信息<br> -x            显示没有控制终端的进程<br>进程状态：R（运行）、S（休眠）、D（不可中断）、Z（僵死）、T（停止）；</li>
+<li>top：用于动态地监视进程活动与系统负载等信息；</li>
+<li>pidof：用于查询某个指定服务进程的PID值，如pidof sshd；</li>
+<li>kill：用于终止某个指定PID的服务进程，如kill 2156；</li>
+<li>killall：用于终止某个指定名称的服务所对应的全部进程；</li>
+</ol>
+<h2 id="3-系统状态检测命令"><a href="#3-系统状态检测命令" class="headerlink" title="3.系统状态检测命令"></a>3.系统状态检测命令</h2><ol>
+<li>ifconfig：用于获取网卡配置与网络状态等信息，可以查看到网卡名称、IP地址和物理地址；</li>
+<li>uname：用于查看系统内核与系统版本等信息，加上-a参数能完整地查看当前系统的内核名称等信息；</li>
+<li>uptime：用于查看系统的负载信息；负载值越低越好，尽量不要长期超过1，生产环境中不要超过5；</li>
+<li>free：用于显示当前系统中内存的使用量信息，结合-h参数能以更人性化的方式树池当前内存的实时信息；</li>
+<li>who：用于查看当前登入主机的用户终端信息；</li>
+<li>last：用于查看所有系统的登陆记录，但仅供参考，其中内容可能会被篡改；</li>
+<li>history：用于显示历史执行过的命令（默认为最近1000条的命令），使用-c参数则会清空所有的历史记录，使用“！编码数字”的方式可以重复执行某一次的命令；<br> 注：只有在终端关闭的时候，才会同步信息；</li>
+<li>sosreport：用于收集系统配置及架构信息并输出诊断文档；</li>
+</ol>
+<h2 id="4-工作目录切换命令"><a href="#4-工作目录切换命令" class="headerlink" title="4.工作目录切换命令"></a>4.工作目录切换命令</h2><ol>
+<li>pwd：用于显示用户当前所处的工作目录；</li>
+<li>cd：用于切换工作路径，其中cd -：表示返回到上一次所处的目录； cd..:表示进入上级目录； cd~：表示切换到当前用户的家目录；</li>
+<li>ls：用于显示目录中的文件信息，其中ls -a：表示查看全部文件（包括隐藏文件)；  ls -l：查看文件的属性、大小等详细信息； ls -d：查看目录及其详细信息；<h2 id="5-文本文件编辑命令"><a href="#5-文本文件编辑命令" class="headerlink" title="5.文本文件编辑命令"></a>5.文本文件编辑命令</h2></li>
+<li>cat：用于查看纯文本文件（内容较少的），cat -n：显示行号；</li>
+<li>more：用于查看纯文本文件（内容较多的）；按回车键向下走一行，空格键向下走一页；</li>
+<li>head：用于查看文本文档的前N行内容，如 head -n 20 initial.cfg:查看initial.cfg文件的前20行内容；</li>
+<li>tail：用于查看文本文档的后N行内容，如 tail -n 20 initial.cfg:查看initial.cfg文件的后20行内容；tail -f 文件名：用于实时查看最新日志文件；</li>
+<li>tr：用于替换文本文件中的字符，格式为：tr [原始字符] [目标字符]，如 tr[a-z] [A-Z];</li>
+<li>wc:用于统计指定文本的行数、字数和字节数；<br> 参数            作用<br> -l            只显示行数<br> -w            只显示单词数<br> -c            只显示字节数</li>
+<li>stat：用于查看文件的具体存储信息和时间等信息；其中Access表示最后一次访问文件的时间；Modify表示真实修改文件内容的时间；Change表示修改文件属性信息的时间。</li>
+<li>cut：用于按“列”提取文本字符；-d参数：用于设置间隔符号； -f参数：用于设置想看的列数；</li>
+<li>diff：用于比较多个文本文件的差异； –brief参数:用于确认两个文件是否不同；  -c参数：用于比较多个文件的差异之处。查询结果中有“！”开头的行，表示内容有不同。</li>
+</ol>
 
     </div>
 
@@ -372,7 +416,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%91%BD%E4%BB%A4%E6%A0%BC%E5%BC%8F"><span class="nav-text">1.命令格式</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%91%BD%E4%BB%A4%E6%A0%BC%E5%BC%8F"><span class="nav-text">1.命令格式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%B8%B8%E7%94%A8%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%91%BD%E4%BB%A4"><span class="nav-text">2.常用的工作命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E7%B3%BB%E7%BB%9F%E7%8A%B6%E6%80%81%E6%A3%80%E6%B5%8B%E5%91%BD%E4%BB%A4"><span class="nav-text">3.系统状态检测命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E5%B7%A5%E4%BD%9C%E7%9B%AE%E5%BD%95%E5%88%87%E6%8D%A2%E5%91%BD%E4%BB%A4"><span class="nav-text">4.工作目录切换命令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E6%96%87%E6%9C%AC%E6%96%87%E4%BB%B6%E7%BC%96%E8%BE%91%E5%91%BD%E4%BB%A4"><span class="nav-text">5.文本文件编辑命令</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -441,13 +485,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">2k</span>
+    <span title="站点总字数">3k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">1 分钟</span>
+    <span title="站点阅读时长">3 分钟</span>
 </div>
 
 <!--
@@ -457,7 +501,7 @@
 <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共743字</span>
+  <span class="post-count">博客全站共2.1k字</span>
   <span class="post-meta-divider">|</span>
   本站总访问量<span id="busuanzi_value_site_pv"></span>次
   <span class="post-meta-divider">|</span>
