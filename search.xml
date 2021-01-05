@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>图片加载命令</title>
-    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class="">
-]]></content>
-  </entry>
-  <entry>
     <title>linux就该这么学——笔记1</title>
     <url>/2020/12/28/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%20%20%E7%AC%94%E8%AE%B01/</url>
     <content><![CDATA[<h2 id="1-命令格式"><a href="#1-命令格式" class="headerlink" title="1.命令格式"></a>1.命令格式</h2><p>格式要求： 命令名称 [命令参数]  [命令对象]<br>注意：<br>（1）命令名称、命令参数、命令对象之间需用空格键分隔；<br>（2）多个参数之间也要有空格，参数有长格式和短格式之分，分别用（–）和（-）作为前缀；长格式和长格式之间、长格式和短格式之间不能合并，短格式和短格式之间可以合并，共用一个空格，合并后仅保留一个-即可。</p>
@@ -55,6 +49,12 @@
       <tags>
         <tag>第2章节</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>图片加载命令</title>
+    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class="">
+]]></content>
   </entry>
   <entry>
     <title>用hexo和github免费创建自己的博客</title>
