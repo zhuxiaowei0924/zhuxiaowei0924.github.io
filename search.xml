@@ -59,13 +59,60 @@
 <li>date：用于显示及设置系统的时间或日期；<br> 直接输入date命令用于查看当前系统时间；<br> date “+%Y-%m-%d %H:%M:%S”:按照“年-月-日 小时:分钟:秒”的格式查看当前系统时间；<br> date -s “20200105 8:30:00”：将系统时间设置为2020年1月5日8点30分；<br> date “+%j”:用于查看今天是当年中的第几天；</li>
 <li>reboot：用于重启系统；</li>
 <li>poweroff：用于系统关机；</li>
-<li>wget命令：用于在终端中下载网络文件（需连接网络才可以下载），如：wget http：//<a href="http://www.linuxprobe.com/docs/linuxprobe.pdf%EF%BC%9B">www.linuxprobe.com/docs/linuxprobe.pdf；</a><br> -b:后台下载模式    -P:下载到指定目录        -t:最大尝试次数        -c:断点续传        -p:下载页面内的所有资源，包括图片、视频        -r:递归下载</li>
-<li>ps:用于查看系统中的进程状态；<br> -a:显示所有进程（包括其他用户）        -u:用户及其他详细信息        -x:显示没有控制终端的进程<br> 进程状态：R（运行）、S（休眠）、D（不可中断）、Z（僵死）、T（停止）；</li>
-<li>top：用于动态地监视进程活动与系统负载等信息；</li>
-<li>pidof：用于查询某个指定服务进程的PID值，如pidof sshd；</li>
-<li>kill：用于终止某个指定PID的服务进程，如kill 2156；</li>
-<li>killall：用于终止某个指定名称的服务所对应的全部进程；</li>
+<li>wget命令：用于在终端中下载网络文件（需连接网络才可以下载），如：wget http：//<a href="http://www.linuxprobe.com/docs/linuxprobe.pdf%EF%BC%9B">www.linuxprobe.com/docs/linuxprobe.pdf；</a></li>
 </ol>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-b</td>
+<td>后台下载模式</td>
+</tr>
+<tr>
+<td>-P</td>
+<td>下载到指定目录</td>
+</tr>
+<tr>
+<td>-c</td>
+<td>断点续传</td>
+</tr>
+<tr>
+<td>-p</td>
+<td>下载页面内的所有资源，包括图片、视频</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>递归下载</td>
+</tr>
+</tbody></table>
+<ol start="6">
+<li>ps:用于查看系统中的进程状态；</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>显示所有进程（包括其他用户）</td>
+</tr>
+<tr>
+<td>-u</td>
+<td>用户及其他详细信息</td>
+</tr>
+<tr>
+<td>-x</td>
+<td>显示没有控制终端的进程</td>
+</tr>
+</tbody></table>
+<p>进程状态：R（运行）、S（休眠）、D（不可中断）、Z（僵死）、T（停止）；<br>7. top：用于动态地监视进程活动与系统负载等信息；<br>8. pidof：用于查询某个指定服务进程的PID值，如pidof sshd；<br>9. kill：用于终止某个指定PID的服务进程，如kill 2156；<br>10. killall：用于终止某个指定名称的服务所对应的全部进程；</p>
 <h2 id="3-系统状态检测命令"><a href="#3-系统状态检测命令" class="headerlink" title="3.系统状态检测命令"></a>3.系统状态检测命令</h2><ol>
 <li>ifconfig：用于获取网卡配置与网络状态等信息，可以查看到网卡名称、IP地址和物理地址；</li>
 <li>uname：用于查看系统内核与系统版本等信息，加上-a参数能完整地查看当前系统的内核名称等信息；</li>
@@ -85,12 +132,128 @@
 <li>head：用于查看文本文档的前N行内容，如 head -n 20 initial.cfg:查看initial.cfg文件的前20行内容；</li>
 <li>tail：用于查看文本文档的后N行内容，如 tail -n 20 initial.cfg:查看initial.cfg文件的后20行内容；tail -f 文件名：用于实时查看最新日志文件；</li>
 <li>tr：用于替换文本文件中的字符，格式为：tr [原始字符] [目标字符]，如 tr[a-z] [A-Z];</li>
-<li>wc:用于统计指定文本的行数、字数和字节数；<br> -l:只显示行数        -w:只显示单词数        -c:只显示字节数</li>
+<li>wc:用于统计指定文本的行数、字数和字节数；</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-l</td>
+<td>只显示行数</td>
+</tr>
+<tr>
+<td>-w</td>
+<td>只显示单词数</td>
+</tr>
+<tr>
+<td>-c</td>
+<td>只显示字节数</td>
+</tr>
+<tr>
+<td>-d</td>
+<td>同时修改atime和mtime</td>
+</tr>
+</tbody></table>
+<ol start="7">
 <li>stat：用于查看文件的具体存储信息和时间等信息；其中Access表示最后一次访问文件的时间；Modify表示真实修改文件内容的时间；Change表示修改文件属性信息的时间。</li>
 <li>cut：用于按“列”提取文本字符；-d参数：用于设置间隔符号； -f参数：用于设置想看的列数；</li>
-<li>diff：用于比较多个文本文件的差异； –brief参数:用于确认两个文件是否不同；  -c参数：用于比较多个文件的差异之处。查询结果中有“！”开头的行，表示内容有不同。</li>
-<li></li>
+<li>diff：用于比较多个文本文件的差异； –brief参数:用于确认两个文件是否不同；  -c参数：用于比较多个文件的差异之处。查询结果中有“！”开头的行，表示内容有不同。<h1 id="6-文件目录管理命令"><a href="#6-文件目录管理命令" class="headerlink" title="6.文件目录管理命令"></a>6.文件目录管理命令</h1></li>
+<li>touch：用于创建空白文件或设置文件的时间；</li>
 </ol>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>修改读取时间</td>
+</tr>
+<tr>
+<td>-m</td>
+<td>修改修改时间</td>
+</tr>
+<tr>
+<td>-c</td>
+<td>修改更改权限时间</td>
+</tr>
+<tr>
+<td>-d</td>
+<td>同时修改atime和mtime</td>
+</tr>
+</tbody></table>
+<p>2.mkdir：用于创建空白目录；mkdir -p：能够递归创建具有嵌套关系的文件目录。<br>3.cp：用于复制文件或目录；格式为：cp [选项] 源文件 目标文件<br>复制操作分为3种情况：<br>（1）如果目标文件为目录，则把源文件复制到该目录中；<br>（2）如果目标文件为文件，则会询问是否要覆盖它；<br>（3）如果目标文件不存在，则执行正常的复制操作；<br>4.mv：用于剪切文件或将文件重命名，格式为：mv [选项]  源文件 [目标路径|目标文件名]<br>5.rm：用于删除文件或目录； -f：强制删除； -r：用于删除文件夹或目录；<br>6.dd：用于按照指定大小和个数的数据块来复制文件或转换文件；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>if</td>
+<td>输入的文件名称</td>
+</tr>
+<tr>
+<td>of</td>
+<td>输出的文件名称</td>
+</tr>
+<tr>
+<td>bs</td>
+<td>每个“块”的大小</td>
+</tr>
+<tr>
+<td>count</td>
+<td>复制“块”的个数</td>
+</tr>
+</tbody></table>
+<p>如：dd if=/dev/zero of=560_file count=1 bs=560M</p>
+<p>7.file:用于查看文件的类型；</p>
+<h1 id="7-打包压缩与搜索命令"><a href="#7-打包压缩与搜索命令" class="headerlink" title="7.打包压缩与搜索命令"></a>7.打包压缩与搜索命令</h1><p>1.tar：用于将文件进行打包压缩或解压；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-c</td>
+<td>创建压缩文件</td>
+</tr>
+<tr>
+<td>-x</td>
+<td>解开压缩文件</td>
+</tr>
+<tr>
+<td>-z</td>
+<td>用Gzip压缩或解压</td>
+</tr>
+<tr>
+<td>-j</td>
+<td>用bzip2压缩或解压</td>
+</tr>
+<tr>
+<td>-v</td>
+<td>显示压缩或解压的过程</td>
+</tr>
+<tr>
+<td>-f</td>
+<td>目标文件名</td>
+</tr>
+<tr>
+<td>-C</td>
+<td>指定解压到的目录</td>
+</tr>
+</tbody></table>
+<p>将文件打包压缩：tar -czvf 压缩包名称.tar.gz 要打包的目录； 如： tar -czvf etc.tar.gz /etc<br>解压命令：tar -xzvf 压缩包名称.tar.gz; 如： tar xzvf etc.tar.gz -C /root/etc</p>
+<p>2.grep:用于在文本中执行关键词搜索； -n：用来显示搜索到信息的行号； -v：用于反选信息；<br>3.find：用于按照指定条件来查找文件；格式为：find [查找路径] 寻找条件 操作； 如： find /etc -name “host*” -print<br>-exec:用于将find命令搜索到的结果交由后面的命令作进一步处理，exec虽然是长格式，但只需要一个“-”。</p>
 ]]></content>
       <categories>
         <category>linux就该这么学</category>
@@ -98,6 +261,12 @@
       <tags>
         <tag>第2章节</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>图片加载命令</title>
+    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class="">
+]]></content>
   </entry>
   <entry>
     <title>用hexo和github免费创建自己的博客</title>
@@ -123,11 +292,5 @@ deploy:
       <tags>
         <tag>博客</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>图片加载命令</title>
-    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class="">
-]]></content>
   </entry>
 </search>
