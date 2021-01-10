@@ -379,6 +379,12 @@
       </tags>
   </entry>
   <entry>
+    <title>图片加载命令</title>
+    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class="">
+]]></content>
+  </entry>
+  <entry>
     <title>liunx就该这么学：vim编辑器与Shell命令脚本</title>
     <url>/2021/01/09/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Avim%E7%BC%96%E8%BE%91%E5%99%A8%E4%B8%8EShell%E5%91%BD%E4%BB%A4%E8%84%9A%E6%9C%AC/</url>
     <content><![CDATA[<h1 id="1-Vim文本编辑器"><a href="#1-Vim文本编辑器" class="headerlink" title="1.Vim文本编辑器"></a>1.Vim文本编辑器</h1><p>注意：在linux系统中一切都是文件，而配置一个服务就是在修改其配置文件的参数；</p>
@@ -489,19 +495,41 @@
 <td>在文本中从上至下搜索该字符串</td>
 </tr>
 </tbody></table>
-<h1 id="2-编写简单的文档"><a href="#2-编写简单的文档" class="headerlink" title="2.编写简单的文档"></a>2.编写简单的文档</h1>]]></content>
+<h1 id="2-配置主机名称"><a href="#2-配置主机名称" class="headerlink" title="2.配置主机名称"></a>2.配置主机名称</h1><p>1.使用Vim编辑器修改“/etc/hostname”中的主机名称，将原始主机名称删除后追加“想加入的主机名称”，修改完毕后记得在末行模式下输入：wq！命令保存文档；<br>2.使用hostname命令检查是否修改成功；  </p>
+<p>注意：修改完毕后，有时主机名称不会立即同步到系统中，可重启虚拟机；  </p>
+<h1 id="3-配置网卡信息"><a href="#3-配置网卡信息" class="headerlink" title="3.配置网卡信息"></a>3.配置网卡信息</h1><p>网卡IP地址配置的是否正确是两台服务器是否可以相互通信的前提；  </p>
+<p>网卡信息配置步骤：  </p>
+<pre><code>1.cd /etc/sysconfig/network-scripts （存放着网卡的配置文件)；
+2.用Vim编辑器修改网卡文件ifcfg-eno16777728（每台仪器的网卡名称不一样，需要用ifconfig命令进行查询）；  
+
+    -设备类型：TYPE=Ethernet
+    -地址分配模式：BOOTPROTO=static
+    -网卡名称：NAME=eno16777728
+    -设备名称：DEVICE=eno1677728（不输入设备名称，在重启网卡时有报错，不太清楚原因）
+    -是否启动：ONBOOT=yes
+    -IP地址：IPADDR=192.168.10.10
+    -子网掩码：NETMASK=255.255.255.0
+    -网关地址：GATEWAY=192.168.10.1
+    -DNS地址：DNS1=192.168.10.1
+
+3.重启网络服务并测试网络是否联通：systemctl restart network     ping 192.168.10.10</code></pre>
+<h1 id="4-配置Yum软件仓库"><a href="#4-配置Yum软件仓库" class="headerlink" title="4.配置Yum软件仓库"></a>4.配置Yum软件仓库</h1><p>配置YUM软件仓库的步骤如下：</p>
+<pre><code>1.cd /etc/yum.repos.d/ （存放Yum软件仓库的配置文件）；
+2.vim rhel7.repo的配置文件（文件名称随意，但后缀必须为.repo），在配置文件中写入下方的配置参数：
+    [rhel7] （Yum软件仓库唯一标识符，避免与其他仓库冲突）
+    name=rhel7 （Yum软件仓库的名称描述，易于识别仓库用处）
+    baseurl=file:///media/cdrom （提供的方式包括FTP（ftp://..）、HTTP（http://..）、本地（file:///..））
+    enabled=1 （设置此源是否可用；1为可用，0为禁用）
+    gpgcheck=0 （设置此源是否校验文件；1为校验，0为不校验）
+3.挂载光盘，并把光盘挂载信息写入到/etc/fstab文件中；
+4.使用“yum install httpd -y”检查Yum软件仓库是否可用</code></pre>
+<h1 id="5-编写Shell脚本"><a href="#5-编写Shell脚本" class="headerlink" title="5.编写Shell脚本"></a>5.编写Shell脚本</h1>]]></content>
       <categories>
         <category>linux就该这么学</category>
       </categories>
       <tags>
         <tag>第4章节：vim编辑器与Shell命令脚本</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>图片加载命令</title>
-    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class="">
-]]></content>
   </entry>
   <entry>
     <title>用hexo和github免费创建自己的博客</title>

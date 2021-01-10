@@ -28,7 +28,7 @@
 <meta property="og:description" content="1.Vim文本编辑器注意：在linux系统中一切都是文件，而配置一个服务就是在修改其配置文件的参数； Vim编辑器有三种模式： （1）命令模式：控制光标移动，可对文本进行复制、粘贴、删除和查找等操作（开机后默认进入命令模式）； （2）输入模式：正常的文本录入（按a、i、o从命令模式进入输入模式，按Esc键退出输入模式）；              a键和i键分别是在光标后一位和光标当前位置切换到输">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2021-01-09T14:53:07.000Z">
-<meta property="article:modified_time" content="2021-01-09T15:15:46.734Z">
+<meta property="article:modified_time" content="2021-01-10T11:11:04.312Z">
 <meta property="article:author" content="晓">
 <meta property="article:tag" content="第4章节：vim编辑器与Shell命令脚本">
 <meta name="twitter:card" content="summary">
@@ -218,10 +218,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2021-01-09 22:53:07 / 修改时间：23:15:46" itemprop="dateCreated datePublished" datetime="2021-01-09T22:53:07+08:00">2021-01-09</time>
+              <time title="创建时间：2021-01-09 22:53:07" itemprop="dateCreated datePublished" datetime="2021-01-09T22:53:07+08:00">2021-01-09</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-01-10 19:11:04" itemprop="dateModified" datetime="2021-01-10T19:11:04+08:00">2021-01-10</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -245,7 +251,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>624</span>
+              <span>1.6k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -372,7 +378,35 @@
 <td>在文本中从上至下搜索该字符串</td>
 </tr>
 </tbody></table>
-<h1 id="2-编写简单的文档"><a href="#2-编写简单的文档" class="headerlink" title="2.编写简单的文档"></a>2.编写简单的文档</h1>
+<h1 id="2-配置主机名称"><a href="#2-配置主机名称" class="headerlink" title="2.配置主机名称"></a>2.配置主机名称</h1><p>1.使用Vim编辑器修改“/etc/hostname”中的主机名称，将原始主机名称删除后追加“想加入的主机名称”，修改完毕后记得在末行模式下输入：wq！命令保存文档；<br>2.使用hostname命令检查是否修改成功；  </p>
+<p>注意：修改完毕后，有时主机名称不会立即同步到系统中，可重启虚拟机；  </p>
+<h1 id="3-配置网卡信息"><a href="#3-配置网卡信息" class="headerlink" title="3.配置网卡信息"></a>3.配置网卡信息</h1><p>网卡IP地址配置的是否正确是两台服务器是否可以相互通信的前提；  </p>
+<p>网卡信息配置步骤：  </p>
+<pre><code>1.cd /etc/sysconfig/network-scripts （存放着网卡的配置文件)；
+2.用Vim编辑器修改网卡文件ifcfg-eno16777728（每台仪器的网卡名称不一样，需要用ifconfig命令进行查询）；  
+
+    -设备类型：TYPE=Ethernet
+    -地址分配模式：BOOTPROTO=static
+    -网卡名称：NAME=eno16777728
+    -设备名称：DEVICE=eno1677728（不输入设备名称，在重启网卡时有报错，不太清楚原因）
+    -是否启动：ONBOOT=yes
+    -IP地址：IPADDR=192.168.10.10
+    -子网掩码：NETMASK=255.255.255.0
+    -网关地址：GATEWAY=192.168.10.1
+    -DNS地址：DNS1=192.168.10.1
+
+3.重启网络服务并测试网络是否联通：systemctl restart network     ping 192.168.10.10</code></pre>
+<h1 id="4-配置Yum软件仓库"><a href="#4-配置Yum软件仓库" class="headerlink" title="4.配置Yum软件仓库"></a>4.配置Yum软件仓库</h1><p>配置YUM软件仓库的步骤如下：</p>
+<pre><code>1.cd /etc/yum.repos.d/ （存放Yum软件仓库的配置文件）；
+2.vim rhel7.repo的配置文件（文件名称随意，但后缀必须为.repo），在配置文件中写入下方的配置参数：
+    [rhel7] （Yum软件仓库唯一标识符，避免与其他仓库冲突）
+    name=rhel7 （Yum软件仓库的名称描述，易于识别仓库用处）
+    baseurl=file:///media/cdrom （提供的方式包括FTP（ftp://..）、HTTP（http://..）、本地（file:///..））
+    enabled=1 （设置此源是否可用；1为可用，0为禁用）
+    gpgcheck=0 （设置此源是否校验文件；1为校验，0为不校验）
+3.挂载光盘，并把光盘挂载信息写入到/etc/fstab文件中；
+4.使用“yum install httpd -y”检查Yum软件仓库是否可用</code></pre>
+<h1 id="5-编写Shell脚本"><a href="#5-编写Shell脚本" class="headerlink" title="5.编写Shell脚本"></a>5.编写Shell脚本</h1>
     </div>
 
     
@@ -479,7 +513,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-Vim%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91%E5%99%A8"><span class="nav-text">1.Vim文本编辑器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E7%BC%96%E5%86%99%E7%AE%80%E5%8D%95%E7%9A%84%E6%96%87%E6%A1%A3"><span class="nav-text">2.编写简单的文档</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-Vim%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91%E5%99%A8"><span class="nav-text">1.Vim文本编辑器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E9%85%8D%E7%BD%AE%E4%B8%BB%E6%9C%BA%E5%90%8D%E7%A7%B0"><span class="nav-text">2.配置主机名称</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E9%85%8D%E7%BD%AE%E7%BD%91%E5%8D%A1%E4%BF%A1%E6%81%AF"><span class="nav-text">3.配置网卡信息</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E9%85%8D%E7%BD%AEYum%E8%BD%AF%E4%BB%B6%E4%BB%93%E5%BA%93"><span class="nav-text">4.配置Yum软件仓库</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-%E7%BC%96%E5%86%99Shell%E8%84%9A%E6%9C%AC"><span class="nav-text">5.编写Shell脚本</span></a></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -548,13 +582,13 @@
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">7k</span>
+    <span title="站点总字数">8k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">6 分钟</span>
+    <span title="站点阅读时长">7 分钟</span>
 </div>
 
 <!--
@@ -564,7 +598,7 @@
 <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共4.6k字</span>
+  <span class="post-count">博客全站共5.1k字</span>
   <span class="post-meta-divider">|</span>
   本站总访问量<span id="busuanzi_value_site_pv"></span>次
   <span class="post-meta-divider">|</span>
