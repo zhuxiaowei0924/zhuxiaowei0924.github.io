@@ -379,12 +379,6 @@
       </tags>
   </entry>
   <entry>
-    <title>图片加载命令</title>
-    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class="">
-]]></content>
-  </entry>
-  <entry>
     <title>liunx就该这么学：vim编辑器与Shell命令脚本</title>
     <url>/2021/01/09/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Avim%E7%BC%96%E8%BE%91%E5%99%A8%E4%B8%8EShell%E5%91%BD%E4%BB%A4%E8%84%9A%E6%9C%AC/</url>
     <content><![CDATA[<h1 id="1-Vim文本编辑器"><a href="#1-Vim文本编辑器" class="headerlink" title="1.Vim文本编辑器"></a>1.Vim文本编辑器</h1><p>注意：在linux系统中一切都是文件，而配置一个服务就是在修改其配置文件的参数；</p>
@@ -393,6 +387,7 @@
 （2）输入模式：正常的文本录入（按a、i、o从命令模式进入输入模式，按Esc键退出输入模式）；
              a键和i键分别是在光标后一位和光标当前位置切换到输入模式，而o键则是在光标的下面再新建一个空行。
 （3）末行模式：保存或退出文档，以及设置编辑环境（按：键进入末行模式，按Esc键退出输入模式）；</code></pre>
+<a id="more"></a>
 <p>命令模式中常用的命令：</p>
 <table>
 <thead>
@@ -530,6 +525,12 @@
       <tags>
         <tag>第4章节：vim编辑器与Shell命令脚本</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>图片加载命令</title>
+    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class="">
+]]></content>
   </entry>
   <entry>
     <title>用hexo和github免费创建自己的博客</title>
