@@ -28,7 +28,7 @@
 <meta property="og:description" content="1.Vim文本编辑器注意：在linux系统中一切都是文件，而配置一个服务就是在修改其配置文件的参数； Vim编辑器有三种模式： （1）命令模式：控制光标移动，可对文本进行复制、粘贴、删除和查找等操作（开机后默认进入命令模式）； （2）输入模式：正常的文本录入（按a、i、o从命令模式进入输入模式，按Esc键退出输入模式）；              a键和i键分别是在光标后一位和光标当前位置切换到输">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2021-01-09T14:53:07.000Z">
-<meta property="article:modified_time" content="2021-01-24T15:19:22.504Z">
+<meta property="article:modified_time" content="2021-01-25T13:15:59.941Z">
 <meta property="article:author" content="晓">
 <meta property="article:tag" content="第4章节：vim编辑器与Shell命令脚本">
 <meta name="twitter:card" content="summary">
@@ -226,7 +226,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-01-24 23:19:22" itemprop="dateModified" datetime="2021-01-24T23:19:22+08:00">2021-01-24</time>
+                <time title="修改时间：2021-01-25 21:15:59" itemprop="dateModified" datetime="2021-01-25T21:15:59+08:00">2021-01-25</time>
               </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
@@ -251,7 +251,7 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>3.1k</span>
+              <span>3.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
@@ -493,7 +493,7 @@
 0</code></pre>
 <p>字符串比较语句用于判断测试字符串是否为空值，或两个字符串是否相同。</p>
 <p>| 操作符 | 作用 |<br>| = | 比较字符串内容是否相同 |<br>| ！= | 比较字符串内容是否不同 |<br>| -z |  判断字符串内容是否为空 |</p>
-<h2 id="5-3-流程控制语句"><a href="#5-3-流程控制语句" class="headerlink" title="5.3 流程控制语句"></a>5.3 流程控制语句</h2><p>1.if条件测试语句</p>
+<h2 id="5-3-流程控制语句"><a href="#5-3-流程控制语句" class="headerlink" title="5.3 流程控制语句"></a>5.3 流程控制语句</h2><p>1.if条件测试语句：可以让脚本根据实际情况自动执行相应的命令。从技术角度来讲，if语句分为单分支结构、双分支结构、多分支结构；</p>
 <pre><code>（1）
 if 条件测试操作
 then 命令序列
@@ -512,17 +512,17 @@ elif 条件测试操作2
     then 命令序列2
 else 命令序列2
 fi</code></pre>
-<p>2.for条件循环语句</p>
+<p>2.for条件循环语句：允许脚本一次性读取多个信息，然后逐一对信息进行操作处理，当要处理的数据有范围时，使用for循环语句再适合不过了。</p>
 <pre><code>for 变量名 in 取值列表
 do
 命令序列
 done</code></pre>
-<p>3.while条件循环语句</p>
+<p>3.while条件循环语句：通过判断条件测试的真假来决定是否继续执行命令，若条件为真就继续执行，为假就结束循环。</p>
 <pre><code>while 条件测试操作
 do
     命令序列
 done</code></pre>
-<p>4.case条件测试语句</p>
+<p>4.case条件测试语句：case语句是在多个范围内匹配数据，若匹配成功则执行相关命令并结束整个条件测试；而如果数据不在所列出的范围内，则会去执行星号（*）中所定义的默认命令。</p>
 <pre><code>case 变量值 in
 模式1）
     命令序列1
@@ -537,7 +537,8 @@ esac</code></pre>
 <p>5.计划任务服务程序</p>
 <p>分为一次性计划任务和长期性计划任务；</p>
 <p>一次性计划任务：写成“ at 时间 ”的形式，如果想要查看已设置好但还未执行的一次性计划任务，可以使用“at -l”命令；要想将其删除，可以用“atrm 任务序号”。</p>
-<p>长期性计划任务：默认启用crond服务；创建、编辑计划任务的命令为“crontab -e”，查看当前计划任务的命令为“crontab -l”，删除某条计划任务的命令为“crontab -r”。口诀：“分、时、日、月、星期 命令”<br>注意：在crond服务的计划任务参数中，所有命令一定要用绝对路径的方式来写，如果不知道绝对路径，请用whereis命令进行查询。</p>
+<p>长期性计划任务：默认启用crond服务；创建、编辑计划任务的命令为“crontab -e”，查看当前计划任务的命令为“crontab -l”，删除某条计划任务的命令为“crontab -r”。口诀：“分、时、日、月、星期 命令”</p>
+<p>注意：<br>（1）在crond服务的计划任务参数中，所有命令一定要用绝对路径的方式来写，如果不知道绝对路径，请用whereis命令进行查询。<br>（2）计划任务中的“分”字段必须有数值，绝对不能为空或是*号，而“日”和“星期”字段不能同时使用，否则就会发生冲突。</p>
 
     </div>
 
@@ -586,7 +587,10 @@ esac</code></pre>
     <a href="/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" rel="prev" title="linux就该这么学：管道符、重定向与环境变量">
       <i class="fa fa-chevron-left"></i> linux就该这么学：管道符、重定向与环境变量
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/" rel="next" title="linux就该这么学：用户身份与文件权限">
+      linux就该这么学：用户身份与文件权限 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -661,7 +665,7 @@ esac</code></pre>
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">5</span>
+          <span class="site-state-item-count">6</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -674,7 +678,7 @@ esac</code></pre>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-count">5</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -714,13 +718,13 @@ esac</code></pre>
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">10k</span>
+    <span title="站点总字数">11k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">9 分钟</span>
+    <span title="站点阅读时长">10 分钟</span>
 </div>
 
 <!--
@@ -730,7 +734,7 @@ esac</code></pre>
 <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共6.1k字</span>
+  <span class="post-count">博客全站共7.2k字</span>
   <span class="post-meta-divider">|</span>
   本站总访问量<span id="busuanzi_value_site_pv"></span>次
   <span class="post-meta-divider">|</span>
