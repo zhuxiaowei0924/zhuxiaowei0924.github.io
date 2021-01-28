@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zhuxiaowei0924.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="1.Vim文本编辑器注意：在linux系统中一切都是文件，而配置一个服务就是在修改其配置文件的参数； Vim编辑器有三种模式： （1）命令模式：控制光标移动，可对文本进行复制、粘贴、删除和查找等操作（开机后默认进入命令模式）； （2）输入模式：正常的文本录入（按a、i、o从命令模式进入输入模式，按Esc键退出输入模式）；              a键和i键分别是在光标后一位和光标当前位置切换到输">
+<meta property="og:type" content="article">
+<meta property="og:title" content="liunx就该这么学：vim编辑器与Shell命令脚本">
+<meta property="og:url" content="https://zhuxiaowei0924.github.io/2021/01/09/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Avim%E7%BC%96%E8%BE%91%E5%99%A8%E4%B8%8EShell%E5%91%BD%E4%BB%A4%E8%84%9A%E6%9C%AC/index.html">
+<meta property="og:site_name" content="随笔&amp;博客">
+<meta property="og:description" content="1.Vim文本编辑器注意：在linux系统中一切都是文件，而配置一个服务就是在修改其配置文件的参数； Vim编辑器有三种模式： （1）命令模式：控制光标移动，可对文本进行复制、粘贴、删除和查找等操作（开机后默认进入命令模式）； （2）输入模式：正常的文本录入（按a、i、o从命令模式进入输入模式，按Esc键退出输入模式）；              a键和i键分别是在光标后一位和光标当前位置切换到输">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-01-09T14:53:07.000Z">
+<meta property="article:modified_time" content="2021-01-25T13:15:59.941Z">
+<meta property="article:author" content="晓">
+<meta property="article:tag" content="第4章节：vim编辑器与Shell命令脚本">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://zhuxiaowei0924.github.io/2021/01/09/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Avim%E7%BC%96%E8%BE%91%E5%99%A8%E4%B8%8EShell%E5%91%BD%E4%BB%A4%E8%84%9A%E6%9C%AC/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>liunx就该这么学：vim编辑器与Shell命令脚本 | 随笔&博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  <!-- 页面点击小红花 -->
+  <script type="text/javascript" src="/js/fairyDustCursor.js"></script>
+  <!-- 引入jQuery -->
+  <script type="text/javascript" src="//libs.baidu.com/jquery/1.8.3/jquery.min.js"></script>
+  <!-- 雪花特效/2 -->
+  <script type="text/javascript" src="/js/snow.js"></script>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">随笔&博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">生于忧患，死于安乐</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zhuxiaowei0924.github.io/2021/01/09/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Avim%E7%BC%96%E8%BE%91%E5%99%A8%E4%B8%8EShell%E5%91%BD%E4%BB%A4%E8%84%9A%E6%9C%AC/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="晓">
+      <meta itemprop="description" content="看得懂的书，请仔细看；看不懂的书，请硬着头皮看。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="随笔&博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          liunx就该这么学：vim编辑器与Shell命令脚本
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-01-09 22:53:07" itemprop="dateCreated datePublished" datetime="2021-01-09T22:53:07+08:00">2021-01-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-01-25 21:15:59" itemprop="dateModified" datetime="2021-01-25T21:15:59+08:00">2021-01-25</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">linux就该这么学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>3.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>3 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="1-Vim文本编辑器"><a href="#1-Vim文本编辑器" class="headerlink" title="1.Vim文本编辑器"></a>1.Vim文本编辑器</h1><p>注意：在linux系统中一切都是文件，而配置一个服务就是在修改其配置文件的参数；</p>
+<p>Vim编辑器有三种模式：</p>
+<pre><code>（1）命令模式：控制光标移动，可对文本进行复制、粘贴、删除和查找等操作（开机后默认进入命令模式）；
+（2）输入模式：正常的文本录入（按a、i、o从命令模式进入输入模式，按Esc键退出输入模式）；
+             a键和i键分别是在光标后一位和光标当前位置切换到输入模式，而o键则是在光标的下面再新建一个空行。
+（3）末行模式：保存或退出文档，以及设置编辑环境（按：键进入末行模式，按Esc键退出输入模式）；</code></pre>
+<a id="more"></a>
+<p>命令模式中常用的命令：</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>dd</td>
+<td>删除（剪切）光标所在整行</td>
+</tr>
+<tr>
+<td>5dd</td>
+<td>删除（剪切）从光标处开始的5行</td>
+</tr>
+<tr>
+<td>yy</td>
+<td>复制光标所在整行</td>
+</tr>
+<tr>
+<td>5yy</td>
+<td>复制从光标处开始的5行</td>
+</tr>
+<tr>
+<td>n</td>
+<td>显示搜索命令定位到的下一个字符串</td>
+</tr>
+<tr>
+<td>N</td>
+<td>显示搜索命令定位到的上一个字符串</td>
+</tr>
+<tr>
+<td>u</td>
+<td>撤销上一步的操作</td>
+</tr>
+<tr>
+<td>p</td>
+<td>将之前删除（dd）或复制（yy）过的数据粘贴到光标后面</td>
+</tr>
+</tbody></table>
+<p>末行模式中常用的命令：</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>:w</td>
+<td>保存</td>
+</tr>
+<tr>
+<td>:q</td>
+<td>退出</td>
+</tr>
+<tr>
+<td>:q!</td>
+<td>强制退出（放弃对文档的修改内容）</td>
+</tr>
+<tr>
+<td>:wq!</td>
+<td>强制保存退出</td>
+</tr>
+<tr>
+<td>:set nu</td>
+<td>显示行号</td>
+</tr>
+<tr>
+<td>:set nonu</td>
+<td>不显示行号</td>
+</tr>
+<tr>
+<td>:命令</td>
+<td>执行该命令</td>
+</tr>
+<tr>
+<td>:整数</td>
+<td>跳转到该行</td>
+</tr>
+<tr>
+<td>:s/one/two</td>
+<td>将当前光标所在行的第一个one替换成two</td>
+</tr>
+<tr>
+<td>:s/one/two/g</td>
+<td>将当前光标所在行的所有one替换成two</td>
+</tr>
+<tr>
+<td>:%s/one/two/g</td>
+<td>将全文中的所有one替换成two</td>
+</tr>
+<tr>
+<td>?字符串</td>
+<td>在文本中从下至上搜索该字符串</td>
+</tr>
+<tr>
+<td>/字符串</td>
+<td>在文本中从上至下搜索该字符串</td>
+</tr>
+</tbody></table>
+<h1 id="2-配置主机名称"><a href="#2-配置主机名称" class="headerlink" title="2.配置主机名称"></a>2.配置主机名称</h1><p>1.使用Vim编辑器修改“/etc/hostname”中的主机名称，将原始主机名称删除后追加“想加入的主机名称”，修改完毕后记得在末行模式下输入：wq！命令保存文档；<br>2.使用hostname命令检查是否修改成功；  </p>
+<p>注意：修改完毕后，有时主机名称不会立即同步到系统中，可重启虚拟机；  </p>
+<h1 id="3-配置网卡信息"><a href="#3-配置网卡信息" class="headerlink" title="3.配置网卡信息"></a>3.配置网卡信息</h1><p>网卡IP地址配置的是否正确是两台服务器是否可以相互通信的前提；  </p>
+<p>网卡信息配置步骤：  </p>
+<pre><code>1.cd /etc/sysconfig/network-scripts （存放着网卡的配置文件)；
+2.用Vim编辑器修改网卡文件ifcfg-eno16777728（每台仪器的网卡名称不一样，需要用ifconfig命令进行查询）；  
+
+    -设备类型：TYPE=Ethernet
+    -地址分配模式：BOOTPROTO=static
+    -网卡名称：NAME=eno16777728
+    -设备名称：DEVICE=eno1677728（不输入设备名称，在重启网卡时有报错，不太清楚原因）
+    -是否启动：ONBOOT=yes
+    -IP地址：IPADDR=192.168.10.10
+    -子网掩码：NETMASK=255.255.255.0
+    -网关地址：GATEWAY=192.168.10.1
+    -DNS地址：DNS1=192.168.10.1
+
+3.重启网络服务并测试网络是否联通：systemctl restart network     ping 192.168.10.10</code></pre>
+<h1 id="4-配置Yum软件仓库"><a href="#4-配置Yum软件仓库" class="headerlink" title="4.配置Yum软件仓库"></a>4.配置Yum软件仓库</h1><p>配置YUM软件仓库的步骤如下：</p>
+<pre><code>1.cd /etc/yum.repos.d/ （存放Yum软件仓库的配置文件）；
+2.vim rhel7.repo的配置文件（文件名称随意，但后缀必须为.repo），在配置文件中写入下方的配置参数：
+    [rhel7] （Yum软件仓库唯一标识符，避免与其他仓库冲突）
+    name=rhel7 （Yum软件仓库的名称描述，易于识别仓库用处）
+    baseurl=file:///media/cdrom （提供的方式包括FTP（ftp://..）、HTTP（http://..）、本地（file:///..））
+    enabled=1 （设置此源是否可用；1为可用，0为禁用）
+    gpgcheck=0 （设置此源是否校验文件；1为校验，0为不校验）
+3.挂载光盘，并把光盘挂载信息写入到/etc/fstab文件中；
+4.使用“yum install httpd -y”检查Yum软件仓库是否可用</code></pre>
+<h1 id="5-编写Shell脚本"><a href="#5-编写Shell脚本" class="headerlink" title="5.编写Shell脚本"></a>5.编写Shell脚本</h1><p>Shell脚本内容可分为三部分：</p>
+<pre><code>1.第一行的#！/bin/bash：用于告诉系统用哪种Shell解释器来执行该脚本；
+2.第二行的#：是注释信息，用于对脚本功能和某些命令的介绍信息；
+3.第三行之后的内容是可执行语句。</code></pre>
+<h2 id="5-1-接受用户参数"><a href="#5-1-接受用户参数" class="headerlink" title="5.1 接受用户参数"></a>5.1 接受用户参数</h2><p>Shell脚本语言内置了用于接收参数的变量，变量之间使用空格间隔；如：$0对应当前Shell脚本名称，$#对应总共几个参数，$*对应所有位置的参数值，$？对应显示上一次命令的执行返回值，而$1、$2、$3…分别对应第N个位置的参数值。</p>
+<h2 id="5-2-判断用户的参数"><a href="#5-2-判断用户的参数" class="headerlink" title="5.2 判断用户的参数"></a>5.2 判断用户的参数</h2><p>条件测试语句格式： [ 条件表达式 ]  两边各有一个空格</p>
+<p>条件测试语句分为4种：文件测试语句、逻辑测试语句、整数值比较语句、字符串比较语句。</p>
+<p>文件测试所用参数：</p>
+<table>
+<thead>
+<tr>
+<th>操作符</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-d</td>
+<td>文件是否为目录</td>
+</tr>
+<tr>
+<td>-e</td>
+<td>文件是否存在</td>
+</tr>
+<tr>
+<td>-f</td>
+<td>文件是否为一般文件</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>当前用户是否有权限读取</td>
+</tr>
+<tr>
+<td>-w</td>
+<td>当前用户是否有权限写入</td>
+</tr>
+<tr>
+<td>-x</td>
+<td>当前用户是否有权限执行</td>
+</tr>
+</tbody></table>
+<pre><code>[root@linuxprobe ~]# [ -d /etc/fstab ]
+[root@linuxprobe ~]# echo $?
+1（返回值如果为0，表示目录存在；为非零值，则表示目录不存在）</code></pre>
+<p>逻辑语句运算符号：与（&amp;&amp;）、或（||）、非（！）；</p>
+<p>&amp;&amp;：表示当前面的命令执行成功后才能执行后面的命令；<br>||：表示当前面的命令执行失败后才能执行后面的命令；<br>！：表示把条件测试中的判断结果取相反值。</p>
+<p>整数比较运算符仅是对数字的操作，不能将数字与字符串、文件等内容一起操作，而且不能想当然地使用日常生活中的等号、大于号、小于号等来判断。</p>
+<table>
+<thead>
+<tr>
+<th>操作符</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-eq</td>
+<td>是否等于</td>
+</tr>
+<tr>
+<td>-ne</td>
+<td>是否不等于</td>
+</tr>
+<tr>
+<td>-gt</td>
+<td>是否大于</td>
+</tr>
+<tr>
+<td>-lt</td>
+<td>是否小于</td>
+</tr>
+<tr>
+<td>-le</td>
+<td>是否等于或小于</td>
+</tr>
+<tr>
+<td>-ge</td>
+<td>是否大于或等于</td>
+</tr>
+</tbody></table>
+<pre><code>[root@linuxprobe ~]# [ 10 -gt 10 ]
+[root@linuxprobe ~]# echo $?
+1
+[root@linuxprobe ~]# [ 10 -eq 10 ]
+[root@linuxprobe ~]# echo $?
+0</code></pre>
+<p>字符串比较语句用于判断测试字符串是否为空值，或两个字符串是否相同。</p>
+<p>| 操作符 | 作用 |<br>| = | 比较字符串内容是否相同 |<br>| ！= | 比较字符串内容是否不同 |<br>| -z |  判断字符串内容是否为空 |</p>
+<h2 id="5-3-流程控制语句"><a href="#5-3-流程控制语句" class="headerlink" title="5.3 流程控制语句"></a>5.3 流程控制语句</h2><p>1.if条件测试语句：可以让脚本根据实际情况自动执行相应的命令。从技术角度来讲，if语句分为单分支结构、双分支结构、多分支结构；</p>
+<pre><code>（1）
+if 条件测试操作
+then 命令序列
+fi
+
+（2）
+if 条件测试操作
+then 命令序列1
+else 命令序列2
+fi
+
+（2）
+if 条件测试操作
+then 命令序列1
+elif 条件测试操作2
+    then 命令序列2
+else 命令序列2
+fi</code></pre>
+<p>2.for条件循环语句：允许脚本一次性读取多个信息，然后逐一对信息进行操作处理，当要处理的数据有范围时，使用for循环语句再适合不过了。</p>
+<pre><code>for 变量名 in 取值列表
+do
+命令序列
+done</code></pre>
+<p>3.while条件循环语句：通过判断条件测试的真假来决定是否继续执行命令，若条件为真就继续执行，为假就结束循环。</p>
+<pre><code>while 条件测试操作
+do
+    命令序列
+done</code></pre>
+<p>4.case条件测试语句：case语句是在多个范围内匹配数据，若匹配成功则执行相关命令并结束整个条件测试；而如果数据不在所列出的范围内，则会去执行星号（*）中所定义的默认命令。</p>
+<pre><code>case 变量值 in
+模式1）
+    命令序列1
+    ;;
+模式2）
+    命令序列2
+    ;;
+    ……
+*）
+    默认命令序列
+esac</code></pre>
+<p>5.计划任务服务程序</p>
+<p>分为一次性计划任务和长期性计划任务；</p>
+<p>一次性计划任务：写成“ at 时间 ”的形式，如果想要查看已设置好但还未执行的一次性计划任务，可以使用“at -l”命令；要想将其删除，可以用“atrm 任务序号”。</p>
+<p>长期性计划任务：默认启用crond服务；创建、编辑计划任务的命令为“crontab -e”，查看当前计划任务的命令为“crontab -l”，删除某条计划任务的命令为“crontab -r”。口诀：“分、时、日、月、星期 命令”</p>
+<p>注意：<br>（1）在crond服务的计划任务参数中，所有命令一定要用绝对路径的方式来写，如果不知道绝对路径，请用whereis命令进行查询。<br>（2）计划任务中的“分”字段必须有数值，绝对不能为空或是*号，而“日”和“星期”字段不能同时使用，否则就会发生冲突。</p>
+
+    </div>
+
+    
+    
+    
+	
+	<div>
+		
+			<div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+		
+	</div>
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>晓
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://zhuxiaowei0924.github.io/2021/01/09/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Avim%E7%BC%96%E8%BE%91%E5%99%A8%E4%B8%8EShell%E5%91%BD%E4%BB%A4%E8%84%9A%E6%9C%AC/" title="liunx就该这么学：vim编辑器与Shell命令脚本">https://zhuxiaowei0924.github.io/2021/01/09/liunx就该这么学：vim编辑器与Shell命令脚本/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%AC%AC4%E7%AB%A0%E8%8A%82%EF%BC%9Avim%E7%BC%96%E8%BE%91%E5%99%A8%E4%B8%8EShell%E5%91%BD%E4%BB%A4%E8%84%9A%E6%9C%AC/" rel="tag"># 第4章节：vim编辑器与Shell命令脚本</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" rel="prev" title="linux就该这么学：管道符、重定向与环境变量">
+      <i class="fa fa-chevron-left"></i> linux就该这么学：管道符、重定向与环境变量
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/" rel="next" title="linux就该这么学：用户身份与文件权限">
+      linux就该这么学：用户身份与文件权限 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-Vim%E6%96%87%E6%9C%AC%E7%BC%96%E8%BE%91%E5%99%A8"><span class="nav-text">1.Vim文本编辑器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E9%85%8D%E7%BD%AE%E4%B8%BB%E6%9C%BA%E5%90%8D%E7%A7%B0"><span class="nav-text">2.配置主机名称</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E9%85%8D%E7%BD%AE%E7%BD%91%E5%8D%A1%E4%BF%A1%E6%81%AF"><span class="nav-text">3.配置网卡信息</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E9%85%8D%E7%BD%AEYum%E8%BD%AF%E4%BB%B6%E4%BB%93%E5%BA%93"><span class="nav-text">4.配置Yum软件仓库</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-%E7%BC%96%E5%86%99Shell%E8%84%9A%E6%9C%AC"><span class="nav-text">5.编写Shell脚本</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#5-1-%E6%8E%A5%E5%8F%97%E7%94%A8%E6%88%B7%E5%8F%82%E6%95%B0"><span class="nav-text">5.1 接受用户参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-2-%E5%88%A4%E6%96%AD%E7%94%A8%E6%88%B7%E7%9A%84%E5%8F%82%E6%95%B0"><span class="nav-text">5.2 判断用户的参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-3-%E6%B5%81%E7%A8%8B%E6%8E%A7%E5%88%B6%E8%AF%AD%E5%8F%A5"><span class="nav-text">5.3 流程控制语句</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="晓"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">晓</p>
+  <div class="site-description" itemprop="description">看得懂的书，请仔细看；看不懂的书，请硬着头皮看。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">6</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">5</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2020 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">晓</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">11k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">10 分钟</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>-->
+
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共7.2k字</span>
+  <span class="post-meta-divider">|</span>
+  本站总访问量<span id="busuanzi_value_site_pv"></span>次
+  <span class="post-meta-divider">|</span>
+  本站访客数<span id="busuanzi_value_site_uv"></span>人次
+  <span class="post-meta-divider">|</span>
+  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+</div>
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script color='255,255,255' opacity='0.5' zIndex='-1' count='200' src="/lib/canvas-nest/canvas-nest-nomobile.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  <script async src="/js/cursor/fireworks.js"></script>
+
+  
+<!--3D飘雪花特效 整理(此部分代码存在影响六角雪花特效）by yaxi.net-->
+<script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="snow.js"></script>
+<style type="text/css">
+.snow-container{
+position:fixed;
+top:0;left:0;
+width:100%;
+height:100%;
+pointer-events:none;
+z-index:100001;
+}
+</style>
+<div class="snow-container"></div>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/z16.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
