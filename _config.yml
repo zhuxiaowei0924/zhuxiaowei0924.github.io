@@ -126,6 +126,11 @@ live2d:
   mobile:
     show: false #是否在手机端显示
     
+lazyload:
+  enable: true
+  onlypost: false
+  loadingImg: /images/loading.png
+    
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
