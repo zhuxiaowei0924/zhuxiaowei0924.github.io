@@ -126,7 +126,7 @@ $ sudo chmod 755 /bin/cat
 
 {% asset_img 6.png %}
 
-很明显，它被设置了 SGID 权限。下面是数据库文件 /var/lib/mlocate/mlocate.db 的权限信息：很明显，它被设置了 SGID 权限。下面是数据库文件 /var/lib/mlocate/mlocate.db 的权限信息：
+很明显，它被设置了 SGID 权限。下面是数据库文件 /var/lib/mlocate/mlocate.db 的权限信息：
 
 {% asset_img 7.png %}
 
@@ -202,12 +202,65 @@ $ chmod o+t testdir  # 为 testdir 目录加上 SBIT 权限。
 总结
 SUID、SGID、SBIT 权限都是为了实现特殊功能而设计的，其目的是弥补 ugo 权限无法实现的一些使用场景。
 
+## 2.2文件的隐藏属性
+
+linux文件除了具备一般权限和特殊权限外，还具有隐藏权限；  
+
+1.chattr：用于设置文件的隐藏权限，添加隐藏功能“+参数”，移除隐藏功能“-参数”。  
 
 
+| 参数 | 作用 |
+| --- | --- |
+| i | 无法对文件进行修改；若对目录设置了该参数，则仅能修改其中的子文件内容而不能新建或删除文件 |
+| a | 仅允许补充（追加）内容，无法覆盖/删除内容（Append Only） |
+| s | 彻底从硬盘中删除，不可恢复（用0填充原文件所在硬盘区域） |
+| A | 不再修改这个文件或目录的最后访问时间（atime） |
+| b | 不再修改文件或目录的存取时间 |
+| u | 当删除该文件后依然保留其在硬盘中的数据，方便日后恢复 |
+
+2.lsattr：用于显示文件的隐藏权限；
+
+## 2.3 文件访问控制列表
+
+一般权限、特殊权限、隐藏权限其实有一个共性—权限是针对某一类用户设置的；如果需要对某个指定的用户进行单独的权限控制，就需要用到文件访问控制列表（ACL);如果针对某个目录设置了ACL，则目录中的文件会继承其ACL；若针对文件设置了ACL，则文件不再继承其所在目录的ACL。
+
+1.setfacl：可以针对单一用户或用户组、单一文件或目录来进行读/写/执行权限的控制。 
+-R：针对目录文件；	-m：针对普通文件；	-b：删除文件的ACL
+
+	[root@linuxprobe ~]# setfacl -Rm u:linuxprobe:rwx /root
+	[root@linuxprobe ~]# su - linuxprobe
+	Last login: Sat Mar 21 15:45:03 CST 2017 on pts/1
+	[linuxprobe@linuxprobe ~]$ cd /root
+	[linuxprobe@linuxprobe root]$ ls
+	anaconda-ks.cfg Downloads Pictures Public
+	[linuxprobe@linuxprobe root]$ cat anaconda-ks.cfg
+	[linuxprobe@linuxprobe root]$ exit
+
+当文件权限的最后一个点（.）变成（+）时，意味着文件设置了ACL。
+
+2.getfacl：用于显示文件的ACL信息；
+
+## 2.4 su命令与sudo服务
+
+su命令可以解决切换用户身份的需求，使得当前用户在不退出登录的情况下，顺畅地切换到其他用户；上面的su命令与用户名之间有一个减号（-），这意味着完全切换到新的用户，即把环境变量信息也变更为新用户的相应信息，而不是保留原始的信息。
+
+sudo命令用于给普通用户提供额外的权限来完成原本root管理员才能完成的任务，格式为“sudo [参数] 命令名称”。
 
 
+| 参数 | 作用 |
+| --- | --- |
+| -l | 列出当前用户可执行的命令 |
+| -u | 以指定的用户身份执行命令 |
+| -k | 清空密码的有效时间，下次执行sudo时需要再次进行密码验证 |
+| -b | 在后台执行指定的命令 |
+| -p | 更改询问密码的提示语 |
 
-
+配置文件（/etc/sudoers）提供集中的用户管理、权限与主机等参数；只有root管理员才可以使用visudo命令编辑sudo服务的配置文件。  
+	
+	谁可以使用  允许使用的主机=（以谁的身份）  可执行命令的列表
+	99 linuxprobe ALL=(ALL) ALL
+	99 linuxprobe ALL=(ALL) /usr/bin/cat（命令的绝对路径）
+	99 linuxprobe ALL=NOPASSWD: /usr/sbin/poweroff
 
 
 
