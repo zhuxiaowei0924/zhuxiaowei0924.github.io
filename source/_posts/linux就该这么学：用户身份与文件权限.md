@@ -96,6 +96,7 @@ categories:
 -本权限仅在执行该二进制可执行文件的过程中有效
 
 下面我们来看 tester 用户是如何利用 SUID 权限完成密码修改的：
+	
 	(1)tester 用户对于 /usr/bin/passwd 这个程序具有执行权限，因此可以执行 passwd 程序
 	(2)passwd 程序的所有者为 root
 	(3)tester 用户执行 passwd 程序的过程中会暂时获得 root 权限
@@ -200,6 +201,7 @@ $ chmod o+t testdir  # 为 testdir 目录加上 SBIT 权限。
 
 总结
 SUID、SGID、SBIT 权限都是为了实现特殊功能而设计的，其目的是弥补 ugo 权限无法实现的一些使用场景。
+
 
 
 
