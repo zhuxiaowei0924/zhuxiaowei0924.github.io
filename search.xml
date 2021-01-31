@@ -400,7 +400,11 @@
 
 <p>上图红框中的权限信息有些奇怪，owner 的信息为 rws 而不是 rwx。当 s 出现在文件拥有者的 x 权限上时，就被称为 SETUID BITS 或 SETUID ，其特点如下：</p>
 <p>-SUID 权限仅对二进制可执行文件有效<br>-如果执行者对于该二进制可执行文件具有 x 的权限，执行者将具有该文件的所有者的权限<br>-本权限仅在执行该二进制可执行文件的过程中有效</p>
-<p>下面我们来看 tester 用户是如何利用 SUID 权限完成密码修改的：<br>    (1)tester 用户对于 /usr/bin/passwd 这个程序具有执行权限，因此可以执行 passwd 程序<br>    (2)passwd 程序的所有者为 root<br>    (3)tester 用户执行 passwd 程序的过程中会暂时获得 root 权限<br>    (4)因此 tester 用户在执行 passwd 程序的过程中可以修改 /etc/shadow 文件</p>
+<p>下面我们来看 tester 用户是如何利用 SUID 权限完成密码修改的：</p>
+<pre><code>(1)tester 用户对于 /usr/bin/passwd 这个程序具有执行权限，因此可以执行 passwd 程序
+(2)passwd 程序的所有者为 root
+(3)tester 用户执行 passwd 程序的过程中会暂时获得 root 权限
+(4)因此 tester 用户在执行 passwd 程序的过程中可以修改 /etc/shadow 文件</code></pre>
 <p>但是如果由 tester 用户执行 cat 命令去读取 /etc/shadow 文件确是不行的：</p>
 
 
@@ -861,6 +865,12 @@ esac</code></pre>
       </tags>
   </entry>
   <entry>
+    <title>图片加载命令</title>
+    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
+]]></content>
+  </entry>
+  <entry>
     <title>用hexo和github免费创建自己的博客</title>
     <url>/2020/12/06/%E7%94%A8hexo%E5%92%8Cgithub%E5%85%8D%E8%B4%B9%E5%88%9B%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2/</url>
     <content><![CDATA[<h2 id="1-安装Nodejs"><a href="#1-安装Nodejs" class="headerlink" title="1.安装Nodejs"></a>1.安装Nodejs</h2><p>官方网站: <a href="https://nodejs.org/">https://nodejs.org</a>, 安装步骤非常简单，一直next，下一步就可以了，默认安装就行。</p>
@@ -884,11 +894,5 @@ deploy:
       <tags>
         <tag>博客</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>图片加载命令</title>
-    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
-]]></content>
   </entry>
 </search>
