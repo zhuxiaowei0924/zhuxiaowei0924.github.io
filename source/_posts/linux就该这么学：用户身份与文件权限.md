@@ -83,11 +83,11 @@ categories:
 1.SUID
 在 Linux 中，所有账号的密码记录在 /etc/shadow 这个文件中，并且只有 root 可以读写入这个文件：
 
-{% asset_p1.png %}
+{% asset_image 1.png %}
 
 如果另一个普通账号 tester 需要修改自己的密码，就要访问 /etc/shadow 这个文件。但是明明只有 root 才能访问 /etc/shadow 这个文件，这究竟是如何做到的呢？事实上，tester 用户是可以修改 /etc/shadow 这个文件内的密码的，就是通过 SUID 的功能。让我们看看 passwd 程序文件的权限信息：
 
-{% asset_p2.png %}
+{% asset_image 2.png %}
 
 上图红框中的权限信息有些奇怪，owner 的信息为 rws 而不是 rwx。当 s 出现在文件拥有者的 x 权限上时，就被称为 SETUID BITS 或 SETUID ，其特点如下：
 
@@ -103,17 +103,17 @@ categories:
 
 但是如果由 tester 用户执行 cat 命令去读取 /etc/shadow 文件确是不行的：
 
-{% asset_p3.png %}
+{% asset_image 3.png %}
 
 原因很清楚，tester 用户没有读 /etc/shadow 文件的权限，同时 cat 程序也没有被设置 SUID。我们可以通过下图来理解这两种情况：
 
-{% asset_p4.png %}
+{% asset_image 4.png %}
 
 如果想让任意用户通过 cat 命令读取 /etc/shadow 文件的内容也是非常容易的，给它设置 SUID 权限就可以了：
 
 $ sudo chmod 4755 /bin/cat
 
-{% asset_p5.png %}
+{% asset_image 5.png %}
 
 现在 cat 已经具有了 SUID 权限，试试看，是不是已经可以 cat 到 /etc/shadow 的内容了。因为这样做非常不安全，所以赶快通过下面的命令把 cat 的 SUID 权限移除掉：
 
@@ -123,15 +123,15 @@ $ sudo chmod 755 /bin/cat
 
 当 s 标志出现在用户组的 x 权限时称为 SGID。SGID 的特点与 SUID 相同，我们通过 /usr/bin/mlocate 程序来演示其用法。mlocate 程序通过查询数据库文件 /var/lib/mlocate/mlocate.db 实现快速的文件查找。 mlocate 程序的权限如下图所示：
 
-{% asset_p6.png %}
+{% asset_image 6.png %}
 
 很明显，它被设置了 SGID 权限。下面是数据库文件 /var/lib/mlocate/mlocate.db 的权限信息：很明显，它被设置了 SGID 权限。下面是数据库文件 /var/lib/mlocate/mlocate.db 的权限信息：
 
-{% asset_p7.png %}
+{% asset_image 7.png %}
 
 普通用户 tester 执行 mlocate 命令时，tester 就会获得用户组 mlocate 的执行权限，又由于用户组 mlocate 对 mlocate.db 具有读权限，所以 tester 就可以读取 mlocate.db 了。程序的执行过程如下图所示：
 
-{% asset_p8.png %}
+{% asset_image 8.png %}
 
 除二进制程序外，SGID 也可以用在目录上。当一个目录设置了 SGID 权限后，它具有如下功能：
 
@@ -141,22 +141,22 @@ $ sudo chmod 755 /bin/cat
 
 下面看个例子，创建 testdir 目录，目录的权限设置如下：
 
-{% asset_p9.png %}
+{% asset_image 9.png %}
 
 此时目录 testdir 的 owner 是 nick，所属的 group 为 tester。
 先创建一个名为 nickfile 的文件：
 
-{% asset_p10.png %}
+{% asset_image 10.png %}
 
 这个文件的权限看起来没有什么特别的。然后给 testdir 目录设置 SGID 权限：
 
 $ sudo chmod 2775 testdir
 
-{% asset_p11.png %}
+{% asset_image 11.png %}
 
 然后再创建一个文件 nickfile2：
 
-{% asset_p12.png %}
+{% asset_image 12.png %}
 
 新建的文件所属的组为 tester！
 
@@ -167,7 +167,7 @@ SBIT
 SBIT 是 the  restricted  deletion  flag  or  sticky  bit 的简称。
 SBIT 目前只对目录有效，用来阻止非文件的所有者删除文件。比较常见的例子就是 /tmp 目录：
 
-{% asset_p13.png %}
+{% asset_image 13.png %}
 
 权限信息中最后一位 t 表明该目录被设置了 SBIT 权限。SBIT 对目录的作用是：当用户在该目录下创建新文件或目录时，仅有自己和 root 才有权力删除。
 
@@ -186,7 +186,7 @@ $ chmod 4755 filename
 
 其实，还可能出现 S 和 T 的情况。S 和 t 是替代 x 这个权限的，但是，如果它本身没有 x 这个权限，添加 SUID、SGID、SBIT 权限后就会显示为大写 S 或大写 T。比如我们为一个权限为 666 的文件添加 SUID、SGID、SBIT 权限：
 
-{% asset_p14.png %}
+{% asset_image 14.png %}
 
 执行 chmod 7666 nickfile，因为 666 表示 "-rw-rw-rw"，均没有 x 权限，所以最后变成了 "-rwSrwSrwT"。
 
