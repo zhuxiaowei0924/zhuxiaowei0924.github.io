@@ -265,6 +265,153 @@
       </tags>
   </entry>
   <entry>
+    <title>linux就该这么学：存储结构与磁盘划分</title>
+    <url>/2021/02/01/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E4%B8%8E%E7%A3%81%E7%9B%98%E5%88%92%E5%88%86/</url>
+    <content><![CDATA[<h1 id="1-一切从“-”开始"><a href="#1-一切从“-”开始" class="headerlink" title="1.一切从“/”开始"></a>1.一切从“/”开始</h1><p>Linux系统中的一切文件都是从“根（/）”目录开始的，并按照文件系统层次化标准（FHS）采用树形结构来存放文件，以及定义了常见目录的用途。另外，Linux系统中的文件和目录名称是严格区分大小写的。  </p>
+<table>
+<thead>
+<tr>
+<th>目录名称</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>/boot</td>
+<td>开机所需文件—内核、开机菜单以及所需配置文件等</td>
+</tr>
+<tr>
+<td>/dev</td>
+<td>以文件形式存放任何设备与接口</td>
+</tr>
+<tr>
+<td>/etc</td>
+<td>配置文件</td>
+</tr>
+<tr>
+<td>/home</td>
+<td>用户主目录</td>
+</tr>
+<tr>
+<td>/media</td>
+<td>用于挂载设备文件的目录</td>
+</tr>
+</tbody></table>
+<p>主分区或扩展分区的编号从1开始，到4结束；逻辑分区从编号5开始。</p>
+<p>mount命令用于挂载文件系统，格式为“mount 文件系统 挂载目录”；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>挂载所有在/etc/fstab中定义的文件系统</td>
+</tr>
+<tr>
+<td>-t</td>
+<td>指定文件系统的类型</td>
+</tr>
+</tbody></table>
+<p>如果想让硬件设备和目录永久地进行自动关联，就必须把挂载信息按照指定的填写格式“设备文件 挂载目录 格式类型 权限选项 是否备份 是否自检”（各字段的意义见表6-4）写入到/etc/fstab文件中。</p>
+<p>umount命令用于撤销已经挂载的设备文件，格式为“umount [挂载点/设备文件]”。</p>
+<h2 id="1-1添加硬盘设备"><a href="#1-1添加硬盘设备" class="headerlink" title="1.1添加硬盘设备"></a>1.1添加硬盘设备</h2><p>1.fdisk命令：用于管理磁盘分区，格式为“fdisk  [磁盘名称]”，它提供了集添加、删除、转换分区等功能于一身的“一站式分区服务”；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>m</td>
+<td>查看全部可用的参数</td>
+</tr>
+<tr>
+<td>n</td>
+<td>添加新的分区</td>
+</tr>
+<tr>
+<td>d</td>
+<td>删除某个分区</td>
+</tr>
+<tr>
+<td>p</td>
+<td>查看分区表信息</td>
+</tr>
+<tr>
+<td>w</td>
+<td>保存并退出</td>
+</tr>
+<tr>
+<td>q</td>
+<td>不保存直接退出</td>
+</tr>
+</tbody></table>
+<p>2.mkfs：存储设备进行分区后进行格式化操作；</p>
+<p>3.mount：挂载存储设备；</p>
+<p>4.du：查看文件数据占用量；du -sh /*命令来查看在Linux系统根目录下所有一级目录分别占用的空间大小。</p>
+<p>如果想让这个设备文件的挂载永久有效，则需要把挂载的信息写入到配置文件中：</p>
+<h2 id="1-2添加交换分区"><a href="#1-2添加交换分区" class="headerlink" title="1.2添加交换分区"></a>1.2添加交换分区</h2><p>SWAP（交换）分区是一种通过在硬盘中预先划分一定的空间，然后将把内存中暂时不常用的数据临时存放到硬盘中，以便腾出物理内存空间让更活跃的程序服务来使用的技术，其设计目的是为了解决真实物理内存不足的问题。但由于交换分区毕竟是通过硬盘设备读写数据的，速度肯定要比物理内存慢，所以只有当真实的物理内存耗尽后才会调用交换分区的资源。</p>
+<p>生产环境中，交换分区的大小一般为真实物理内存的1.5～2倍；</p>
+<pre><code>（1）fdisk
+（2）mkswap:SWAP分区专用的格式化命令；
+（3）free -m：用于查看交换分区的大小；
+（4）将相关信息写入配置文件（/etc/fstab），并保存！如：/dev/sdb2 swap swap defaults 0 0 </code></pre>
+<h2 id="1-3磁盘容量配额"><a href="#1-3磁盘容量配额" class="headerlink" title="1.3磁盘容量配额"></a>1.3磁盘容量配额</h2><p>使用quota命令进行磁盘容量配额管理，从而限制用户的硬盘可用容量或所能创建的最大文件个数。quota命令还有软限制和硬限制的功能。</p>
+<p>软限制：当达到软限制时会提示用户，但仍允许用户在限定的额度内继续使用。</p>
+<p>硬限制：当达到硬限制时会提示用户，且强制终止用户的操作。</p>
+<p>1.xfs_quota：-c参数用于以参数的形式设置要执行的命令；-x参数是专家模式，让运维人员能够对quota服务进行更多复杂的配置。</p>
+<pre><code>[root@linuxprobe ~]# xfs_quota -x -c &#39;limit bsoft=3m bhard=6m isoft=3 ihard=6 tom&#39; /boot
+[root@linuxprobe ~]# xfs_quota -x -c report /boot</code></pre>
+<p>2.edquota：用于编辑用户的quota配额限制，格式为“edquota [参数] [用户] ”。-u参数表示要针对哪个用户进行设置；-g参数表示要针对哪个用户组进行设置。</p>
+<h2 id="1-4软硬方式链接"><a href="#1-4软硬方式链接" class="headerlink" title="1.4软硬方式链接"></a>1.4软硬方式链接</h2><p>硬链接： 是指针，所有的硬链接都是指向同一个磁盘块； 删除一个指针不会真正删除文件，只有把所有的指针都删除才会真正删除文件。<br>软链接： 保存了其代表的文件的绝对路径，是另外一种文件，在硬盘上有独立的区块，访问时替换自身路径。</p>
+<p>1.ln：用于创建链接文件，格式为“ln [选项] 目标”；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-s</td>
+<td>创建“符号链接”（如果不带-s参数，则默认创建硬链接）</td>
+</tr>
+<tr>
+<td>-f</td>
+<td>强制创建文件或目录的链接</td>
+</tr>
+<tr>
+<td>-i</td>
+<td>覆盖前先询问</td>
+</tr>
+<tr>
+<td>-v</td>
+<td>显示创建链接的过程</td>
+</tr>
+</tbody></table>
+<pre><code>[root@linuxprobe ~]# echo &quot;Welcome to linuxprobe.com&quot; &gt; readme.txt
+[root@linuxprobe ~]# ln -s readme.txt readit.txt
+[root@linuxprobe ~]# cat readme.txt 
+ Welcome to linuxprobe.com
+[root@linuxprobe ~]# cat readit.txt 
+ Welcome to linuxprobe.com
+[root@linuxprobe ~]# ls -l readme.txt 
+ -rw-r--r-- 1 root root 26 Jan 11 00:08 readme.txt
+[root@linuxprobe ~]# rm -f readme.txt 
+[root@linuxprobe ~]# cat readit.txt 
+ cat: readit.txt: No such file or directory</code></pre>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第6章节：存储结构与磁盘划分</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux就该这么学：用户身份与文件权限</title>
     <url>/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/</url>
     <content><![CDATA[<h1 id="1-用户身份与能力"><a href="#1-用户身份与能力" class="headerlink" title="1.用户身份与能力"></a>1.用户身份与能力</h1><p>管理员UID为0：系统的管理员用户。</p>
