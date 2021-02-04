@@ -1,6 +1,165 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>linux就该这么学：iptables与firewalld防火墙</title>
+    <url>/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/</url>
+    <content><![CDATA[<h1 id="1-Iptables"><a href="#1-Iptables" class="headerlink" title="1.Iptables"></a>1.Iptables</h1><h2 id="（1）策略与规则链"><a href="#（1）策略与规则链" class="headerlink" title="（1）策略与规则链"></a>（1）策略与规则链</h2><p>iptables服务把用于处理或过滤流量的策略条目称之为规则，多条规则可以组成一个规则链，而规则链则依据数据包处理位置的不同进行分类，具体如下：</p>
+<a id="more"></a>
+
+<pre><code>在进行路由选择前处理数据包（PREROUTING）；
+
+处理流入的数据包（INPUT）；
+
+处理流出的数据包（OUTPUT）；
+
+处理转发的数据包（FORWARD）；
+
+在进行路由选择后处理数据包（POSTROUTING）。</code></pre>
+<p>iptables服务的术语分别是ACCEPT（允许流量通过）、REJECT（拒绝流量通过）、LOG（记录日志信息）、DROP（拒绝流量通过）。REJECT和DROP的不同点：就DROP来说，它是直接将流量丢弃而且不响应；REJECT则会在拒绝流量后再回复一条“您的信息已经收到，但是被扔掉了”信息，从而让流量发送方清晰地看到数据被拒绝的响应信息。</p>
+<h2 id="（2）基本命令参数"><a href="#（2）基本命令参数" class="headerlink" title="（2）基本命令参数"></a>（2）基本命令参数</h2><p>防火墙策略规则的匹配顺序是从上至下的，因此要把较为严格、优先级较高的策略规则放到前面，以免发生错误。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-P</td>
+<td>设置默认策略</td>
+</tr>
+<tr>
+<td>-F</td>
+<td>清空规则链</td>
+</tr>
+<tr>
+<td>-L</td>
+<td>查看规则链</td>
+</tr>
+<tr>
+<td>-A</td>
+<td>在规则链的末尾加入新规则</td>
+</tr>
+<tr>
+<td>-I num</td>
+<td>在规则链的头部加入新规则</td>
+</tr>
+<tr>
+<td>-D num</td>
+<td>删除某一条规则</td>
+</tr>
+<tr>
+<td>-s</td>
+<td>匹配来源地址IP/MASK，加叹号“!”表示除这个IP外</td>
+</tr>
+<tr>
+<td>-d</td>
+<td>匹配目标地址</td>
+</tr>
+<tr>
+<td>-p</td>
+<td>匹配协议，如TCP、UDP、ICMP</td>
+</tr>
+<tr>
+<td>–dport num</td>
+<td>匹配目标端口号</td>
+</tr>
+<tr>
+<td>–sport num</td>
+<td>匹配来源端口号</td>
+</tr>
+</tbody></table>
+<p>规则链的默认策略拒绝动作只能是DROP，而不能是REJECT。</p>
+<p>防火墙策略规则是按照从上到下的顺序匹配的，因此一定要把允许动作放到拒绝动作前面，否则所有的流量就将被拒绝掉，从而导致任何主机都无法访问我们的服务。</p>
+<p>向INPUT规则链中添加拒绝192.168.10.5主机访问本机80端口（Web服务）的策略规则：</p>
+<pre><code>[root@linuxprobe ~]# iptables -I INPUT -p tcp -s 192.168.10.5 --dport 80 -j REJECT</code></pre>
+<p>向INPUT规则链中添加拒绝所有主机访问本机1000～1024端口的策略规则：</p>
+<pre><code>[root@linuxprobe ~]# iptables -A INPUT -p tcp --dport 1000:1024 -j REJECT
+[root@linuxprobe ~]# iptables -A INPUT -p udp --dport 1000:1024 -j REJECT</code></pre>
+<p>使用iptables命令配置的防火墙规则默认会在系统下一次重启时失效，如果想让配置的防火墙策略永久生效，还要执行保存命令：</p>
+<pre><code>[root@linuxprobe ~]# service iptables save
+iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
+<h1 id="2-Firewalld"><a href="#2-Firewalld" class="headerlink" title="2.Firewalld"></a>2.Firewalld</h1><table>
+<thead>
+<tr>
+<th>区域</th>
+<th>默认规则策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>trusted</td>
+<td>允许所有的数据包</td>
+</tr>
+<tr>
+<td>home</td>
+<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh、mdns、ipp-client、amba-client与dhcpv6-client服务相关，则允许流量</td>
+</tr>
+<tr>
+<td>internal</td>
+<td>等同于home区域</td>
+</tr>
+<tr>
+<td>work</td>
+<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh、ipp-client与dhcpv6-client服务相关，则允许流量</td>
+</tr>
+<tr>
+<td>public</td>
+<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh、dhcpv6-client服务相关，则允许流量</td>
+</tr>
+<tr>
+<td>external</td>
+<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh服务相关，则允许流量</td>
+</tr>
+<tr>
+<td>dmz</td>
+<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh服务相关，则允许流量</td>
+</tr>
+<tr>
+<td>block</td>
+<td>拒绝流入的流量，除非与流出的流量相关</td>
+</tr>
+<tr>
+<td>drop</td>
+<td>拒绝流入的流量，除非与流出的流量相关</td>
+</tr>
+</tbody></table>
+<h2 id="2-1图形管理工具"><a href="#2-1图形管理工具" class="headerlink" title="2.1图形管理工具"></a>2.1图形管理工具</h2><img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/1.png" class>
+
+<p>我们先将当前区域中请求http服务的流量设置为允许，但仅限当前生效：</p>
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/2.png" class>
+
+<p>试添加一条防火墙策略规则，使其放行访问8080～8088端口（TCP协议）的流量，并将其设置为永久生效，配置完毕之后，还需要在Options菜单中单击Reload Firewalld命令，让配置的防火墙策略立即生效：</p>
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/3.png" class>
+
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/4.png" class>
+
+<p>使用iptables命令实现SNAT技术(Source Network Address Translation，源网络地址转换),可以使得多个内网中的用户通过同一个外网IP接入Internet:</p>
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/5.png" class>
+
+<p>将本机888端口的流量转发到22端口，且要求当前和长期均有效:</p>
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/6.png" class>
+
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/7.png" class>
+
+<p>配置富规则，让192.168.10.20主机访问到本机的1234端口号:</p>
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/8.png" class>
+
+<p>把网卡与防火墙策略区域进行绑定:</p>
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/9.png" class>
+
+<h2 id="2-3服务的访问控制列表"><a href="#2-3服务的访问控制列表" class="headerlink" title="2.3服务的访问控制列表"></a>2.3服务的访问控制列表</h2><p>TCP Wrappers是RHEL 7系统中默认启用的一款流量监控程序，它能够根据来访主机的地址与本机的目标服务程序作出允许或拒绝的操作。换句话说，Linux系统中其实有两个层面的防火墙，第一种是前面讲到的基于TCP/IP协议的流量过滤工具，而TCP Wrappers服务则是能允许或禁止Linux系统提供服务的防火墙，从而在更高层面保护了Linux系统的安全运行。</p>
+<p>在配置TCP Wrappers服务时需要遵循两个原则：</p>
+<pre><code>（1）编写拒绝策略规则时，填写的是服务名称，而非协议名称；
+（2）建议先编写拒绝策略规则（/etc/hosts.deny），再编写允许策略规则（/etc/hosts.allow），以便直观地看到相应的效果。</code></pre>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第8章节：iptables与firewalld防火墙</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux就该这么学：linux命令</title>
     <url>/2020/12/28/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Alinux%E5%91%BD%E4%BB%A4/</url>
     <content><![CDATA[<h1 id="1-命令格式"><a href="#1-命令格式" class="headerlink" title="1.命令格式"></a>1.命令格式</h1><p>格式要求： 命令名称 [命令参数]  [命令对象]<br>注意：<br>（1）命令名称、命令参数、命令对象之间需用空格键分隔；<br>（2）多个参数之间也要有空格，参数有长格式和短格式之分，分别用（–）和（-）作为前缀；长格式和长格式之间、长格式和短格式之间不能合并，短格式和短格式之间可以合并，共用一个空格，合并后仅保留一个-即可。</p>
@@ -360,6 +519,77 @@
       </categories>
       <tags>
         <tag>第7章节：使用RAID与LVM磁盘阵列技术</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：使用ssh服务管理远程主机</title>
+    <url>/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/</url>
+    <content><![CDATA[<h1 id="1-配置网卡服务"><a href="#1-配置网卡服务" class="headerlink" title="1.配置网卡服务"></a>1.配置网卡服务</h1><h1 id="1-1配置网卡参数"><a href="#1-1配置网卡参数" class="headerlink" title="1.1配置网卡参数"></a>1.1配置网卡参数</h1><img src="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/1.png" class>
+
+<img src="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/2.png" class>
+
+<img src="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/3.png" class>
+
+<img src="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/4.png" class>
+
+<img src="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/5.png" class>
+
+<img src="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/6.png" class>
+
+<img src="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/7.png" class>
+
+<img src="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/8.png" class>
+
+<p>用Vim编辑器将网卡配置文件中的ONBOOT参数修改成yes，这样在系统重启后网卡就被激活了:</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno16777736
+TYPE=Ethernet
+BOOTPROTO=none
+...
+ONBOOT=yes</code></pre>
+<p>修改完Linux系统中的服务配置文件后,要手动重启相应的服务:</p>
+<pre><code>[root@linuxprobe ~]# systemctl restart network</code></pre>
+<h2 id="1-2创建网络会话"><a href="#1-2创建网络会话" class="headerlink" title="1.2创建网络会话"></a>1.2创建网络会话</h2><p>NetworkManager：是一种动态管理网络配置的守护进程，能够让网络设备保持连接状态；可以使用nmcli命令来管理Network Manager服务。</p>
+<p>可以使用nmcli命令并按照“connection add con-name type ifname”的格式来创建网络会话。</p>
+<p>使用con-name参数指定使用的网络会话名称company，然后依次用ifname参数指定网卡名称，用autoconnect no参数设置该网络会话默认不被自动激活，以及用ip4及gw4参数手动指定网络的IP地址：</p>
+<pre><code>[root@linuxprobe ~]# nmcli connection add con-name company ifname eno16777736 autoconnect no type ethernet ip4 192.168.10.10/24 gw4 192.168.10.1</code></pre>
+<p>使用con-name参数指定网络会话名称house，使用外部DHCP服务器自动获得IP地址，不需要进行手动指定：</p>
+<pre><code>[root@linuxprobe ~]# nmcli connection add con-name house type ethernet ifname eno16777736</code></pre>
+<p>使配置过的网络会话生效：</p>
+<pre><code>[root@linuxprobe ~]# nmcli connection up house </code></pre>
+<h2 id="1-3绑定两块网卡"><a href="#1-3绑定两块网卡" class="headerlink" title="1.3绑定两块网卡"></a>1.3绑定两块网卡</h2><img src="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/9.png" class>
+
+<img src="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/10.png" class>
+
+<p>使用Vim文本编辑器来配置网卡设备的绑定参数：<br>    [root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno16777736<br>    TYPE=Ethernet<br>    BOOTPROTO=none<br>    ONBOOT=yes<br>    USERCTL=no<br>    DEVICE=eno16777736<br>    MASTER=bond0<br>    SLAVE=yes<br>    [root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno33554968<br>    TYPE=Ethernet<br>    BOOTPROTO=none<br>    ONBOOT=yes<br>    USERCTL=no<br>    DEVICE=eno33554968<br>    MASTER=bond0<br>    SLAVE=yes</p>
+<p>将绑定后的设备命名为bond0并把IP地址等信息填写进去，这样当用户访问相应服务的时候，实际上就是由这两块网卡设备在共同提供服务：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-bond0
+TYPE=Ethernet
+BOOTPROTO=none
+ONBOOT=yes
+USERCTL=no
+DEVICE=bond0
+IPADDR=192.168.10.10
+PREFIX=24
+DNS=192.168.10.1
+NM_CONTROLLED=no</code></pre>
+<p>让Linux内核支持网卡绑定驱动。常见的网卡绑定驱动有三种模式—mode0、mode1和mode6。下面以绑定两块网卡为例，讲解使用的情景。</p>
+<pre><code>mode0（平衡负载模式）：平时两块网卡均工作，且自动备援，但需要在与服务器本地网卡相连的交换机设备上进行端口聚合来支持绑定技术。
+
+mode1（自动备援模式）：平时只有一块网卡工作，在它故障后自动替换为另外的网卡。
+
+mode6（平衡负载模式）：平时两块网卡均工作，且自动备援，无须交换机设备提供辅助支持。</code></pre>
+<p>使用Vim文本编辑器创建一个用于网卡绑定的驱动文件，使得绑定后的bond0网卡设备能够支持绑定技术（bonding）；同时定义网卡以mode6模式进行绑定，且出现故障时自动切换的时间为100毫秒：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/modprobe.d/bond.conf
+alias bond0 bonding
+options bond0 miimon=100 mode=6</code></pre>
+<p>重启网络服务后网卡绑定操作即可成功。正常情况下只有bond0网卡设备才会有IP地址等信息：</p>
+<pre><code>[root@linuxprobe ~]# systemctl restart network</code></pre>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第9章节：使用ssh服务管理远程主机</tag>
       </tags>
   </entry>
   <entry>
@@ -914,12 +1144,6 @@ anaconda-ks.cfg Downloads Pictures Public
       </tags>
   </entry>
   <entry>
-    <title>图片加载命令</title>
-    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
-]]></content>
-  </entry>
-  <entry>
     <title>liunx就该这么学：vim编辑器与Shell命令脚本</title>
     <url>/2021/01/09/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Avim%E7%BC%96%E8%BE%91%E5%99%A8%E4%B8%8EShell%E5%91%BD%E4%BB%A4%E8%84%9A%E6%9C%AC/</url>
     <content><![CDATA[<h1 id="1-Vim文本编辑器"><a href="#1-Vim文本编辑器" class="headerlink" title="1.Vim文本编辑器"></a>1.Vim文本编辑器</h1><p>注意：在linux系统中一切都是文件，而配置一个服务就是在修改其配置文件的参数；</p>
@@ -1198,6 +1422,12 @@ esac</code></pre>
       <tags>
         <tag>第4章节：vim编辑器与Shell命令脚本</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>图片加载命令</title>
+    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
+]]></content>
   </entry>
   <entry>
     <title>用hexo和github免费创建自己的博客</title>

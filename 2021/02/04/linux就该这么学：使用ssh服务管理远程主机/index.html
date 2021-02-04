@@ -20,20 +20,31 @@
     var CONFIG = {"hostname":"zhuxiaowei0924.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="1.命令格式格式要求： 命令名称 [命令参数]  [命令对象]注意：（1）命令名称、命令参数、命令对象之间需用空格键分隔；（2）多个参数之间也要有空格，参数有长格式和短格式之分，分别用（–）和（-）作为前缀；长格式和长格式之间、长格式和短格式之间不能合并，短格式和短格式之间可以合并，共用一个空格，合并后仅保留一个-即可。">
+  <meta name="description" content="1.配置网卡服务1.1配置网卡参数                用Vim编辑器将网卡配置文件中的ONBOOT参数修改成yes，这样在系统重启后网卡就被激活了: [root@linuxprobe ~]# vim &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-eno16777736 TYPE&#x3D;Ethernet BOOTPROTO&#x3D;none ... ONBOOT&#x3D;yes 修">
 <meta property="og:type" content="article">
-<meta property="og:title" content="linux就该这么学：linux命令">
-<meta property="og:url" content="https://zhuxiaowei0924.github.io/2020/12/28/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Alinux%E5%91%BD%E4%BB%A4/index.html">
+<meta property="og:title" content="linux就该这么学：使用ssh服务管理远程主机">
+<meta property="og:url" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/index.html">
 <meta property="og:site_name" content="随笔&amp;博客">
-<meta property="og:description" content="1.命令格式格式要求： 命令名称 [命令参数]  [命令对象]注意：（1）命令名称、命令参数、命令对象之间需用空格键分隔；（2）多个参数之间也要有空格，参数有长格式和短格式之分，分别用（–）和（-）作为前缀；长格式和长格式之间、长格式和短格式之间不能合并，短格式和短格式之间可以合并，共用一个空格，合并后仅保留一个-即可。">
+<meta property="og:description" content="1.配置网卡服务1.1配置网卡参数                用Vim编辑器将网卡配置文件中的ONBOOT参数修改成yes，这样在系统重启后网卡就被激活了: [root@linuxprobe ~]# vim &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-eno16777736 TYPE&#x3D;Ethernet BOOTPROTO&#x3D;none ... ONBOOT&#x3D;yes 修">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2020-12-28T14:08:21.000Z">
-<meta property="article:modified_time" content="2021-01-27T13:40:15.806Z">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/1.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/2.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/3.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/4.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/5.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/6.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/7.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/8.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/9.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/10.png">
+<meta property="article:published_time" content="2021-02-04T14:00:33.000Z">
+<meta property="article:modified_time" content="2021-02-04T15:04:05.944Z">
 <meta property="article:author" content="晓">
-<meta property="article:tag" content="第2章节：linux命令">
+<meta property="article:tag" content="第9章节：使用ssh服务管理远程主机">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/1.png">
 
-<link rel="canonical" href="https://zhuxiaowei0924.github.io/2020/12/28/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Alinux%E5%91%BD%E4%BB%A4/">
+<link rel="canonical" href="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/">
 
 
 <script id="page-configurations">
@@ -46,7 +57,7 @@
   };
 </script>
 
-  <title>linux就该这么学：linux命令 | 随笔&博客</title>
+  <title>linux就该这么学：使用ssh服务管理远程主机 | 随笔&博客</title>
   
 
 
@@ -196,7 +207,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://zhuxiaowei0924.github.io/2020/12/28/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Alinux%E5%91%BD%E4%BB%A4/">
+    <link itemprop="mainEntityOfPage" href="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.jpg">
@@ -209,7 +220,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          linux就该这么学：linux命令
+          linux就该这么学：使用ssh服务管理远程主机
         </h1>
 
         <div class="post-meta">
@@ -218,16 +229,10 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2020-12-28 22:08:21" itemprop="dateCreated datePublished" datetime="2020-12-28T22:08:21+08:00">2020-12-28</time>
+              <time title="创建时间：2021-02-04 22:00:33 / 修改时间：23:04:05" itemprop="dateCreated datePublished" datetime="2021-02-04T22:00:33+08:00">2021-02-04</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2021-01-27 21:40:15" itemprop="dateModified" datetime="2021-01-27T21:40:15+08:00">2021-01-27</time>
-              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -251,14 +256,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>2.9k</span>
+              <span>1.9k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>3 分钟</span>
+              <span>2 分钟</span>
             </span>
 
         </div>
@@ -270,259 +275,66 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="1-命令格式"><a href="#1-命令格式" class="headerlink" title="1.命令格式"></a>1.命令格式</h1><p>格式要求： 命令名称 [命令参数]  [命令对象]<br>注意：<br>（1）命令名称、命令参数、命令对象之间需用空格键分隔；<br>（2）多个参数之间也要有空格，参数有长格式和短格式之分，分别用（–）和（-）作为前缀；长格式和长格式之间、长格式和短格式之间不能合并，短格式和短格式之间可以合并，共用一个空格，合并后仅保留一个-即可。</p>
-<a id="more"></a>
-<p>在命令行终端中输入”man 命令”来查看命令自身的帮助信息，在命令帮助信息的界面中，常用操作按键如下所示：</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>空格键</td>
-<td>向下翻一页</td>
-</tr>
-<tr>
-<td>PaGe down</td>
-<td>向下翻一页</td>
-</tr>
-<tr>
-<td>PaGe up</td>
-<td>向上翻一页</td>
-</tr>
-<tr>
-<td>home</td>
-<td>直接前往首页</td>
-</tr>
-<tr>
-<td>end</td>
-<td>直接前往尾页</td>
-</tr>
-<tr>
-<td>/</td>
-<td>从上往下搜索某个关键词，如“/linux”</td>
-</tr>
-<tr>
-<td>？</td>
-<td>从下往上搜索某个关键词</td>
-</tr>
-<tr>
-<td>n</td>
-<td>定位到下一个搜索到的关键词</td>
-</tr>
-<tr>
-<td>N</td>
-<td>定位到上一个搜索到的关键词</td>
-</tr>
-<tr>
-<td>q</td>
-<td>退出帮助文档</td>
-</tr>
-</tbody></table>
-<h1 id="2-常用的工作命令"><a href="#2-常用的工作命令" class="headerlink" title="2.常用的工作命令"></a>2.常用的工作命令</h1><ol>
-<li>echo：用于在终端输出字符串或变量提取后的值，如： echo 字符串/$变量</li>
-<li>date：用于显示及设置系统的时间或日期；<br> 直接输入date命令用于查看当前系统时间；<br> date “+%Y-%m-%d %H:%M:%S”:按照“年-月-日 小时:分钟:秒”的格式查看当前系统时间；<br> date -s “20200105 8:30:00”：将系统时间设置为2020年1月5日8点30分；<br> date “+%j”:用于查看今天是当年中的第几天；</li>
-<li>reboot：用于重启系统；</li>
-<li>poweroff：用于系统关机；</li>
-<li>wget命令：用于在终端中下载网络文件（需连接网络才可以下载），如：wget http：//<a target="_blank" rel="noopener" href="http://www.linuxprobe.com/docs/linuxprobe.pdf%EF%BC%9B">www.linuxprobe.com/docs/linuxprobe.pdf；</a></li>
-</ol>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-b</td>
-<td>后台下载模式</td>
-</tr>
-<tr>
-<td>-P</td>
-<td>下载到指定目录</td>
-</tr>
-<tr>
-<td>-c</td>
-<td>断点续传</td>
-</tr>
-<tr>
-<td>-p</td>
-<td>下载页面内的所有资源，包括图片、视频</td>
-</tr>
-<tr>
-<td>-r</td>
-<td>递归下载</td>
-</tr>
-</tbody></table>
-<ol start="6">
-<li>ps:用于查看系统中的进程状态；</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-a</td>
-<td>显示所有进程（包括其他用户）</td>
-</tr>
-<tr>
-<td>-u</td>
-<td>用户及其他详细信息</td>
-</tr>
-<tr>
-<td>-x</td>
-<td>显示没有控制终端的进程</td>
-</tr>
-</tbody></table>
-<p>进程状态：R（运行）、S（休眠）、D（不可中断）、Z（僵死）、T（停止）；<br>7. top：用于动态地监视进程活动与系统负载等信息；<br>8. pidof：用于查询某个指定服务进程的PID值，如pidof sshd；<br>9. kill：用于终止某个指定PID的服务进程，如kill 2156；<br>10. killall：用于终止某个指定名称的服务所对应的全部进程；</p>
-<h1 id="3-系统状态检测命令"><a href="#3-系统状态检测命令" class="headerlink" title="3.系统状态检测命令"></a>3.系统状态检测命令</h1><ol>
-<li>ifconfig：用于获取网卡配置与网络状态等信息，可以查看到网卡名称、IP地址和物理地址；</li>
-<li>uname：用于查看系统内核与系统版本等信息，加上-a参数能完整地查看当前系统的内核名称等信息；</li>
-<li>uptime：用于查看系统的负载信息；负载值越低越好，尽量不要长期超过1，生产环境中不要超过5；</li>
-<li>free：用于显示当前系统中内存的使用量信息，结合-h参数能以更人性化的方式树池当前内存的实时信息；</li>
-<li>who：用于查看当前登入主机的用户终端信息；</li>
-<li>last：用于查看所有系统的登陆记录，但仅供参考，其中内容可能会被篡改；</li>
-<li>history：用于显示历史执行过的命令（默认为最近1000条的命令），使用-c参数则会清空所有的历史记录，使用“！编码数字”的方式可以重复执行某一次的命令；<br> 注：只有在终端关闭的时候，才会同步信息；</li>
-<li>sosreport：用于收集系统配置及架构信息并输出诊断文档；</li>
-</ol>
-<h1 id="4-工作目录切换命令"><a href="#4-工作目录切换命令" class="headerlink" title="4.工作目录切换命令"></a>4.工作目录切换命令</h1><ol>
-<li>pwd：用于显示用户当前所处的工作目录；</li>
-<li>cd：用于切换工作路径，其中cd -：表示返回到上一次所处的目录； cd..:表示进入上级目录； cd~：表示切换到当前用户的家目录；</li>
-<li>ls：用于显示目录中的文件信息，其中ls -a：表示查看全部文件（包括隐藏文件)；  ls -l：查看文件的属性、大小等详细信息； ls -d：查看目录及其详细信息；</li>
-</ol>
-<h1 id="5-文本文件编辑命令"><a href="#5-文本文件编辑命令" class="headerlink" title="5.文本文件编辑命令"></a>5.文本文件编辑命令</h1><ol>
-<li>cat：用于查看纯文本文件（内容较少的），cat -n：显示行号；</li>
-<li>more：用于查看纯文本文件（内容较多的）；按回车键向下走一行，空格键向下走一页；</li>
-<li>head：用于查看文本文档的前N行内容，如 head -n 20 initial.cfg:查看initial.cfg文件的前20行内容；</li>
-<li>tail：用于查看文本文档的后N行内容，如 tail -n 20 initial.cfg:查看initial.cfg文件的后20行内容；tail -f 文件名：用于实时查看最新日志文件；</li>
-<li>tr：用于替换文本文件中的字符，格式为：tr [原始字符] [目标字符]，如 tr[a-z] [A-Z];</li>
-<li>wc:用于统计指定文本的行数、字数和字节数；</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-l</td>
-<td>只显示行数</td>
-</tr>
-<tr>
-<td>-w</td>
-<td>只显示单词数</td>
-</tr>
-<tr>
-<td>-c</td>
-<td>只显示字节数</td>
-</tr>
-<tr>
-<td>-d</td>
-<td>同时修改atime和mtime</td>
-</tr>
-</tbody></table>
-<ol start="7">
-<li>stat：用于查看文件的具体存储信息和时间等信息；其中Access表示最后一次访问文件的时间；Modify表示真实修改文件内容的时间；Change表示修改文件属性信息的时间。</li>
-<li>cut：用于按“列”提取文本字符；-d参数：用于设置间隔符号； -f参数：用于设置想看的列数；</li>
-<li>diff：用于比较多个文本文件的差异； –brief参数:用于确认两个文件是否不同；  -c参数：用于比较多个文件的差异之处。查询结果中有“！”开头的行，表示内容有不同。</li>
-</ol>
-<h1 id="6-文件目录管理命令"><a href="#6-文件目录管理命令" class="headerlink" title="6.文件目录管理命令"></a>6.文件目录管理命令</h1><p>1.touch：用于创建空白文件或设置文件的时间；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-a</td>
-<td>修改读取时间</td>
-</tr>
-<tr>
-<td>-m</td>
-<td>修改修改时间</td>
-</tr>
-<tr>
-<td>-c</td>
-<td>修改更改权限时间</td>
-</tr>
-<tr>
-<td>-d</td>
-<td>同时修改atime和mtime</td>
-</tr>
-</tbody></table>
-<p>2.mkdir：用于创建空白目录；mkdir -p：能够递归创建具有嵌套关系的文件目录。<br>3.cp：用于复制文件或目录；格式为：cp [选项] 源文件 目标文件<br>复制操作分为3种情况：<br>（1）如果目标文件为目录，则把源文件复制到该目录中；<br>（2）如果目标文件为文件，则会询问是否要覆盖它；<br>（3）如果目标文件不存在，则执行正常的复制操作；<br>4.mv：用于剪切文件或将文件重命名，格式为：mv [选项]  源文件 [目标路径|目标文件名]<br>5.rm：用于删除文件或目录； -f：强制删除； -r：用于删除文件夹或目录；<br>6.dd：用于按照指定大小和个数的数据块来复制文件或转换文件；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>if</td>
-<td>输入的文件名称</td>
-</tr>
-<tr>
-<td>of</td>
-<td>输出的文件名称</td>
-</tr>
-<tr>
-<td>bs</td>
-<td>每个“块”的大小</td>
-</tr>
-<tr>
-<td>count</td>
-<td>复制“块”的个数</td>
-</tr>
-</tbody></table>
-<p>如：dd if=/dev/zero of=560_file count=1 bs=560M</p>
-<p>7.file:用于查看文件的类型；</p>
-<h1 id="7-打包压缩与搜索命令"><a href="#7-打包压缩与搜索命令" class="headerlink" title="7.打包压缩与搜索命令"></a>7.打包压缩与搜索命令</h1><p>1.tar：用于将文件进行打包压缩或解压；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-c</td>
-<td>创建压缩文件</td>
-</tr>
-<tr>
-<td>-x</td>
-<td>解开压缩文件</td>
-</tr>
-<tr>
-<td>-z</td>
-<td>用Gzip压缩或解压</td>
-</tr>
-<tr>
-<td>-j</td>
-<td>用bzip2压缩或解压</td>
-</tr>
-<tr>
-<td>-v</td>
-<td>显示压缩或解压的过程</td>
-</tr>
-<tr>
-<td>-f</td>
-<td>目标文件名</td>
-</tr>
-<tr>
-<td>-C</td>
-<td>指定解压到的目录</td>
-</tr>
-</tbody></table>
-<p>将文件打包压缩：tar -czvf 压缩包名称.tar.gz 要打包的目录； 如： tar -czvf etc.tar.gz /etc<br>解压命令：tar -xzvf 压缩包名称.tar.gz; 如： tar xzvf etc.tar.gz -C /root/etc</p>
-<p>2.grep:用于在文本中执行关键词搜索； -n：用来显示搜索到信息的行号； -v：用于反选信息；<br>3.find：用于按照指定条件来查找文件；格式为：find [查找路径] 寻找条件 操作； 如： find /etc -name “host*” -print<br>-exec:用于将find命令搜索到的结果交由后面的命令作进一步处理，exec虽然是长格式，但只需要一个“-”。</p>
+        <h1 id="1-配置网卡服务"><a href="#1-配置网卡服务" class="headerlink" title="1.配置网卡服务"></a>1.配置网卡服务</h1><h1 id="1-1配置网卡参数"><a href="#1-1配置网卡参数" class="headerlink" title="1.1配置网卡参数"></a>1.1配置网卡参数</h1><img src="/images/loading.png" data-original="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/1.png" class>
+
+<img src="/images/loading.png" data-original="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/2.png" class>
+
+<img src="/images/loading.png" data-original="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/3.png" class>
+
+<img src="/images/loading.png" data-original="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/4.png" class>
+
+<img src="/images/loading.png" data-original="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/5.png" class>
+
+<img src="/images/loading.png" data-original="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/6.png" class>
+
+<img src="/images/loading.png" data-original="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/7.png" class>
+
+<img src="/images/loading.png" data-original="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/8.png" class>
+
+<p>用Vim编辑器将网卡配置文件中的ONBOOT参数修改成yes，这样在系统重启后网卡就被激活了:</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno16777736
+TYPE=Ethernet
+BOOTPROTO=none
+...
+ONBOOT=yes</code></pre>
+<p>修改完Linux系统中的服务配置文件后,要手动重启相应的服务:</p>
+<pre><code>[root@linuxprobe ~]# systemctl restart network</code></pre>
+<h2 id="1-2创建网络会话"><a href="#1-2创建网络会话" class="headerlink" title="1.2创建网络会话"></a>1.2创建网络会话</h2><p>NetworkManager：是一种动态管理网络配置的守护进程，能够让网络设备保持连接状态；可以使用nmcli命令来管理Network Manager服务。</p>
+<p>可以使用nmcli命令并按照“connection add con-name type ifname”的格式来创建网络会话。</p>
+<p>使用con-name参数指定使用的网络会话名称company，然后依次用ifname参数指定网卡名称，用autoconnect no参数设置该网络会话默认不被自动激活，以及用ip4及gw4参数手动指定网络的IP地址：</p>
+<pre><code>[root@linuxprobe ~]# nmcli connection add con-name company ifname eno16777736 autoconnect no type ethernet ip4 192.168.10.10/24 gw4 192.168.10.1</code></pre>
+<p>使用con-name参数指定网络会话名称house，使用外部DHCP服务器自动获得IP地址，不需要进行手动指定：</p>
+<pre><code>[root@linuxprobe ~]# nmcli connection add con-name house type ethernet ifname eno16777736</code></pre>
+<p>使配置过的网络会话生效：</p>
+<pre><code>[root@linuxprobe ~]# nmcli connection up house </code></pre>
+<h2 id="1-3绑定两块网卡"><a href="#1-3绑定两块网卡" class="headerlink" title="1.3绑定两块网卡"></a>1.3绑定两块网卡</h2><img src="/images/loading.png" data-original="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/9.png" class>
+
+<img src="/images/loading.png" data-original="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/10.png" class>
+
+<p>使用Vim文本编辑器来配置网卡设备的绑定参数：<br>    [root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno16777736<br>    TYPE=Ethernet<br>    BOOTPROTO=none<br>    ONBOOT=yes<br>    USERCTL=no<br>    DEVICE=eno16777736<br>    MASTER=bond0<br>    SLAVE=yes<br>    [root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno33554968<br>    TYPE=Ethernet<br>    BOOTPROTO=none<br>    ONBOOT=yes<br>    USERCTL=no<br>    DEVICE=eno33554968<br>    MASTER=bond0<br>    SLAVE=yes</p>
+<p>将绑定后的设备命名为bond0并把IP地址等信息填写进去，这样当用户访问相应服务的时候，实际上就是由这两块网卡设备在共同提供服务：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-bond0
+TYPE=Ethernet
+BOOTPROTO=none
+ONBOOT=yes
+USERCTL=no
+DEVICE=bond0
+IPADDR=192.168.10.10
+PREFIX=24
+DNS=192.168.10.1
+NM_CONTROLLED=no</code></pre>
+<p>让Linux内核支持网卡绑定驱动。常见的网卡绑定驱动有三种模式—mode0、mode1和mode6。下面以绑定两块网卡为例，讲解使用的情景。</p>
+<pre><code>mode0（平衡负载模式）：平时两块网卡均工作，且自动备援，但需要在与服务器本地网卡相连的交换机设备上进行端口聚合来支持绑定技术。
+
+mode1（自动备援模式）：平时只有一块网卡工作，在它故障后自动替换为另外的网卡。
+
+mode6（平衡负载模式）：平时两块网卡均工作，且自动备援，无须交换机设备提供辅助支持。</code></pre>
+<p>使用Vim文本编辑器创建一个用于网卡绑定的驱动文件，使得绑定后的bond0网卡设备能够支持绑定技术（bonding）；同时定义网卡以mode6模式进行绑定，且出现故障时自动切换的时间为100毫秒：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/modprobe.d/bond.conf
+alias bond0 bonding
+options bond0 miimon=100 mode=6</code></pre>
+<p>重启网络服务后网卡绑定操作即可成功。正常情况下只有bond0网卡设备才会有IP地址等信息：</p>
+<pre><code>[root@linuxprobe ~]# systemctl restart network</code></pre>
 
     </div>
 
@@ -548,7 +360,7 @@
   </li>
   <li class="post-copyright-link">
     <strong>本文链接：</strong>
-    <a href="https://zhuxiaowei0924.github.io/2020/12/28/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Alinux%E5%91%BD%E4%BB%A4/" title="linux就该这么学：linux命令">https://zhuxiaowei0924.github.io/2020/12/28/linux就该这么学：linux命令/</a>
+    <a href="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/" title="linux就该这么学：使用ssh服务管理远程主机">https://zhuxiaowei0924.github.io/2021/02/04/linux就该这么学：使用ssh服务管理远程主机/</a>
   </li>
   <li class="post-copyright-license">
     <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
@@ -559,7 +371,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E7%AC%AC2%E7%AB%A0%E8%8A%82%EF%BC%9Alinux%E5%91%BD%E4%BB%A4/" rel="tag"># 第2章节：linux命令</a>
+              <a href="/tags/%E7%AC%AC9%E7%AB%A0%E8%8A%82%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/" rel="tag"># 第9章节：使用ssh服务管理远程主机</a>
           </div>
 
         
@@ -568,13 +380,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/" rel="prev" title="图片加载命令">
-      <i class="fa fa-chevron-left"></i> 图片加载命令
+    <a href="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/" rel="prev" title="linux就该这么学：iptables与firewalld防火墙">
+      <i class="fa fa-chevron-left"></i> linux就该这么学：iptables与firewalld防火墙
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/" rel="next" title="linux就该这么学：管道符、重定向与环境变量">
-      linux就该这么学：管道符、重定向与环境变量 <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -633,7 +442,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E5%91%BD%E4%BB%A4%E6%A0%BC%E5%BC%8F"><span class="nav-text">1.命令格式</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E5%B8%B8%E7%94%A8%E7%9A%84%E5%B7%A5%E4%BD%9C%E5%91%BD%E4%BB%A4"><span class="nav-text">2.常用的工作命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E7%B3%BB%E7%BB%9F%E7%8A%B6%E6%80%81%E6%A3%80%E6%B5%8B%E5%91%BD%E4%BB%A4"><span class="nav-text">3.系统状态检测命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E5%B7%A5%E4%BD%9C%E7%9B%AE%E5%BD%95%E5%88%87%E6%8D%A2%E5%91%BD%E4%BB%A4"><span class="nav-text">4.工作目录切换命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-%E6%96%87%E6%9C%AC%E6%96%87%E4%BB%B6%E7%BC%96%E8%BE%91%E5%91%BD%E4%BB%A4"><span class="nav-text">5.文本文件编辑命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95%E7%AE%A1%E7%90%86%E5%91%BD%E4%BB%A4"><span class="nav-text">6.文件目录管理命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#7-%E6%89%93%E5%8C%85%E5%8E%8B%E7%BC%A9%E4%B8%8E%E6%90%9C%E7%B4%A2%E5%91%BD%E4%BB%A4"><span class="nav-text">7.打包压缩与搜索命令</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E9%85%8D%E7%BD%AE%E7%BD%91%E5%8D%A1%E6%9C%8D%E5%8A%A1"><span class="nav-text">1.配置网卡服务</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-1%E9%85%8D%E7%BD%AE%E7%BD%91%E5%8D%A1%E5%8F%82%E6%95%B0"><span class="nav-text">1.1配置网卡参数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2%E5%88%9B%E5%BB%BA%E7%BD%91%E7%BB%9C%E4%BC%9A%E8%AF%9D"><span class="nav-text">1.2创建网络会话</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3%E7%BB%91%E5%AE%9A%E4%B8%A4%E5%9D%97%E7%BD%91%E5%8D%A1"><span class="nav-text">1.3绑定两块网卡</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
