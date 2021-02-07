@@ -20,12 +20,12 @@
     var CONFIG = {"hostname":"zhuxiaowei0924.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
   </script>
 
-  <meta name="description" content="1.配置网卡服务1.1配置网卡参数                用Vim编辑器将网卡配置文件中的ONBOOT参数修改成yes，这样在系统重启后网卡就被激活了: [root@linuxprobe ~]# vim &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-eno16777736 TYPE&#x3D;Ethernet BOOTPROTO&#x3D;none ... ONBOOT&#x3D;yes 修">
+  <meta name="description" content="1.配置网卡服务介绍了SSH协议与sshd服务程序的理论知识、Linux系统的远程管理方法以及在系统中配置服务程序的方法，并采用实验的形式演示了使用基于密码验证的sshd服务程序进行远程登录，以及使用screen服务程序远程管理Linux系统的不间断会话等技术。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="linux就该这么学：使用ssh服务管理远程主机">
 <meta property="og:url" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/index.html">
 <meta property="og:site_name" content="随笔&amp;博客">
-<meta property="og:description" content="1.配置网卡服务1.1配置网卡参数                用Vim编辑器将网卡配置文件中的ONBOOT参数修改成yes，这样在系统重启后网卡就被激活了: [root@linuxprobe ~]# vim &#x2F;etc&#x2F;sysconfig&#x2F;network-scripts&#x2F;ifcfg-eno16777736 TYPE&#x3D;Ethernet BOOTPROTO&#x3D;none ... ONBOOT&#x3D;yes 修">
+<meta property="og:description" content="1.配置网卡服务介绍了SSH协议与sshd服务程序的理论知识、Linux系统的远程管理方法以及在系统中配置服务程序的方法，并采用实验的形式演示了使用基于密码验证的sshd服务程序进行远程登录，以及使用screen服务程序远程管理Linux系统的不间断会话等技术。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/1.png">
 <meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/2.png">
@@ -38,7 +38,7 @@
 <meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/9.png">
 <meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/10.png">
 <meta property="article:published_time" content="2021-02-04T14:00:33.000Z">
-<meta property="article:modified_time" content="2021-02-04T15:04:05.944Z">
+<meta property="article:modified_time" content="2021-02-07T07:39:29.790Z">
 <meta property="article:author" content="晓">
 <meta property="article:tag" content="第9章节：使用ssh服务管理远程主机">
 <meta name="twitter:card" content="summary">
@@ -229,10 +229,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2021-02-04 22:00:33 / 修改时间：23:04:05" itemprop="dateCreated datePublished" datetime="2021-02-04T22:00:33+08:00">2021-02-04</time>
+              <time title="创建时间：2021-02-04 22:00:33" itemprop="dateCreated datePublished" datetime="2021-02-04T22:00:33+08:00">2021-02-04</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-02-07 15:39:29" itemprop="dateModified" datetime="2021-02-07T15:39:29+08:00">2021-02-07</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -256,14 +262,14 @@
                 <i class="far fa-file-word"></i>
               </span>
                 <span class="post-meta-item-text">本文字数：</span>
-              <span>1.9k</span>
+              <span>6.3k</span>
             </span>
             <span class="post-meta-item" title="阅读时长">
               <span class="post-meta-item-icon">
                 <i class="far fa-clock"></i>
               </span>
                 <span class="post-meta-item-text">阅读时长 &asymp;</span>
-              <span>2 分钟</span>
+              <span>6 分钟</span>
             </span>
 
         </div>
@@ -275,7 +281,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="1-配置网卡服务"><a href="#1-配置网卡服务" class="headerlink" title="1.配置网卡服务"></a>1.配置网卡服务</h1><h1 id="1-1配置网卡参数"><a href="#1-1配置网卡参数" class="headerlink" title="1.1配置网卡参数"></a>1.1配置网卡参数</h1><img src="/images/loading.png" data-original="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/1.png" class>
+        <h1 id="1-配置网卡服务"><a href="#1-配置网卡服务" class="headerlink" title="1.配置网卡服务"></a>1.配置网卡服务</h1><p>介绍了SSH协议与sshd服务程序的理论知识、Linux系统的远程管理方法以及在系统中配置服务程序的方法，并采用实验的形式演示了使用基于密码验证的sshd服务程序进行远程登录，以及使用screen服务程序远程管理Linux系统的不间断会话等技术。</p>
+<a id="more"></a>
+
+<h1 id="1-1配置网卡参数"><a href="#1-1配置网卡参数" class="headerlink" title="1.1配置网卡参数"></a>1.1配置网卡参数</h1><img src="/images/loading.png" data-original="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/1.png" class>
 
 <img src="/images/loading.png" data-original="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/2.png" class>
 
@@ -311,7 +320,23 @@ ONBOOT=yes</code></pre>
 
 <img src="/images/loading.png" data-original="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/10.png" class>
 
-<p>使用Vim文本编辑器来配置网卡设备的绑定参数：<br>    [root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno16777736<br>    TYPE=Ethernet<br>    BOOTPROTO=none<br>    ONBOOT=yes<br>    USERCTL=no<br>    DEVICE=eno16777736<br>    MASTER=bond0<br>    SLAVE=yes<br>    [root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno33554968<br>    TYPE=Ethernet<br>    BOOTPROTO=none<br>    ONBOOT=yes<br>    USERCTL=no<br>    DEVICE=eno33554968<br>    MASTER=bond0<br>    SLAVE=yes</p>
+<p>使用Vim文本编辑器来配置网卡设备的绑定参数：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno16777736
+TYPE=Ethernet
+BOOTPROTO=none
+ONBOOT=yes
+USERCTL=no
+DEVICE=eno16777736
+MASTER=bond0
+SLAVE=yes
+[root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno33554968
+TYPE=Ethernet
+BOOTPROTO=none
+ONBOOT=yes
+USERCTL=no
+DEVICE=eno33554968
+MASTER=bond0
+SLAVE=yes</code></pre>
 <p>将绑定后的设备命名为bond0并把IP地址等信息填写进去，这样当用户访问相应服务的时候，实际上就是由这两块网卡设备在共同提供服务：</p>
 <pre><code>[root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-bond0
 TYPE=Ethernet
@@ -335,6 +360,217 @@ alias bond0 bonding
 options bond0 miimon=100 mode=6</code></pre>
 <p>重启网络服务后网卡绑定操作即可成功。正常情况下只有bond0网卡设备才会有IP地址等信息：</p>
 <pre><code>[root@linuxprobe ~]# systemctl restart network</code></pre>
+<h1 id="2-远程控制服务"><a href="#2-远程控制服务" class="headerlink" title="2.远程控制服务"></a>2.远程控制服务</h1><h2 id="2-1配置sshd服务"><a href="#2-1配置sshd服务" class="headerlink" title="2.1配置sshd服务"></a>2.1配置sshd服务</h2><p>想要使用SSH协议来远程管理Linux系统，则需要部署配置sshd服务程序。sshd是基于SSH协议开发的一款远程管理服务程序，不仅使用起来方便快捷，而且能够提供两种安全验证的方法：</p>
+<pre><code>基于口令的验证—用账户和密码来验证登录；
+
+基于密钥的验证—需要在本地生成密钥对，然后把密钥对中的公钥上传至服务器，并与服务器中的公钥进行比较；该方式相较来说更安全。</code></pre>
+<p>sshd服务的配置信息保存在/etc/ssh/sshd_config文件中；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Port 22</td>
+<td>默认的sshd服务端口</td>
+</tr>
+<tr>
+<td>ListenAddress 0.0.0.0</td>
+<td>设定sshd服务器监听的IP地址</td>
+</tr>
+<tr>
+<td>Protocol 2</td>
+<td>SSH协议的版本号</td>
+</tr>
+<tr>
+<td>HostKey /tc/ssh/ssh_host_key</td>
+<td>SSH协议版本为1时，DES私钥存放的位置</td>
+</tr>
+<tr>
+<td>HostKey /etc/ssh/ssh_host_rsa_key</td>
+<td>SSH协议版本为2时，RSA私钥存放的位置</td>
+</tr>
+<tr>
+<td>HostKey /etc/ssh/ssh_host_dsa_key</td>
+<td>SSH协议版本为2时，DSA私钥存放的位置</td>
+</tr>
+<tr>
+<td>PermitRootLogin yes</td>
+<td>设定是否允许root管理员直接登录</td>
+</tr>
+<tr>
+<td>StrictModes yes</td>
+<td>当远程用户的私钥改变时直接拒绝连接</td>
+</tr>
+<tr>
+<td>MaxAuthTries 6</td>
+<td>最大密码尝试次数</td>
+</tr>
+<tr>
+<td>MaxSessions 10</td>
+<td>最大终端数</td>
+</tr>
+<tr>
+<td>PasswordAuthentication yes</td>
+<td>是否允许密码验证</td>
+</tr>
+<tr>
+<td>PermitEmptyPasswords no</td>
+<td>是否允许空密码登录（很不安全）</td>
+</tr>
+</tbody></table>
+<pre><code>[root@linuxprobe ~]# ssh 192.168.10.10
+The authenticity of host &#39;192.168.10.10 (192.168.10.10)&#39; can&#39;t be established.
+ECDSA key fingerprint is 4f:a7:91:9e:8d:6f:b9:48:02:32:61:95:48:ed:1e:3f.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added &#39;192.168.10.10&#39; (ECDSA) to the list of known hosts.
+root@192.168.10.10&#39;s password:此处输入远程主机root管理员的密码
+Last login: Wed Apr 15 15:54:21 2017 from 192.168.10.10
+[root@linuxprobe ~]# 
+[root@linuxprobe ~]# exit
+logout
+Connection to 192.168.10.10 closed.</code></pre>
+<p>禁止以root管理员的身份远程登录到服务器：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/ssh/sshd_config 
+ ………………省略部分输出信息………………
+ 46 
+ 47 #LoginGraceTime 2m
+ **48 PermitRootLogin no**
+ 49 #StrictModes yes
+ 50 #MaxAuthTries 6
+ 51 #MaxSessions 10
+ 52
+ ………………省略部分输出信息………………</code></pre>
+<p>让新配置文件生效，则需要手动重启相应的服务程序；最好也将这个服务程序加入到开机启动项中：</p>
+<pre><code>[root@linuxprobe ~]# systemctl restart sshd
+[root@linuxprobe ~]# systemctl enable sshd</code></pre>
+<h2 id="2-2安全密钥验证"><a href="#2-2安全密钥验证" class="headerlink" title="2.2安全密钥验证"></a>2.2安全密钥验证</h2><p>第1步：在客户端主机中生成“密钥对”。</p>
+<pre><code>[root@linuxprobe ~]# ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):按回车键或设置密钥的存储路径
+Created directory &#39;/root/.ssh&#39;.
+Enter passphrase (empty for no passphrase):直接按回车键或设置密钥的密码
+Enter same passphrase again:再次按回车键或设置密钥的密码
+Your identification has been saved in /root/.ssh/id_rsa.
+Your public key has been saved in /root/.ssh/id_rsa.pub.
+Your identification has been saved in /root/.ssh/id_rsa.
+Your public key has been saved in /root/.ssh/id_rsa.pub.
+The key fingerprint is:
+40:32:48:18:e4:ac:c0:c3:c1:ba:7c:6c:3a:a8:b5:22 root@linuxprobe.com
+The key&#39;s randomart image is:
+    +--[ RSA 2048]----+
+    |+*..o .          |
+    |*.o  +           |
+    |o*    .          |
+    |+ .    .         |
+    |o..     S        |
+    |.. +             |
+    |. =              |
+    |E+ .             |
+    |+.o              |
+    +-----------------+</code></pre>
+<p>第2步：把客户端主机中生成的公钥文件传送至远程主机：</p>
+<pre><code>[root@linuxprobe ~]# ssh-copy-id 192.168.10.10
+The authenticity of host &#39;192.168.10.20 (192.168.10.10)&#39; can&#39;t be established.
+ECDSA key fingerprint is 4f:a7:91:9e:8d:6f:b9:48:02:32:61:95:48:ed:1e:3f.
+Are you sure you want to continue connecting (yes/no)? yes
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+root@192.168.10.10&#39;s password:此处输入远程服务器密码
+Number of key(s) added: 1
+Now try logging into the machine, with: &quot;ssh &#39;192.168.10.10&#39;&quot;
+and check to make sure that only the key(s) you wanted were added.</code></pre>
+<p>第3步：对服务器进行设置，使其只允许密钥验证，拒绝传统的口令验证方式。记得在修改配置文件后保存并重启sshd服务程序。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/ssh/sshd_config 
+ ………………省略部分输出信息………………
+ 74 
+ 75 # To disable tunneled clear text passwords, change to no here!
+ 76 #PasswordAuthentication yes
+ 77 #PermitEmptyPasswords no
+ **78 PasswordAuthentication no**
+ 79 
+ ………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart sshd</code></pre>
+<p>第4步：在客户端尝试登录到服务器，此时无须输入密码也可成功登录。</p>
+<pre><code>[root@linuxprobe ~]# ssh 192.168.10.10
+Last login: Mon Apr 13 19:34:13 2017</code></pre>
+<h2 id="2-3远程传输命令"><a href="#2-3远程传输命令" class="headerlink" title="2.3远程传输命令"></a>2.3远程传输命令</h2><p>scp（secure copy）是一个基于SSH协议在网络之间进行安全传输的命令，其格式为“scp [参数] 本地文件 远程帐户@远程IP地址:远程目录；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-v</td>
+<td>显示详细的连接进度</td>
+</tr>
+<tr>
+<td>-p</td>
+<td>指定远程主机的sshd端口号</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>用于传送文件夹</td>
+</tr>
+<tr>
+<td>-6</td>
+<td>使用IPv6协议</td>
+</tr>
+</tbody></table>
+<p>在使用scp命令把文件从本地复制到远程主机时，首先需要以绝对路径的形式写清本地文件的存放位置：</p>
+<pre><code>[root@linuxprobe ~]# echo &quot;Welcome to LinuxProbe.Com&quot; &gt; readme.txt
+[root@linuxprobe ~]# scp /root/readme.txt 192.168.10.20:/home
+root@192.168.10.20&#39;s password:此处输入远程服务器中root管理员的密码
+readme.txt 100% 26 0.0KB/s 00:00</code></pre>
+<p>使用scp命令把远程主机上的文件下载到本地主机，其命令格式为“scp [参数] 远程用户@远程IP地址:远程文件 本地目录”:</p>
+<pre><code>[root@linuxprobe ~]# scp 192.168.10.20:/etc/redhat-release /root
+root@192.168.10.20&#39;s password:此处输入远程服务器中root管理员的密码
+redhat-release 100% 52 0.1KB/s 00:00 
+[root@linuxprobe ~]# cat redhat-release 
+Red Hat Enterprise Linux Server release 7.0 (Maipo)</code></pre>
+<h1 id="3-不间断会话服务"><a href="#3-不间断会话服务" class="headerlink" title="3.不间断会话服务"></a>3.不间断会话服务</h1><p>screen是一款能够实现多窗口远程控制的开源服务程序，简单来说就是为了解决网络异常中断或为了同时控制多个远程终端窗口而设计的程序。用户还可以使用screen服务程序同时在多个远程会话中自由切换，能够做到实现如下功能。</p>
+<pre><code>会话恢复：即便网络中断，也可让会话随时恢复，确保用户不会失去对远程会话的控制。
+
+多窗口：每个会话都是独立运行的，拥有各自独立的输入输出终端窗口，终端窗口内显示过的信息也将被分开隔离保存，以便下次使用时依然能看到之前的操作记录。
+
+会话共享：当多个用户同时登录到远程服务器时，便可以使用会话共享功能让用户之间的输入输出信息共享。</code></pre>
+<h2 id="3-1管理远程会话"><a href="#3-1管理远程会话" class="headerlink" title="3.1管理远程会话"></a>3.1管理远程会话</h2><p>screen命令：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-S</td>
+<td>创建会话窗口</td>
+</tr>
+<tr>
+<td>-d</td>
+<td>将指定会话进行离线处理</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>恢复指定会话</td>
+</tr>
+<tr>
+<td>-x</td>
+<td>一次性恢复所有会话</td>
+</tr>
+<tr>
+<td>-ls</td>
+<td>显示当前已有会话</td>
+</tr>
+<tr>
+<td>-wipe</td>
+<td>将目前无法使用的会话删除</td>
+</tr>
+</tbody></table>
 
     </div>
 
@@ -383,7 +619,10 @@ options bond0 miimon=100 mode=6</code></pre>
     <a href="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/" rel="prev" title="linux就该这么学：iptables与firewalld防火墙">
       <i class="fa fa-chevron-left"></i> linux就该这么学：iptables与firewalld防火墙
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/" rel="next" title="linux虚拟机外网网络访问设置指南">
+      linux虚拟机外网网络访问设置指南 <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -442,7 +681,7 @@ options bond0 miimon=100 mode=6</code></pre>
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E9%85%8D%E7%BD%AE%E7%BD%91%E5%8D%A1%E6%9C%8D%E5%8A%A1"><span class="nav-text">1.配置网卡服务</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-1%E9%85%8D%E7%BD%AE%E7%BD%91%E5%8D%A1%E5%8F%82%E6%95%B0"><span class="nav-text">1.1配置网卡参数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2%E5%88%9B%E5%BB%BA%E7%BD%91%E7%BB%9C%E4%BC%9A%E8%AF%9D"><span class="nav-text">1.2创建网络会话</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3%E7%BB%91%E5%AE%9A%E4%B8%A4%E5%9D%97%E7%BD%91%E5%8D%A1"><span class="nav-text">1.3绑定两块网卡</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E9%85%8D%E7%BD%AE%E7%BD%91%E5%8D%A1%E6%9C%8D%E5%8A%A1"><span class="nav-text">1.配置网卡服务</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#1-1%E9%85%8D%E7%BD%AE%E7%BD%91%E5%8D%A1%E5%8F%82%E6%95%B0"><span class="nav-text">1.1配置网卡参数</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2%E5%88%9B%E5%BB%BA%E7%BD%91%E7%BB%9C%E4%BC%9A%E8%AF%9D"><span class="nav-text">1.2创建网络会话</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-3%E7%BB%91%E5%AE%9A%E4%B8%A4%E5%9D%97%E7%BD%91%E5%8D%A1"><span class="nav-text">1.3绑定两块网卡</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E8%BF%9C%E7%A8%8B%E6%8E%A7%E5%88%B6%E6%9C%8D%E5%8A%A1"><span class="nav-text">2.远程控制服务</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1%E9%85%8D%E7%BD%AEsshd%E6%9C%8D%E5%8A%A1"><span class="nav-text">2.1配置sshd服务</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2%E5%AE%89%E5%85%A8%E5%AF%86%E9%92%A5%E9%AA%8C%E8%AF%81"><span class="nav-text">2.2安全密钥验证</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3%E8%BF%9C%E7%A8%8B%E4%BC%A0%E8%BE%93%E5%91%BD%E4%BB%A4"><span class="nav-text">2.3远程传输命令</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E4%B8%8D%E9%97%B4%E6%96%AD%E4%BC%9A%E8%AF%9D%E6%9C%8D%E5%8A%A1"><span class="nav-text">3.不间断会话服务</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%BC%9A%E8%AF%9D"><span class="nav-text">3.1管理远程会话</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -458,7 +697,7 @@ options bond0 miimon=100 mode=6</code></pre>
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">10</span>
+          <span class="site-state-item-count">11</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -471,7 +710,7 @@ options bond0 miimon=100 mode=6</code></pre>
       <div class="site-state-item site-state-tags">
             <a href="/tags/">
           
-        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-count">10</span>
         <span class="site-state-item-name">标签</span></a>
       </div>
   </nav>
@@ -511,13 +750,13 @@ options bond0 miimon=100 mode=6</code></pre>
       <i class="fa fa-chart-area"></i>
     </span>
       <span class="post-meta-item-text">站点总字数：</span>
-    <span title="站点总字数">23k</span>
+    <span title="站点总字数">28k</span>
     <span class="post-meta-divider">|</span>
     <span class="post-meta-item-icon">
       <i class="fa fa-coffee"></i>
     </span>
       <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
-    <span title="站点阅读时长">21 分钟</span>
+    <span title="站点阅读时长">25 分钟</span>
 </div>
 
 <!--
@@ -527,7 +766,7 @@ options bond0 miimon=100 mode=6</code></pre>
 <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
 <div class="theme-info">
   <div class="powered-by"></div>
-  <span class="post-count">博客全站共14k字</span>
+  <span class="post-count">博客全站共16.1k字</span>
   <span class="post-meta-divider">|</span>
   本站总访问量<span id="busuanzi_value_site_pv"></span>次
   <span class="post-meta-divider">|</span>

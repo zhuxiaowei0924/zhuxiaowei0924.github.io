@@ -524,7 +524,10 @@ iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
   <entry>
     <title>linux就该这么学：使用ssh服务管理远程主机</title>
     <url>/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/</url>
-    <content><![CDATA[<h1 id="1-配置网卡服务"><a href="#1-配置网卡服务" class="headerlink" title="1.配置网卡服务"></a>1.配置网卡服务</h1><h1 id="1-1配置网卡参数"><a href="#1-1配置网卡参数" class="headerlink" title="1.1配置网卡参数"></a>1.1配置网卡参数</h1><img src="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/1.png" class>
+    <content><![CDATA[<h1 id="1-配置网卡服务"><a href="#1-配置网卡服务" class="headerlink" title="1.配置网卡服务"></a>1.配置网卡服务</h1><p>介绍了SSH协议与sshd服务程序的理论知识、Linux系统的远程管理方法以及在系统中配置服务程序的方法，并采用实验的形式演示了使用基于密码验证的sshd服务程序进行远程登录，以及使用screen服务程序远程管理Linux系统的不间断会话等技术。</p>
+<a id="more"></a>
+
+<h1 id="1-1配置网卡参数"><a href="#1-1配置网卡参数" class="headerlink" title="1.1配置网卡参数"></a>1.1配置网卡参数</h1><img src="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/1.png" class>
 
 <img src="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/2.png" class>
 
@@ -560,7 +563,23 @@ ONBOOT=yes</code></pre>
 
 <img src="/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/10.png" class>
 
-<p>使用Vim文本编辑器来配置网卡设备的绑定参数：<br>    [root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno16777736<br>    TYPE=Ethernet<br>    BOOTPROTO=none<br>    ONBOOT=yes<br>    USERCTL=no<br>    DEVICE=eno16777736<br>    MASTER=bond0<br>    SLAVE=yes<br>    [root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno33554968<br>    TYPE=Ethernet<br>    BOOTPROTO=none<br>    ONBOOT=yes<br>    USERCTL=no<br>    DEVICE=eno33554968<br>    MASTER=bond0<br>    SLAVE=yes</p>
+<p>使用Vim文本编辑器来配置网卡设备的绑定参数：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno16777736
+TYPE=Ethernet
+BOOTPROTO=none
+ONBOOT=yes
+USERCTL=no
+DEVICE=eno16777736
+MASTER=bond0
+SLAVE=yes
+[root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno33554968
+TYPE=Ethernet
+BOOTPROTO=none
+ONBOOT=yes
+USERCTL=no
+DEVICE=eno33554968
+MASTER=bond0
+SLAVE=yes</code></pre>
 <p>将绑定后的设备命名为bond0并把IP地址等信息填写进去，这样当用户访问相应服务的时候，实际上就是由这两块网卡设备在共同提供服务：</p>
 <pre><code>[root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-bond0
 TYPE=Ethernet
@@ -584,6 +603,217 @@ alias bond0 bonding
 options bond0 miimon=100 mode=6</code></pre>
 <p>重启网络服务后网卡绑定操作即可成功。正常情况下只有bond0网卡设备才会有IP地址等信息：</p>
 <pre><code>[root@linuxprobe ~]# systemctl restart network</code></pre>
+<h1 id="2-远程控制服务"><a href="#2-远程控制服务" class="headerlink" title="2.远程控制服务"></a>2.远程控制服务</h1><h2 id="2-1配置sshd服务"><a href="#2-1配置sshd服务" class="headerlink" title="2.1配置sshd服务"></a>2.1配置sshd服务</h2><p>想要使用SSH协议来远程管理Linux系统，则需要部署配置sshd服务程序。sshd是基于SSH协议开发的一款远程管理服务程序，不仅使用起来方便快捷，而且能够提供两种安全验证的方法：</p>
+<pre><code>基于口令的验证—用账户和密码来验证登录；
+
+基于密钥的验证—需要在本地生成密钥对，然后把密钥对中的公钥上传至服务器，并与服务器中的公钥进行比较；该方式相较来说更安全。</code></pre>
+<p>sshd服务的配置信息保存在/etc/ssh/sshd_config文件中；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Port 22</td>
+<td>默认的sshd服务端口</td>
+</tr>
+<tr>
+<td>ListenAddress 0.0.0.0</td>
+<td>设定sshd服务器监听的IP地址</td>
+</tr>
+<tr>
+<td>Protocol 2</td>
+<td>SSH协议的版本号</td>
+</tr>
+<tr>
+<td>HostKey /tc/ssh/ssh_host_key</td>
+<td>SSH协议版本为1时，DES私钥存放的位置</td>
+</tr>
+<tr>
+<td>HostKey /etc/ssh/ssh_host_rsa_key</td>
+<td>SSH协议版本为2时，RSA私钥存放的位置</td>
+</tr>
+<tr>
+<td>HostKey /etc/ssh/ssh_host_dsa_key</td>
+<td>SSH协议版本为2时，DSA私钥存放的位置</td>
+</tr>
+<tr>
+<td>PermitRootLogin yes</td>
+<td>设定是否允许root管理员直接登录</td>
+</tr>
+<tr>
+<td>StrictModes yes</td>
+<td>当远程用户的私钥改变时直接拒绝连接</td>
+</tr>
+<tr>
+<td>MaxAuthTries 6</td>
+<td>最大密码尝试次数</td>
+</tr>
+<tr>
+<td>MaxSessions 10</td>
+<td>最大终端数</td>
+</tr>
+<tr>
+<td>PasswordAuthentication yes</td>
+<td>是否允许密码验证</td>
+</tr>
+<tr>
+<td>PermitEmptyPasswords no</td>
+<td>是否允许空密码登录（很不安全）</td>
+</tr>
+</tbody></table>
+<pre><code>[root@linuxprobe ~]# ssh 192.168.10.10
+The authenticity of host &#39;192.168.10.10 (192.168.10.10)&#39; can&#39;t be established.
+ECDSA key fingerprint is 4f:a7:91:9e:8d:6f:b9:48:02:32:61:95:48:ed:1e:3f.
+Are you sure you want to continue connecting (yes/no)? yes
+Warning: Permanently added &#39;192.168.10.10&#39; (ECDSA) to the list of known hosts.
+root@192.168.10.10&#39;s password:此处输入远程主机root管理员的密码
+Last login: Wed Apr 15 15:54:21 2017 from 192.168.10.10
+[root@linuxprobe ~]# 
+[root@linuxprobe ~]# exit
+logout
+Connection to 192.168.10.10 closed.</code></pre>
+<p>禁止以root管理员的身份远程登录到服务器：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/ssh/sshd_config 
+ ………………省略部分输出信息………………
+ 46 
+ 47 #LoginGraceTime 2m
+ **48 PermitRootLogin no**
+ 49 #StrictModes yes
+ 50 #MaxAuthTries 6
+ 51 #MaxSessions 10
+ 52
+ ………………省略部分输出信息………………</code></pre>
+<p>让新配置文件生效，则需要手动重启相应的服务程序；最好也将这个服务程序加入到开机启动项中：</p>
+<pre><code>[root@linuxprobe ~]# systemctl restart sshd
+[root@linuxprobe ~]# systemctl enable sshd</code></pre>
+<h2 id="2-2安全密钥验证"><a href="#2-2安全密钥验证" class="headerlink" title="2.2安全密钥验证"></a>2.2安全密钥验证</h2><p>第1步：在客户端主机中生成“密钥对”。</p>
+<pre><code>[root@linuxprobe ~]# ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/root/.ssh/id_rsa):按回车键或设置密钥的存储路径
+Created directory &#39;/root/.ssh&#39;.
+Enter passphrase (empty for no passphrase):直接按回车键或设置密钥的密码
+Enter same passphrase again:再次按回车键或设置密钥的密码
+Your identification has been saved in /root/.ssh/id_rsa.
+Your public key has been saved in /root/.ssh/id_rsa.pub.
+Your identification has been saved in /root/.ssh/id_rsa.
+Your public key has been saved in /root/.ssh/id_rsa.pub.
+The key fingerprint is:
+40:32:48:18:e4:ac:c0:c3:c1:ba:7c:6c:3a:a8:b5:22 root@linuxprobe.com
+The key&#39;s randomart image is:
+    +--[ RSA 2048]----+
+    |+*..o .          |
+    |*.o  +           |
+    |o*    .          |
+    |+ .    .         |
+    |o..     S        |
+    |.. +             |
+    |. =              |
+    |E+ .             |
+    |+.o              |
+    +-----------------+</code></pre>
+<p>第2步：把客户端主机中生成的公钥文件传送至远程主机：</p>
+<pre><code>[root@linuxprobe ~]# ssh-copy-id 192.168.10.10
+The authenticity of host &#39;192.168.10.20 (192.168.10.10)&#39; can&#39;t be established.
+ECDSA key fingerprint is 4f:a7:91:9e:8d:6f:b9:48:02:32:61:95:48:ed:1e:3f.
+Are you sure you want to continue connecting (yes/no)? yes
+/usr/bin/ssh-copy-id: INFO: attempting to log in with the new key(s), to filter out any that are already installed
+/usr/bin/ssh-copy-id: INFO: 1 key(s) remain to be installed -- if you are prompted now it is to install the new keys
+root@192.168.10.10&#39;s password:此处输入远程服务器密码
+Number of key(s) added: 1
+Now try logging into the machine, with: &quot;ssh &#39;192.168.10.10&#39;&quot;
+and check to make sure that only the key(s) you wanted were added.</code></pre>
+<p>第3步：对服务器进行设置，使其只允许密钥验证，拒绝传统的口令验证方式。记得在修改配置文件后保存并重启sshd服务程序。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/ssh/sshd_config 
+ ………………省略部分输出信息………………
+ 74 
+ 75 # To disable tunneled clear text passwords, change to no here!
+ 76 #PasswordAuthentication yes
+ 77 #PermitEmptyPasswords no
+ **78 PasswordAuthentication no**
+ 79 
+ ………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart sshd</code></pre>
+<p>第4步：在客户端尝试登录到服务器，此时无须输入密码也可成功登录。</p>
+<pre><code>[root@linuxprobe ~]# ssh 192.168.10.10
+Last login: Mon Apr 13 19:34:13 2017</code></pre>
+<h2 id="2-3远程传输命令"><a href="#2-3远程传输命令" class="headerlink" title="2.3远程传输命令"></a>2.3远程传输命令</h2><p>scp（secure copy）是一个基于SSH协议在网络之间进行安全传输的命令，其格式为“scp [参数] 本地文件 远程帐户@远程IP地址:远程目录；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-v</td>
+<td>显示详细的连接进度</td>
+</tr>
+<tr>
+<td>-p</td>
+<td>指定远程主机的sshd端口号</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>用于传送文件夹</td>
+</tr>
+<tr>
+<td>-6</td>
+<td>使用IPv6协议</td>
+</tr>
+</tbody></table>
+<p>在使用scp命令把文件从本地复制到远程主机时，首先需要以绝对路径的形式写清本地文件的存放位置：</p>
+<pre><code>[root@linuxprobe ~]# echo &quot;Welcome to LinuxProbe.Com&quot; &gt; readme.txt
+[root@linuxprobe ~]# scp /root/readme.txt 192.168.10.20:/home
+root@192.168.10.20&#39;s password:此处输入远程服务器中root管理员的密码
+readme.txt 100% 26 0.0KB/s 00:00</code></pre>
+<p>使用scp命令把远程主机上的文件下载到本地主机，其命令格式为“scp [参数] 远程用户@远程IP地址:远程文件 本地目录”:</p>
+<pre><code>[root@linuxprobe ~]# scp 192.168.10.20:/etc/redhat-release /root
+root@192.168.10.20&#39;s password:此处输入远程服务器中root管理员的密码
+redhat-release 100% 52 0.1KB/s 00:00 
+[root@linuxprobe ~]# cat redhat-release 
+Red Hat Enterprise Linux Server release 7.0 (Maipo)</code></pre>
+<h1 id="3-不间断会话服务"><a href="#3-不间断会话服务" class="headerlink" title="3.不间断会话服务"></a>3.不间断会话服务</h1><p>screen是一款能够实现多窗口远程控制的开源服务程序，简单来说就是为了解决网络异常中断或为了同时控制多个远程终端窗口而设计的程序。用户还可以使用screen服务程序同时在多个远程会话中自由切换，能够做到实现如下功能。</p>
+<pre><code>会话恢复：即便网络中断，也可让会话随时恢复，确保用户不会失去对远程会话的控制。
+
+多窗口：每个会话都是独立运行的，拥有各自独立的输入输出终端窗口，终端窗口内显示过的信息也将被分开隔离保存，以便下次使用时依然能看到之前的操作记录。
+
+会话共享：当多个用户同时登录到远程服务器时，便可以使用会话共享功能让用户之间的输入输出信息共享。</code></pre>
+<h2 id="3-1管理远程会话"><a href="#3-1管理远程会话" class="headerlink" title="3.1管理远程会话"></a>3.1管理远程会话</h2><p>screen命令：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-S</td>
+<td>创建会话窗口</td>
+</tr>
+<tr>
+<td>-d</td>
+<td>将指定会话进行离线处理</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>恢复指定会话</td>
+</tr>
+<tr>
+<td>-x</td>
+<td>一次性恢复所有会话</td>
+</tr>
+<tr>
+<td>-ls</td>
+<td>显示当前已有会话</td>
+</tr>
+<tr>
+<td>-wipe</td>
+<td>将目前无法使用的会话删除</td>
+</tr>
+</tbody></table>
 ]]></content>
       <categories>
         <category>linux就该这么学</category>
@@ -1141,6 +1371,66 @@ anaconda-ks.cfg Downloads Pictures Public
       </categories>
       <tags>
         <tag>第3章节：管道符、重定向与环境变量</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux虚拟机外网网络访问设置指南</title>
+    <url>/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/</url>
+    <content><![CDATA[<p>要达到的效果就是在Linux虚拟机中可以上网：ping <a href="http://www.baidu.com/">http://www.baidu.com</a></p>
+<p>VMware中安装完 redhat7 后， 默认初始配置如下：</p>
+<a id="more"></a>
+
+<h1 id="1-VMware-网络配置"><a href="#1-VMware-网络配置" class="headerlink" title="1.VMware 网络配置"></a>1.VMware 网络配置</h1><p>（编辑 –&gt; 虚拟网络编辑器）查看</p>
+<p>默认配置为： (这些配置都不需要发生变更， 看看就好)</p>
+<p>子网IP：192.168.154.0</p>
+<p>子网掩码 : 255.255.255.0</p>
+<p>可设置的IP网段为： 192.168.154.128 ~ 254</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/1.jpg" class>
+
+<p>点开 NAT设置可以看到 GATEWAY : 192.168.154.2:</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/2.jpg" class>
+
+<p>下面介绍 redhat 本身配置m修改配置参数如下：</p>
+<p>注意各个参数与第一步 VMware 中的默认配置的联系 :</p>
+<p>BOOTPROTO ： dhcp –&gt; static （静态IP）</p>
+<p>ONBOOT : no –&gt; YES (开机自动连接网络)</p>
+<p>IPADDR : 192.168.154.128 ~ 254 之间即可</p>
+<p>NETMASK : 子网， 与 VMware 默认一致</p>
+<p>GATEWAY : 网关， 与VMware 默认一致</p>
+<p>DNS1 : 首选 DNS, 不配置会出现外网不通， 只能与内网互通的问题.</p>
+<p>这里DNS要说一下的是，其他资料上有说要跟本机上网的DNS一致，还有说跟网关一致，或者改成<br>8.8.8.8，都试过，ping <a href="http://www.baidu.com/">www.baidu.com</a> 都可以，不同的机器可能有不同，希望可以共同探讨。</p>
+<p>NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进行设置，而不是通过网络管理器进行管理。“ONBOOT=yes”告诉我们，系统将在启动时开启该接口。</p>
+<p>编辑/etc/sysconfig/network-scipts/网卡名称：</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/3.jpg" class>
+
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/4.jpg" class>
+
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/5.jpg" class>
+
+<p>重启网络服务命令： systemctl restart network；</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/6.jpg" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>linux虚拟机外网网络访问设置指南</tag>
       </tags>
   </entry>
   <entry>
