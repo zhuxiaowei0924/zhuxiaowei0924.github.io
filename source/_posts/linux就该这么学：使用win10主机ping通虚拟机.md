@@ -7,6 +7,8 @@ categories:
 - linux就该这么学
 ---
 
+<!--more-->
+
 在win10系统中安装了vm12版本，Linux我选用的是redhat 7版本；成功安装redhat 7后，将linux虚拟机的IP地址固定：
 
 {% asset_img 1.png %}
