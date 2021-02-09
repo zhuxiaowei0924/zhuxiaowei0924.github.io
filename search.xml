@@ -1158,7 +1158,9 @@ Red Hat Enterprise Linux Server release 7.0 (Maipo)</code></pre>
   <entry>
     <title>linux就该这么学：使用win10主机ping通虚拟机</title>
     <url>/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
-    <content><![CDATA[<p>在win10系统中安装了vm12版本，Linux我选用的是redhat 7版本；成功安装redhat 7后，将linux虚拟机的IP地址固定：</p>
+    <content><![CDATA[<a id="more"></a>
+
+<p>在win10系统中安装了vm12版本，Linux我选用的是redhat 7版本；成功安装redhat 7后，将linux虚拟机的IP地址固定：</p>
 <img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/1.png" class>
 
 <p>linux虚拟机的外部连接方式为NAT模式，在linux虚拟机中能够ping通自己的IP，但无法ping通win10系统的IP，win10系统也无法ping通linux虚拟机IP。</p>
