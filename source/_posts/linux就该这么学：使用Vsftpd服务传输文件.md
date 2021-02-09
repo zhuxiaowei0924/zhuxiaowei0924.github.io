@@ -123,7 +123,7 @@ vsftpd服务程序默认开启了匿名开放模式，我们需要做的就是�
 	[root@linuxprobe ~]# systemctl restart vsftpd
 	[root@linuxprobe ~]# systemctl enable vsftpd
 
-现在就可以在客户端执行ftp命令连接到远程的FTP服务器了。在vsftpd服务程序的匿名开放认证模式下，其账户统一为anonymous，密码为空。可以切换到该目录下的pub目录中，然后尝试创建一个新的目录文件，以检验是否拥有写入权限：
+现在就可以在**客户端**执行ftp命令连接到远程的FTP服务器了。在vsftpd服务程序的匿名开放认证模式下，其账户统一为anonymous，密码为空。可以切换到该目录下的pub目录中，然后尝试创建一个新的目录文件，以检验是否拥有写入权限：
 
 	[root@linuxprobe ~]# ftp 192.168.10.10
 	Connected to 192.168.10.10 (192.168.10.10).
