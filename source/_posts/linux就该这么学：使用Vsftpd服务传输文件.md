@@ -270,6 +270,217 @@ vsftpd服务程序为了保证服务器的安全性而默认禁止了root管理�
 
 ## 2.3虚拟用户模式
 
+第1步：在**服务器**中创建用于进行FTP认证的用户数据库文件，其中奇数行为账户名，偶数行为密码。例如，我们分别创建出zhangsan和lisi两个用户，密码均为redhat：
+
+	[root@linuxprobe ~]# cd /etc/vsftpd/
+	[root@linuxprobe vsftpd]# vim vuser.list
+	zhangsan
+	redhat
+	lisi
+	redhat
+
+第2步：明文信息既不安全，也不符合让vsftpd服务程序直接加载的格式，因此需要使用db_load命令用哈希（hash）算法将原始的明文信息文件转换成数据库文件，并且降低数据库文件的权限（避免其他人看到数据库文件的内容），然后再把原始的明文信息文件删除。
+
+	[root@linuxprobe vsftpd]# db_load -T -t hash -f vuser.list vuser.db
+	[root@linuxprobe vsftpd]# file vuser.db
+	vuser.db: Berkeley DB (Hash, version 9, native byte-order)
+	[root@linuxprobe vsftpd]# chmod 600 vuser.db
+	[root@linuxprobe vsftpd]# rm -f vuser.list
+
+第3步：创建vsftpd服务程序用于存储文件的根目录以及虚拟用户映射的系统本地用户。FTP服务用于存储文件的根目录指的是，当虚拟用户登录后所访问的默认位置。
+
+为了方便管理FTP服务器上的数据，可以把这个系统本地用户的家目录设置为/var目录（该目录用来存放经常发生改变的数据）。并且为了安全起见，我们将这个系统本地用户设置为不允许登录FTP服务器，这不会影响虚拟用户登录，而且还可以避免黑客通过这个系统本地用户进行登录。
+
+	[root@linuxprobe ~]# useradd -d /var/ftproot -s /sbin/nologin virtual
+	[root@linuxprobe ~]# ls -ld /var/ftproot/
+	drwx------. 3 virtual virtual 74 Jul 14 17:50 /var/ftproot/
+	[root@linuxprobe ~]# chmod -Rf 755 /var/ftproot/
+
+第4步：建立用于支持虚拟用户的PAM文件；新建一个用于虚拟用户认证的PAM文件vsftpd.vu，其中PAM文件内的“db=”参数为使用db_load命令生成的账户密码数据库文件的路径，但不用写数据库文件的后缀：
+
+	[root@linuxprobe ~]# vim /etc/pam.d/vsftpd.vu
+	auth       required     pam_userdb.so db=/etc/vsftpd/vuser
+	account    required     pam_userdb.so db=/etc/vsftpd/vuser
+
+第5步：在vsftpd服务程序的主配置文件中通过pam_service_name参数将PAM认证文件的名称修改为vsftpd.vu：
+
+
+| 参数 | 作用 |
+| --- | --- |
+| anonymous_enable=NO | 禁止匿名开放模式 |
+| local_enable=YES | 允许本地用户模式 |
+| guest_enable=YES | 开启虚拟用户模式 |
+| guest_username=virtual | 指定虚拟用户账户 |
+| pam_service_name=vsftpd.vu | 指定PAM文件 |
+| allow_writeable_chroot=YES | 允许对禁锢的FTP根目录执行写入操作，而且不拒绝用户的登录请求 |
+
+	[root@linuxprobe ~]# vim /etc/vsftpd/vsftpd.conf
+	1 anonymous_enable=NO
+	2 local_enable=YES
+	3 guest_enable=YES
+	4 guest_username=virtual
+	5 allow_writeable_chroot=YES
+	6 write_enable=YES
+	7 local_umask=022
+	8 dirmessage_enable=YES
+	9 xferlog_enable=YES
+	10 connect_from_port_20=YES
+	11 xferlog_std_format=YES
+	12 listen=NO
+	13 listen_ipv6=YES
+	14 pam_service_name=vsftpd.vu
+	15 userlist_enable=YES
+	16 tcp_wrappers=YES
+
+第6步：为虚拟用户设置不同的权限。虽然账户zhangsan和lisi都是用于vsftpd服务程序认证的虚拟账户，但是我们依然想对这两人进行区别对待。比如，允许张三上传、创建、修改、查看、删除文件，只允许李四查看文件。这可以通过vsftpd服务程序来实现。只需新建一个目录，在里面分别创建两个以zhangsan和lisi命名的文件，其中在名为zhangsan的文件中写入允许的相关权限（使用匿名用户的参数）
+	
+	[root@linuxprobe ~]# mkdir /etc/vsftpd/vusers_dir/
+	[root@linuxprobe ~]# cd /etc/vsftpd/vusers_dir/
+	[root@linuxprobe vusers_dir]# touch lisi
+	[root@linuxprobe vusers_dir]# vim zhangsan
+	anon_upload_enable=YES
+	anon_mkdir_write_enable=YES
+	anon_other_write_enable=YES
+
+第7步：再次修改vsftpd主配置文件，通过添加user_config_dir参数来定义这两个虚拟用户不同权限的配置文件所存放的路径。为了让修改后的参数立即生效，需要重启vsftpd服务程序并将该服务添加到开机启动项中：
+
+	[root@linuxprobe ~]# vim /etc/vsftpd/vsftpd.conf
+	anonymous_enable=NO
+	local_enable=YES
+	guest_enable=YES
+	guest_username=virtual
+	allow_writeable_chroot=YES
+	write_enable=YES
+	local_umask=022
+	dirmessage_enable=YES
+	xferlog_enable=YES
+	connect_from_port_20=YES
+	xferlog_std_format=YES
+	listen=NO
+	listen_ipv6=YES
+	pam_service_name=vsftpd.vu
+	userlist_enable=YES
+	tcp_wrappers=YES
+	user_config_dir=/etc/vsftpd/vusers_dir
+	[root@linuxprobe ~]# systemctl restart vsftpd
+	[root@linuxprobe ~]# systemctl enable vsftpd
+	 ln -s '/usr/lib/systemd/system/vsftpd.service' '/etc/systemd/system/multi-user.target.wants/vsftpd.service
+
+第8步：设置SELinux域允许策略，然后使用虚拟用户模式登录FTP服务器。
+
+	[root@linuxprobe ~]# getsebool -a | grep ftp
+	ftp_home_dir –> off
+	ftpd_anon_write –> off
+	ftpd_connect_all_unreserved –> off
+	ftpd_connect_db –> off
+	ftpd_full_access –> off
+	……
+	[root@linuxprobe ~]# setsebool -P ftpd_full_access=on
+
+第9步：然后在**客户端**上重新安装FTP服务器；然后用虚拟用户模式成功登录FTP服务器，还可以分别使用账户zhangsan和lisi来检验他们的权限。
+
+	[root@linuxprobe ~]# ftp 192.168.10.10
+	Connected to 192.168.10.10 (192.168.10.10).
+	220 (vsFTPd 3.0.2)
+	Name (192.168.10.10:root): lisi
+	331 Please specify the password.
+	Password:此处输入虚拟用户的密码
+	230 Login successful.
+	Remote system type is UNIX.
+	Using binary mode to transfer files.
+	ftp> mkdir files
+	550 Permission denied.
+	ftp> exit
+	221 Goodbye.
+	[root@linuxprobe ~]# ftp 192.168.10.10
+	Connected to 192.168.10.10 (192.168.10.10).
+	220 (vsFTPd 3.0.2)
+	Name (192.168.10.10:root): zhangsan
+	331 Please specify the password.
+	Password:此处输入虚拟用户的密码
+	230 Login successful.
+	Remote system type is UNIX.
+	Using binary mode to transfer files.
+	ftp> mkdir files
+	257 "/files" created
+	ftp> rename files database
+	350 Ready for RNTO.
+	250 Rename successful.
+	ftp> rmdir database
+	250 Remove directory operation successful.
+	ftp> exit
+	221 Goodbye.
+
+# 3.TFTP简单文件传输协议
+
+简单文件传输协议（Trivial File Transfer Protocol，TFTP）是一种基于UDP协议在客户端和服务器之间进行简单文件传输的协议。顾名思义，它提供不复杂、开销不大的文件传输服务（可将其当作FTP协议的简化版本）。
+
+第1步：在服务器上安装tftp-server、tftp和xinetd：
+
+	[root@linuxprobe ~]# yum install tftp-server tftp xinetd
+
+第2步：TFTP服务是使用xinetd服务程序来管理的。xinetd服务可以用来管理多种轻量级的网络服务，而且具有强大的日志功能。简单来说，在安装TFTP软件包后，还需要在xinetd服务程序中将其开启，把默认的禁用（disable）参数修改为no：
+
+	[root@linuxprobe ~]# vim /etc/xinetd.d/tftp
+	service tftp
+	{
+	        socket_type             = dgram
+	        protocol                = udp
+	        wait                    = yes
+	        user                    = root
+	        server                  = /usr/sbin/in.tftpd
+	        server_args             = -s /var/lib/tftpboot
+	        disable                 = no
+	        per_source              = 11
+	        cps                     = 100 2
+	        flags                   = IPv4
+	}
+
+
+第3步：重启xinetd服务并将它添加到系统的开机启动项中，以确保TFTP服务在系统重启后依然处于运行状态：
+
+	[root@linuxprobe ~]# systemctl restart xinetd
+	[root@linuxprobe ~]# systemctl enable xinetd
+
+第4步：考虑到有些系统的防火墙默认没有允许UDP协议的69端口，因此需要手动将该端口号加入到防火墙的允许策略中（看电脑实际情况而定）：
+	
+	[root@linuxprobe ~]# firewall-cmd --permanent --add-port=69/udp
+	success
+	[root@linuxprobe ~]# firewall-cmd --reload 
+	success
+
+第5步：TFTP的根目录为/var/lib/tftpboot，可以在改目录中放置或新建自己想要传输的数据文件，如：
+
+[root@linuxprobe ~]# echo "i love linux" > /var/lib/tftpboot/readme.txt
+
+第6步：在客户端上按照以上步骤重新安装tftp；安装完成后，我们可以使用刚安装好的tftp命令尝试访问服务器端目录中的文件，亲身体验TFTP服务的文件传输过程。
+
+
+| 命令 | 作用 |
+| --- | --- |
+| ? | 帮助信息 |
+| put | 上传文件 |
+| get | 下载文件 |
+| verbose | 显示详细的处理信息 |
+| status | 显示当前的状态信息 |
+| binary | 使用二进制进行传输 |
+| ascii | 使用ASCII码进行传输 |
+| timeout | 设置重传的超时时间 |
+| quit | 退出 |
+
+	[root@linuxprobe ~]# tftp 192.168.10.10
+	tftp> get readme.txt
+	tftp> quit
+	[root@linuxprobe ~]# ls
+	anaconda-ks.cfg Documents initial-setup-ks.cfg Pictures readme.txt Videos
+	Desktop Downloads Music Public Templates
+	[root@linuxprobe ~]# cat readme.txt 
+	i love linux
+
+
+
+
+
 
 
 
