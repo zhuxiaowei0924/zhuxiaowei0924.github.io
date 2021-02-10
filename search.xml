@@ -1156,58 +1156,6 @@ Red Hat Enterprise Linux Server release 7.0 (Maipo)</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>linux就该这么学：使用win10主机ping通虚拟机</title>
-    <url>/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
-    <content><![CDATA[<a id="more"></a>
-
-<p>在win10系统中安装了vm12版本，Linux我选用的是redhat 7版本；成功安装redhat 7后，将linux虚拟机的IP地址固定：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/1.png" class>
-
-<p>linux虚拟机的外部连接方式为NAT模式，在linux虚拟机中能够ping通自己的IP，但无法ping通win10系统的IP，win10系统也无法ping通linux虚拟机IP。</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/2.png" class>
-
-<p>解决方法如下：</p>
-<p>1.首先确认了本机的网络有无VMware Network Adapter VMnet8这两个网络：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/3.png" class>
-
-<p>有以上两个网络的话，跳过此步骤；没有的话，则将VM虚拟机卸载，之后清理完之后再重新安装VM虚拟机软件。</p>
-<p>2.安装好虚拟机后，打开终端，输入：vim /etc/sysconfig/network-scripts/ifcfg-eno16777728（网卡名称），编辑下网卡文件，将BOOTPROTO的值修改为static，并添加参数：IPADDR，GATEWAR，NETMASK，NM_CONTROLLED。IPADDR，GATEWAR这两个设置注意网段要与VMware Network Adapter VMnet8 的一致：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/4.png" class>
-
-<p>3.设置好之后，保存退出；之后重启系统，用linux虚拟机ping下win10系统IP地址，测试是否能够ping通，如果可以，那就ok了。</p>
-<p>linux虚拟机ping win10系统：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/5.png" class>
-
-<p>win10系统ping linux虚拟机：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/6.png" class>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>使用win10主机ping通虚拟机</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux就该这么学：存储结构与磁盘划分</title>
     <url>/2021/02/01/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E4%B8%8E%E7%A3%81%E7%9B%98%E5%88%92%E5%88%86/</url>
     <content><![CDATA[<h1 id="1-一切从“-”开始"><a href="#1-一切从“-”开始" class="headerlink" title="1.一切从“/”开始"></a>1.一切从“/”开始</h1><p>Linux系统中的一切文件都是从“根（/）”目录开始的，并按照文件系统层次化标准（FHS）采用树形结构来存放文件，以及定义了常见目录的用途。另外，Linux系统中的文件和目录名称是严格区分大小写的。  </p>
@@ -1645,76 +1593,6 @@ anaconda-ks.cfg Downloads Pictures Public
       </tags>
   </entry>
   <entry>
-    <title>linux虚拟机外网网络访问设置指南</title>
-    <url>/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/</url>
-    <content><![CDATA[<p>要达到的效果就是在Linux虚拟机中可以上网：ping <a href="http://www.baidu.com/">http://www.baidu.com</a></p>
-<p>VMware中安装完 redhat7 后， 默认初始配置如下：</p>
-<a id="more"></a>
-
-<h1 id="1-VMware-网络配置"><a href="#1-VMware-网络配置" class="headerlink" title="1.VMware 网络配置"></a>1.VMware 网络配置</h1><p>（编辑 –&gt; 虚拟网络编辑器）查看</p>
-<p>默认配置为： (这些配置都不需要发生变更， 看看就好)</p>
-<pre><code>子网IP：192.168.154.0
-
-子网掩码 : 255.255.255.0
-
-可设置的IP网段为： 192.168.154.128 ~ 254
-
-&#123;% asset_img 1.jpg %&#125;
-
-点开 NAT设置可以看到 GATEWAY : 192.168.154.2:</code></pre>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/2.jpg" class>
-
-<p>下面介绍 redhat 本身配置m修改配置参数如下：</p>
-<p>注意各个参数与第一步 VMware 中的默认配置的联系 :</p>
-<pre><code>BOOTPROTO ： dhcp --&gt; static （静态IP）
-
-ONBOOT : no --&gt; YES (开机自动连接网络)
-
-IPADDR : 192.168.154.128 ~ 254 之间即可
-
-NETMASK : 子网， 与 VMware 默认一致
-
-GATEWAY : 网关， 与VMware 默认一致
-
-DNS1 : 首选 DNS, 不配置会出现外网不通， 只能与内网互通的问题.
-
-这里DNS要说一下的是，其他资料上有说要跟本机上网的DNS一致，还有说跟网关一致，或者改成8.8.8.8，都试过，ping www.baidu.com 都可以，不同的机器可能有不同，希望可以共同探讨。
-
-NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进行设置，而不是通过网络管理器进行管理。“ONBOOT=yes”告诉我们，系统将在启动时开启该接口。</code></pre>
-<p>编辑/etc/sysconfig/network-scipts/网卡名称：</p>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/3.jpg" class>
-
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/4.jpg" class>
-
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/5.jpg" class>
-
-<p>重启网络服务命令： systemctl restart network；</p>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/6.jpg" class>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>linux虚拟机外网网络访问设置指南</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux就该这么学：管道符、重定向与环境变量</title>
     <url>/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
     <content><![CDATA[<h1 id="1-输入输出重定向"><a href="#1-输入输出重定向" class="headerlink" title="1.输入输出重定向"></a>1.输入输出重定向</h1><p>输入重定向：是指把文件导入到命令中； 输出重定向：是指把原本要输出到屏幕的数据写入到指定文件中。输出重定向又分为标准输出重定向和错误输出重定向。<br>输入重定向中用到的符号及其作用：</p>
@@ -1826,6 +1704,76 @@ NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进
       </categories>
       <tags>
         <tag>第3章节：管道符、重定向与环境变量</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux虚拟机外网网络访问设置指南</title>
+    <url>/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/</url>
+    <content><![CDATA[<p>要达到的效果就是在Linux虚拟机中可以上网：ping <a href="http://www.baidu.com/">http://www.baidu.com</a></p>
+<p>VMware中安装完 redhat7 后， 默认初始配置如下：</p>
+<a id="more"></a>
+
+<h1 id="1-VMware-网络配置"><a href="#1-VMware-网络配置" class="headerlink" title="1.VMware 网络配置"></a>1.VMware 网络配置</h1><p>（编辑 –&gt; 虚拟网络编辑器）查看</p>
+<p>默认配置为： (这些配置都不需要发生变更， 看看就好)</p>
+<pre><code>子网IP：192.168.154.0
+
+子网掩码 : 255.255.255.0
+
+可设置的IP网段为： 192.168.154.128 ~ 254
+
+&#123;% asset_img 1.jpg %&#125;
+
+点开 NAT设置可以看到 GATEWAY : 192.168.154.2:</code></pre>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/2.jpg" class>
+
+<p>下面介绍 redhat 本身配置m修改配置参数如下：</p>
+<p>注意各个参数与第一步 VMware 中的默认配置的联系 :</p>
+<pre><code>BOOTPROTO ： dhcp --&gt; static （静态IP）
+
+ONBOOT : no --&gt; YES (开机自动连接网络)
+
+IPADDR : 192.168.154.128 ~ 254 之间即可
+
+NETMASK : 子网， 与 VMware 默认一致
+
+GATEWAY : 网关， 与VMware 默认一致
+
+DNS1 : 首选 DNS, 不配置会出现外网不通， 只能与内网互通的问题.
+
+这里DNS要说一下的是，其他资料上有说要跟本机上网的DNS一致，还有说跟网关一致，或者改成8.8.8.8，都试过，ping www.baidu.com 都可以，不同的机器可能有不同，希望可以共同探讨。
+
+NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进行设置，而不是通过网络管理器进行管理。“ONBOOT=yes”告诉我们，系统将在启动时开启该接口。</code></pre>
+<p>编辑/etc/sysconfig/network-scipts/网卡名称：</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/3.jpg" class>
+
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/4.jpg" class>
+
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/5.jpg" class>
+
+<p>重启网络服务命令： systemctl restart network；</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/6.jpg" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>linux虚拟机外网网络访问设置指南</tag>
       </tags>
   </entry>
   <entry>
@@ -2137,6 +2085,58 @@ deploy:
       </categories>
       <tags>
         <tag>博客</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：使用win10主机ping通虚拟机</title>
+    <url>/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
+    <content><![CDATA[<p>在win10系统中安装了vm12版本，Linux我选用的是redhat 7版本；成功安装redhat 7后，将linux虚拟机的IP地址固定：</p>
+<a id="more"></a>
+
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/1.png" class>
+
+<p>linux虚拟机的外部连接方式为NAT模式，在linux虚拟机中能够ping通自己的IP，但无法ping通win10系统的IP，win10系统也无法ping通linux虚拟机IP。</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/2.png" class>
+
+<p>解决方法如下：</p>
+<p>1.首先确认了本机的网络有无VMware Network Adapter VMnet8这两个网络：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/3.png" class>
+
+<p>有以上两个网络的话，跳过此步骤；没有的话，则将VM虚拟机卸载，之后清理完之后再重新安装VM虚拟机软件。</p>
+<p>2.安装好虚拟机后，打开终端，输入：vim /etc/sysconfig/network-scripts/ifcfg-eno16777728（网卡名称），编辑下网卡文件，将BOOTPROTO的值修改为static，并添加参数：IPADDR，GATEWAR，NETMASK，NM_CONTROLLED。IPADDR，GATEWAR这两个设置注意网段要与VMware Network Adapter VMnet8 的一致：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/4.png" class>
+
+<p>3.设置好之后，保存退出；之后重启系统，用linux虚拟机ping下win10系统IP地址，测试是否能够ping通，如果可以，那就ok了。</p>
+<p>linux虚拟机ping win10系统：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/5.png" class>
+
+<p>win10系统ping linux虚拟机：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/6.png" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>使用win10主机ping通虚拟机</tag>
       </tags>
   </entry>
   <entry>
