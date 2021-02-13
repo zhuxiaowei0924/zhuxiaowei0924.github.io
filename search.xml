@@ -1,6 +1,323 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>linux就该这么学-12:使用Samba或NFS实现文件共享</title>
+    <url>/2021/02/11/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-12-%E4%BD%BF%E7%94%A8Samba%E6%88%96NFS%E5%AE%9E%E7%8E%B0%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB/</url>
+    <content><![CDATA[<h1 id="1-SAMBA文件共享服务"><a href="#1-SAMBA文件共享服务" class="headerlink" title="1.SAMBA文件共享服务"></a>1.SAMBA文件共享服务</h1><p>Samba服务程序现在已经成为在Linux系统与Windows系统之间共享文件的最佳选择。</p>
+<p>首先需要先通过Yum软件仓库来安装Samba服务程序：</p>
+<!--more--t> 
+
+    [root@linuxprobe ~ ]# yum install samba
+
+ Samba服务程序中的参数以及作用:
+
+    [global]                                    #全局参数。
+
+        workgroup = MYGROUP                        #工作组名称
+
+        server string = Samba Server Version %v    #服务器介绍信息，参数%v为显示SMB版本号
+
+        log file = /var/log/samba/log.%m        #定义日志文件的存放位置与名称，参数%m为来访的主机名
+
+        max log size = 50                        #定义日志文件的最大容量为50KB
+
+        security = user                            #安全验证的方式，总共有4种
+
+        #share：来访主机无需验证口令；比较方便，但安全性很差
+
+        #user：需验证来访主机提供的口令后才可以访问；提升了安全性
+
+        #server：使用独立的远程主机验证来访主机提供的口令（集中管理账户）
+
+        #domain：使用域控制器进行身份验证
+
+        passdb backend = tdbsam                    #定义用户后台的类型，共有3种
+
+        #smbpasswd：使用smbpasswd命令为系统用户设置Samba服务程序的密码
+
+        #tdbsam：创建数据库文件并使用pdbedit命令建立Samba服务程序的用户
+
+        #ldapsam：基于LDAP服务进行账户验证
+
+        load printers = yes                        #设置在Samba服务启动时是否共享打印机设备
+
+        cups options = raw                        #打印机的选项
+
+    [homes]                                        #共享参数
+
+        comment = Home Directories                #描述信息
+
+        browseable = no                            #指定共享信息是否在“网上邻居”中可见
+
+        writable = yes                            #定义是否可以执行写入操作，与“read only”相反
+
+    [printers]                                    #打印机共享参数
+
+        comment = All Printers    
+
+        path = /var/spool/samba                    #共享文件的实际路径(重要)。
+
+        browseable = no    
+        guest ok = no                            #是否所有人可见，等同于"public"参数。
+
+        writable = no    
+
+        printable = yes    
+
+    [root@linuxprobe ~]# cat /etc/samba/smb.conf
+
+## 1.1配置共享资源
+
+用于设置Samba服务程序的参数以及作用：
+
+
+| 参数 | 作用 |
+| --- | --- |
+| [database] | 共享名称为database |
+| comment = Do not arbitrarily modify the database file | 警告用户不要随意修改数据库 |
+| path = /home/database | 共享目录为/home/database |
+| public = no | 关闭“所有人可见” |
+| writable = yes | 允许写入操作 |
+
+第1步：创建用于访问共享资源的账户信息。在RHEL 7系统中，Samba服务程序默认使用的是用户口令认证模式（user）。这种认证模式可以确保仅让有密码且受信任的用户访问共享资源，而且验证过程也十分简单。不过，只有建立账户信息数据库之后，才能使用用户口令认证模式。另外，Samba服务程序的数据库要求账户必须在当前系统中已经存在，否则日后创建文件时将导致文件的权限属性混乱不堪，由此引发错误。
+
+pdbedit命令用于管理SMB服务程序的账户信息数据库，格式为“pdbedit [选项] 账户”。在第一次把账户信息写入到数据库时需要使用-a参数，以后在执行修改密码、删除账户等操作时就不再需要该参数了。
+
+
+| 参数 | 作用 |
+| --- | --- |
+| -a 用户名 | 建立Samba用户 |
+| -x 用户名 | 删除Samba用户 |
+| -L | 列出用户列表 |
+| -Lv | 列出用户详细信息的列表 |
+
+    [root@linuxprobe ~]# id linuxprobe
+    uid=1000(linuxprobe) gid=1000(linuxprobe) groups=1000(linuxprobe)
+    [root@linuxprobe ~]# pdbedit -a -u linuxprobe
+    new password:此处输入该账户在Samba服务数据库中的密码
+    retype new password:再次输入密码进行确认
+    Unix username: linuxprobe
+    NT username: 
+    Account Flags: [U ]
+    ……
+    Logon hours : FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+
+第2步：创建用于共享资源的文件目录。
+
+    [root@linuxprobe ~]# mkdir /home/database
+    [root@linuxprobe ~]# chown -Rf linuxprobe:linuxprobe /home/database
+    [root@linuxprobe ~]# semanage fcontext -a -t samba_share_t /home/database
+    [root@linuxprobe ~]# restorecon -Rv /home/database
+    restorecon reset /home/database context unconfined_u:object_r:home_root_t:s0->unconfined_u:object_r:samba_share_t:s0
+
+第3步：设置SELinux服务与策略，使其允许通过Samba服务程序访问普通用户家目录。
+
+    [root@linuxprobe ~]# getsebool -a | grep samba
+    samba_create_home_dirs --> off
+<pre><code>samba_domain_controller --&gt; off
+samba_enable_home_dirs --&gt; off
+……
+[root@linuxprobe ~]# setsebool -P samba_enable_home_dirs on</code></pre>
+<p>第4步：在Samba服务程序的主配置文件中，写入共享信息。在原始的配置文件中，[homes]参数为来访用户的家目录共享信息，[printers]参数为共享的打印机设备可以手动删除，这没有任何问题。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/samba/smb.conf 
+[global]
+ workgroup = MYGROUP
+ server string = Samba Server Version %v
+ log file = /var/log/samba/log.%m
+ max log size = 50
+ security = user
+ passdb backend = tdbsam
+ load printers = yes
+ cups options = raw
+[database]
+ comment = Do not arbitrarily modify the database file
+ path = /home/database
+ public = no
+ writable = yes</code></pre>
+<p>第5步：Samba服务程序的配置工作基本完毕。接下来重启smb服务（Samba服务程序在Linux系统中的名字为smb）并清空iptables防火墙。</p>
+<pre><code>[root@linuxprobe ~]# systemctl restart smb
+[root@linuxprobe ~]# systemctl enable smb
+ ln -s &#39;/usr/lib/systemd/system/smb.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/smb.service&#39;
+[root@linuxprobe ~]# iptables -F
+[root@linuxprobe ~]# service iptables save
+iptables: Saving firewall rules to /etc/sysconfig/iptables:[ OK ]</code></pre>
+<h2 id="1-2windows挂载共享"><a href="#1-2windows挂载共享" class="headerlink" title="1.2windows挂载共享"></a>1.2windows挂载共享</h2><p>Samba服务器和Windows客户端使用的操作系统以及IP地址（举例）：</p>
+<p>| 主机名称 | 操作系统 | IP地址 |<br>| — | — |<br>| Samba共享服务器 |     RHEL 7 | 192.168.10.10 |<br>| Linux客户端 | RHEL 7 | 192.168.10.20 |<br>| Windows客户端 | Windows 7 | 192.168.10.30 |</p>
+<p>要在Windows系统中访问共享资源，只需在Windows的“运行”命令框中输入两个反斜杠，然后再加服务器的IP地址即可：</p>
+<img src="/2021/02/11/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-12-%E4%BD%BF%E7%94%A8Samba%E6%88%96NFS%E5%AE%9E%E7%8E%B0%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB/1.png" class>
+
+<p>在RHEL 7系统中，Samba服务程序使用的果然是独立的账户信息数据库。所以，即便在Linux系统中有一个linuxprobe账户，Samba服务程序使用的账户信息数据库中也有一个同名的linuxprobe账户，大家也一定要弄清楚它们各自所对应的密码。</p>
+<img src="/2021/02/11/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-12-%E4%BD%BF%E7%94%A8Samba%E6%88%96NFS%E5%AE%9E%E7%8E%B0%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB/2.jpg" class>
+
+<p>正确输入linuxprobe账户名以及使用pdbedit命令设置的密码后，就可以登录到共享界面中了!</p>
+<p>由于Windows系统的缓存原因，有可能您在第二次登录时提供了正确的账户和密码，依然会报错，这时只需要重新启动一下Windows客户端就没问题了!</p>
+<h2 id="1-3linux挂载共享"><a href="#1-3linux挂载共享" class="headerlink" title="1.3linux挂载共享"></a>1.3linux挂载共享</h2><p> Samba共享服务器和Linux客户端各自使用的操作系统以及IP地址：</p>
+<p>| 主机名称 | 操作系统 | IP地址 |<br>| — | — |<br>| Samba共享服务器 |     RHEL 7 | 192.168.10.10 |<br>| Linux客户端 | RHEL 7 | 192.168.10.20 |<br>| Windows客户端 | Windows 7 | 192.168.10.30 |</p>
+<pre><code>[root@linuxprobe ~]# yum install cifs-utils
+Loaded plugins: langpacks, product-id, subscription-manager
+rhel | 4.1 kB 00:00 
+Resolving Dependencies
+--&gt; Running transaction check
+---&gt; Package cifs-utils.x86_64 0:6.2-6.el7 will be installed
+--&gt; Finished Dependency Resolution
+Dependencies Resolved
+……
+Installed:
+ cifs-utils.x86_64 0:6.2-6.el7 
+Complete!</code></pre>
+<p>在Linux客户端，按照Samba服务的用户名、密码、共享域的顺序将相关信息写入到一个认证文件中。为了保证不被其他人随意看到，最后把这个认证文件的权限修改为仅root管理员才能够读写：</p>
+<pre><code>[root@linuxprobe ~]# vim auth.smb
+username=linuxprobe
+password=redhat
+domain=MYGROUP
+[root@linuxprobe ~]# chmod -Rf 600 auth.smb</code></pre>
+<p>现在，在Linux客户端上创建一个用于挂载Samba服务共享资源的目录，并把挂载信息写入到/etc/fstab文件中，以确保共享挂载信息在服务器重启后依然生效：</p>
+<pre><code>[root@linuxprobe ~]# mkdir /database
+[root@linuxprobe ~]# vim /etc/fstab
+/dev/mapper/rhel-swap swap swap defaults 0 0
+/dev/cdrom /media/cdrom iso9660 defaults 0 0 
+//192.168.10.10/database /database cifs credentials=/root/auth.smb 0 0
+[root@linuxprobe ~]# mount -a</code></pre>
+<p>Linux客户端成功地挂载了Samba服务的共享资源。进入到挂载目录/database后就可以看到Windows系统访问Samba服务程序时留下来的文件了（即文件Memo.txt）。当然，我们也可以对该文件进行读写操作并保存。</p>
+<pre><code>[root@linuxprobe ~]# cat /database/Memo.txt</code></pre>
+<h1 id="2-NFS网络文件系统"><a href="#2-NFS网络文件系统" class="headerlink" title="2.NFS网络文件系统"></a>2.NFS网络文件系统</h1><p>NFS服务：用于两台linux主机进行共享文件；</p>
+<pre><code>[root@linuxprobe ~]# yum install nfs-utils</code></pre>
+<p>| 主机名称 | 操作系统 | IP地址 |<br>| — | — |<br>| Linux服务端 |     RHEL 7 | 192.168.10.10 |<br>| Linux客户端 | RHEL 7 | 192.168.10.20 |</p>
+<pre><code>[root@linuxprobe ~]# iptables -F
+[root@linuxprobe ~]# service iptables save
+iptables: Saving firewall rules to /etc/sysconfig/iptables:[ OK ]</code></pre>
+<p>第2步：在NFS服务器上建立用于NFS文件共享的目录，并设置足够的权限确保其他人也有写入权限。</p>
+<pre><code>[root@linuxprobe ~]# mkdir /nfsfile
+[root@linuxprobe ~]# chmod -Rf 777 /nfsfile
+[root@linuxprobe ~]# echo &quot;welcome to linuxprobe.com&quot; &gt; /nfsfile/readme</code></pre>
+<p>第3步：NFS服务程序的配置文件为/etc/exports，默认情况下里面没有任何内容。我们可以按照“共享目录的路径 允许访问的NFS客户端（共享权限参数）”的格式，定义要共享的目录与相应的权限。</p>
+<p>用于配置NFS服务程序配置文件的参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ro</td>
+<td>只读</td>
+</tr>
+<tr>
+<td>rw</td>
+<td>读写</td>
+</tr>
+<tr>
+<td>root_squash</td>
+<td>当NFS客户端以root管理员访问时，映射为NFS服务器的匿名用户</td>
+</tr>
+<tr>
+<td>no_root_squash</td>
+<td>当NFS客户端以root管理员访问时，映射为NFS服务器的root管理员</td>
+</tr>
+<tr>
+<td>all_squash</td>
+<td>无论NFS客户端使用什么账户访问，均映射为NFS服务器的匿名用户</td>
+</tr>
+<tr>
+<td>sync</td>
+<td>同时将数据写入到内存与硬盘中，保证不丢失数据</td>
+</tr>
+<tr>
+<td>async</td>
+<td>优先将数据保存到内存，然后再写入硬盘；这样效率更高，但可能会丢失数据</td>
+</tr>
+</tbody></table>
+<p>请注意，NFS客户端地址与权限之间没有空格。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/exports
+/nfsfile 192.168.10.*(rw,sync,root_squash)</code></pre>
+<p>第4步：启动和启用NFS服务程序。由于在使用NFS服务进行文件共享之前，需要使用RPC（Remote Procedure Call，远程过程调用）服务将NFS服务器的IP地址和端口号等信息发送给客户端。因此，在启动NFS服务之前，还需要顺带重启并启用rpcbind服务程序，并将这两个服务一并加入开机启动项中。</p>
+<pre><code>[root@linuxprobe ~]# systemctl restart rpcbind
+[root@linuxprobe ~]# systemctl enable rpcbind
+[root@linuxprobe ~]# systemctl start nfs-server
+[root@linuxprobe ~]# systemctl enable nfs-server</code></pre>
+<p>NFS客户端的配置步骤也十分简单。先使用showmount命令（以及必要的参数，见表12-8）查询NFS服务器的远程共享信息，其输出格式为“共享的目录名称 允许使用客户端地址”。</p>
+<p>showmount命令中可用的参数以及作用：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-e</td>
+<td>显示NFS服务器的共享列表</td>
+</tr>
+<tr>
+<td>-a</td>
+<td>显示本机挂载的文件资源的情况NFS资源的情况</td>
+</tr>
+<tr>
+<td>-v</td>
+<td>显示版本号</td>
+</tr>
+</tbody></table>
+<pre><code>[root@linuxprobe ~]# showmount -e 192.168.10.10
+Export list for 192.168.10.10:
+/nfsfile 192.168.10.*</code></pre>
+<p>然后在NFS客户端创建一个挂载目录。使用mount命令并结合-t参数，指定要挂载的文件系统的类型，并在命令后面写上服务器的IP地址、服务器上的共享目录以及要挂载到本地系统（即客户端）的目录。</p>
+<pre><code>[root@linuxprobe ~]# mkdir /nfsfile
+[root@linuxprobe ~]# mount -t nfs 192.168.10.10:/nfsfile /nfsfile</code></pre>
+<p>如果希望NFS文件共享服务能一直有效，则需要将其写入到fstab文件中：</p>
+<pre><code>[root@linuxprobe ~]# cat /nfsfile/readme
+    welcome to linuxprobe.com
+[root@linuxprobe ~]# vim /etc/fstab
+    ……
+    /dev/cdrom /media/cdrom iso9660 defaults 0 0 
+    192.168.10.10:/nfsfile /nfsfile nfs defaults 0 0</code></pre>
+<h1 id="3-AutoFs自动挂载服务"><a href="#3-AutoFs自动挂载服务" class="headerlink" title="3.AutoFs自动挂载服务"></a>3.AutoFs自动挂载服务</h1><pre><code>[root@linuxprobe ~]# yum install autofs</code></pre>
+<p>在autofs服务程序的主配置文件中需要按照“挂载目录 <strong>子配置文件</strong>”的格式进行填写。挂载目录是设备挂载位置的上一级目录。例如，光盘设备一般挂载到/media/cdrom目录中，那么挂载目录写成/media即可。对应的<strong>子配置文件</strong>则是对这个挂载目录内的挂载设备信息作进一步的说明。<strong>子配置文件</strong>需要用户自行定义，文件名字没有严格要求，但后缀建议以.misc结束。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/auto.master
+#
+# Sample auto.master file
+# This is an automounter map and it has the following format
+# key [ -mount-options-separated-by-comma ] location
+# For details of the format look at autofs(5).
+#
+/media /etc/iso.misc
+/misc /etc/auto.misc
+#
+# NOTE: mounts done from a hosts map will be mounted with the
+# &quot;nosuid&quot; and &quot;nodev&quot; options unless the &quot;suid&quot; and &quot;dev&quot;
+# options are explicitly given.
+……
+    +auto.master</code></pre>
+<p>在子配置文件中，应按照“挂载目录 挂载文件类型及权限 :设备名称”的格式进行填写，挂载目录写为iso，而-fstype为文件系统格式参数，iso9660为光盘设备格式，ro、nosuid及nodev为光盘设备具体的权限参数，/dev/cdrom则是定义要挂载的设备名称:</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/iso.misc
+iso   -fstype=iso9660,ro,nosuid,nodev :/dev/cdrom
+[root@linuxprobe ~]# systemctl start autofs 
+[root@linuxprobe ~]# systemctl enable autofs 
+
+[root@linuxprobe ~]# df -h
+Filesystem Size Used Avail Use% Mounted on
+/dev/mapper/rhel-root 18G 3.0G 15G 17% /
+tmpfs 914M 0 914M 0% /sys/fs/cgroup
+/dev/sda1 497M 119M 379M 24% /boot
+[root@linuxprobe ~]# cd /media
+[root@linuxprobe media]# ls
+[root@linuxprobe media]# cd iso
+[root@linuxprobe iso]# ls -l
+total 812
+dr-xr-xr-x. 4 root root 2048 May 7 2017 addons
+dr-xr-xr-x. 3 root root 2048 May 7 2017 EFI
+[root@linuxprobe ~]# df -h
+Filesystem Size Used Avail Use% Mounted on
+/dev/cdrom 3.5G 3.5G 0 100% /media/iso</code></pre>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第12章节：使用Samba或NFS实现文件共享</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux就该这么学：iptables与firewalld防火墙</title>
     <url>/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/</url>
     <content><![CDATA[<h1 id="1-Iptables"><a href="#1-Iptables" class="headerlink" title="1.Iptables"></a>1.Iptables</h1><h2 id="（1）策略与规则链"><a href="#（1）策略与规则链" class="headerlink" title="（1）策略与规则链"></a>（1）策略与规则链</h2><p>iptables服务把用于处理或过滤流量的策略条目称之为规则，多条规则可以组成一个规则链，而规则链则依据数据包处理位置的不同进行分类，具体如下：</p>
@@ -1021,6 +1338,88 @@ Red Hat Enterprise Linux Server release 7.0 (Maipo)</code></pre>
       </categories>
       <tags>
         <tag>第6章节：存储结构与磁盘划分</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：安装samba服务时packagekit报错解决方法</title>
+    <url>/2021/02/12/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AE%89%E8%A3%85samba%E6%9C%8D%E5%8A%A1%E6%97%B6packagekit%E6%8A%A5%E9%94%99%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/</url>
+    <content><![CDATA[<p>在linux虚拟机Redhat7.0版本系统终端中输入命令：yum install samba，安装samba服务时，在安装过程中，出现以下报错信息：</p>
+<pre><code>Error: initscripts conflicts with redhat-release-server-7.0-1.el7.x86_64
+ You could try using --skip-broken to work around the problem
+Found 2 pre-existing rpmdb problem(s), &#39;yum check&#39; output follows:
+PackageKit-0.8.9-11.el7.x86_64 has missing requires of PackageKit-backend
+rhn-check-2.0.2-5.el7.noarch has missing requires of yum-rhn-plugin &gt;= (&#39;0&#39;, &#39;1.6.4&#39;, &#39;1&#39;)</code></pre>
+<p>有2个problem，1个error；先解决problem：</p>
+<pre><code>（1）在http://rpm.pbone.net/网站中下载PackageKit-yum-0.8.9-11.el7.x86_64.rpm,然后将rpm文件拖入linux系统中，输入命令：rpm -Uvh PackageKit-yum-0.8.9-11.el7.x86_64.rpm，解决第1个problem。
+（2）在终端中输入命令：yum install yum-rhn-plugin，，解决第2个problem。</code></pre>
+<p>再解决initscripts conflicts的error：</p>
+<pre><code>首先，先查一下本机的initscripts的版本，有没有更适合自己系统的，输入以下命令：yum list initscripts，
+
+显示以下信息：
+
+Loading mirror speeds from cached hostfile
+Installed Packages
+initscripts.x86_64                9.49.17-1.el7                @anaconda/7.0
+Available Packages
+initscripts.x86_64                9.49.53-1.el7_9.1                updates  
+
+说明当前版本是initscripts.x86_64  9.49.17-1.el7   @anaconda/7.0  
+
+可以用更适合系统的initscripts.x86_64   9.49.53-1.el7_9.1版本来替换。
+
+再输入命令：yum list centos-release，看看合适的centos-release版本：
+
+Loading mirror speeds from cached hostfile
+Available Packages
+centos-release.x86_64               7-9.2009.1.el7.centos                updates
+
+使用以上命令可以知道，最合适的版本是centos-release.x86_64  7-9.2009.1.el7.centos
+
+从http://rpm.pbone.net/网站中分别下载initscripts-9.49.53-1.el7.x86_64.rpm和centos-release-7-9.2009.1.el7.centos.x86_64.rpm，然后输入命令：rpm -e redhat-release-server-7.0-1.el7.x86_64 --nodeps，将有冲突的版本删掉，删除redhat-release以后，不重启机器，马上安装centos-release.x86_64：
+
+[root@linuxprobe Desktop]# rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:centos-release-7-9.2009.1.el7.cenwarning: /etc/yum.repos.d/CentOS-Base.repo created as /etc/yum.repos.d/CentOS-Base.repo.rpmnew
+################################# [100%]
+error: unpacking of archive failed on file /usr/share/doc/redhat-release: cpio: rename failed - Is a directory
+error: centos-release-7-9.2009.1.el7.centos.x86_64: install failed</code></pre>
+<p>安装时出错！提示“/usr/share/doc/redhat-release 失败：cpio: rename 失败 - 是一个目录”</p>
+<p>推测：安装centos-release时，这个redhat-release目录碍事了，所以我们手动把它删除掉（注意备份）。</p>
+<pre><code>[root@linuxprobe doc]# rm -r /usr/share/doc/redhat-release 
+rm：是否删除目录 &quot;/usr/share/doc/redhat-release&quot;？y
+
+如果还是报错，则再在/usr/share目录中删除redhat-release：
+
+[root@linuxprobe share]# rm -r /usr/share/redhat-release 
+rm：是否删除目录 &quot;/usr/share/redhat-release&quot;？y
+
+然后再终端中输入命令：rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm：
+
+[root@linuxprobe Desktop]# rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm
+Preparing...                          ################################# [100%]
+Updating / installing...
+  1:centos-release-7-9.2009.1.el7.cenwarning: /etc/yum.repos.d/CentOS-Base.repo created as /etc/yum.repos.d/CentOS-Base.repo.rpmnew
+################################# [100%]</code></pre>
+<p>到这一步，基本安装samba服务过程中的problem和error都已经解决，但此时如果输入yum install samba命令安装samba服务时，</p>
+<p>可能会引起SELinux的报警，因此需要将SELinux关闭；在/etc/selinux/config配置文件中查看SELinux的默认状态。如果是</p>
+<p>enforcing，建议赶紧修改为permissive或disabled；SELinux服务的主配置文件中，定义的是SELinux的默认运行状态，可以将其</p>
+<p>理解为系统重启后的状态，因此它不会在更改后立即生效。可以使用getenforce命令获得当前SELinux服务的运行模式：</p>
+<pre><code>[root@linuxprobe ~]# getenforce 
+Enforcing</code></pre>
+<p>再用setenforce [0|1]命令修改SELinux当前的运行模式（0为禁用，1为启用）。注意，这种修改只是临时的，在系统重启后就会失效：</p>
+<pre><code>[root@linuxprobe ~]# setenforce 0
+[root@linuxprobe ~]# getenforce
+Permissive</code></pre>
+<p>之后在终端中输入：yum install samba，安装samba服务，成功！</p>
+<p>具体方法可参考以下链接：</p>
+<p><a href="http://www.likecs.com/default/index/show?id=20904">http://www.likecs.com/default/index/show?id=20904</a><br><a href="https://blog.csdn.net/zz24_com/article/details/105127746">https://blog.csdn.net/zz24_com/article/details/105127746</a></p>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>安装samba服务时packagekit报错解决方法</tag>
       </tags>
   </entry>
   <entry>
