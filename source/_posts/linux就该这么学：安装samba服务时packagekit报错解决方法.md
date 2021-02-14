@@ -10,6 +10,8 @@ categories:
 
 在linux虚拟机Redhat7.0版本系统终端中输入命令：yum install samba，安装samba服务时，在安装过程中，出现以下报错信息：
 
+<!--more-->
+
 	Error: initscripts conflicts with redhat-release-server-7.0-1.el7.x86_64
 	 You could try using --skip-broken to work around the problem
 	Found 2 pre-existing rpmdb problem(s), 'yum check' output follows:
@@ -19,7 +21,7 @@ categories:
 有2个problem，1个error；先解决problem：
 
 	（1）在http://rpm.pbone.net/网站中下载PackageKit-yum-0.8.9-11.el7.x86_64.rpm,然后将rpm文件拖入linux系统中，输入命令：rpm -Uvh PackageKit-yum-0.8.9-11.el7.x86_64.rpm，解决第1个problem。
-	（2）在终端中输入命令：yum install yum-rhn-plugin，，解决第2个problem。
+	（2）在终端中输入命令：yum install yum-rhn-plugin，解决第2个problem。
 
 再解决initscripts conflicts的error：
 

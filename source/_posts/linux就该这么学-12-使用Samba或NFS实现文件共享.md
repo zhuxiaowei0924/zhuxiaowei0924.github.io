@@ -14,7 +14,7 @@ Samba服务程序现在已经成为在Linux系统与Windows系统之间共享文
 
 首先需要先通过Yum软件仓库来安装Samba服务程序：
 
-<!--more--t> 
+<!--more--> 
 
 	[root@linuxprobe ~ ]# yum install samba
 
