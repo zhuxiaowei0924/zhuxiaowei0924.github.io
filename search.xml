@@ -5,116 +5,139 @@
     <url>/2021/02/11/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-12-%E4%BD%BF%E7%94%A8Samba%E6%88%96NFS%E5%AE%9E%E7%8E%B0%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB/</url>
     <content><![CDATA[<h1 id="1-SAMBA文件共享服务"><a href="#1-SAMBA文件共享服务" class="headerlink" title="1.SAMBA文件共享服务"></a>1.SAMBA文件共享服务</h1><p>Samba服务程序现在已经成为在Linux系统与Windows系统之间共享文件的最佳选择。</p>
 <p>首先需要先通过Yum软件仓库来安装Samba服务程序：</p>
-<!--more--t> 
+<a id="more"></a> 
 
-    [root@linuxprobe ~ ]# yum install samba
+<pre><code>[root@linuxprobe ~ ]# yum install samba</code></pre>
+<p> Samba服务程序中的参数以及作用:</p>
+<pre><code>[global]                                    #全局参数。
 
- Samba服务程序中的参数以及作用:
+    workgroup = MYGROUP                        #工作组名称
 
-    [global]                                    #全局参数。
+    server string = Samba Server Version %v    #服务器介绍信息，参数%v为显示SMB版本号
 
-        workgroup = MYGROUP                        #工作组名称
+    log file = /var/log/samba/log.%m        #定义日志文件的存放位置与名称，参数%m为来访的主机名
 
-        server string = Samba Server Version %v    #服务器介绍信息，参数%v为显示SMB版本号
+    max log size = 50                        #定义日志文件的最大容量为50KB
 
-        log file = /var/log/samba/log.%m        #定义日志文件的存放位置与名称，参数%m为来访的主机名
+    security = user                            #安全验证的方式，总共有4种
 
-        max log size = 50                        #定义日志文件的最大容量为50KB
+    #share：来访主机无需验证口令；比较方便，但安全性很差
 
-        security = user                            #安全验证的方式，总共有4种
+    #user：需验证来访主机提供的口令后才可以访问；提升了安全性
 
-        #share：来访主机无需验证口令；比较方便，但安全性很差
+    #server：使用独立的远程主机验证来访主机提供的口令（集中管理账户）
 
-        #user：需验证来访主机提供的口令后才可以访问；提升了安全性
+    #domain：使用域控制器进行身份验证
 
-        #server：使用独立的远程主机验证来访主机提供的口令（集中管理账户）
+    passdb backend = tdbsam                    #定义用户后台的类型，共有3种
 
-        #domain：使用域控制器进行身份验证
+    #smbpasswd：使用smbpasswd命令为系统用户设置Samba服务程序的密码
 
-        passdb backend = tdbsam                    #定义用户后台的类型，共有3种
+    #tdbsam：创建数据库文件并使用pdbedit命令建立Samba服务程序的用户
 
-        #smbpasswd：使用smbpasswd命令为系统用户设置Samba服务程序的密码
+    #ldapsam：基于LDAP服务进行账户验证
 
-        #tdbsam：创建数据库文件并使用pdbedit命令建立Samba服务程序的用户
+    load printers = yes                        #设置在Samba服务启动时是否共享打印机设备
 
-        #ldapsam：基于LDAP服务进行账户验证
+    cups options = raw                        #打印机的选项
 
-        load printers = yes                        #设置在Samba服务启动时是否共享打印机设备
+[homes]                                        #共享参数
 
-        cups options = raw                        #打印机的选项
+    comment = Home Directories                #描述信息
 
-    [homes]                                        #共享参数
+    browseable = no                            #指定共享信息是否在“网上邻居”中可见
 
-        comment = Home Directories                #描述信息
+    writable = yes                            #定义是否可以执行写入操作，与“read only”相反
 
-        browseable = no                            #指定共享信息是否在“网上邻居”中可见
+[printers]                                    #打印机共享参数
 
-        writable = yes                            #定义是否可以执行写入操作，与“read only”相反
+    comment = All Printers    
 
-    [printers]                                    #打印机共享参数
+    path = /var/spool/samba                    #共享文件的实际路径(重要)。
 
-        comment = All Printers    
+    browseable = no    
+    guest ok = no                            #是否所有人可见，等同于&quot;public&quot;参数。
 
-        path = /var/spool/samba                    #共享文件的实际路径(重要)。
+    writable = no    
 
-        browseable = no    
-        guest ok = no                            #是否所有人可见，等同于"public"参数。
+    printable = yes    
 
-        writable = no    
-
-        printable = yes    
-
-    [root@linuxprobe ~]# cat /etc/samba/smb.conf
-
-## 1.1配置共享资源
-
-用于设置Samba服务程序的参数以及作用：
-
-
-| 参数 | 作用 |
-| --- | --- |
-| [database] | 共享名称为database |
-| comment = Do not arbitrarily modify the database file | 警告用户不要随意修改数据库 |
-| path = /home/database | 共享目录为/home/database |
-| public = no | 关闭“所有人可见” |
-| writable = yes | 允许写入操作 |
-
-第1步：创建用于访问共享资源的账户信息。在RHEL 7系统中，Samba服务程序默认使用的是用户口令认证模式（user）。这种认证模式可以确保仅让有密码且受信任的用户访问共享资源，而且验证过程也十分简单。不过，只有建立账户信息数据库之后，才能使用用户口令认证模式。另外，Samba服务程序的数据库要求账户必须在当前系统中已经存在，否则日后创建文件时将导致文件的权限属性混乱不堪，由此引发错误。
-
-pdbedit命令用于管理SMB服务程序的账户信息数据库，格式为“pdbedit [选项] 账户”。在第一次把账户信息写入到数据库时需要使用-a参数，以后在执行修改密码、删除账户等操作时就不再需要该参数了。
-
-
-| 参数 | 作用 |
-| --- | --- |
-| -a 用户名 | 建立Samba用户 |
-| -x 用户名 | 删除Samba用户 |
-| -L | 列出用户列表 |
-| -Lv | 列出用户详细信息的列表 |
-
-    [root@linuxprobe ~]# id linuxprobe
-    uid=1000(linuxprobe) gid=1000(linuxprobe) groups=1000(linuxprobe)
-    [root@linuxprobe ~]# pdbedit -a -u linuxprobe
-    new password:此处输入该账户在Samba服务数据库中的密码
-    retype new password:再次输入密码进行确认
-    Unix username: linuxprobe
-    NT username: 
-    Account Flags: [U ]
-    ……
-    Logon hours : FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-
-第2步：创建用于共享资源的文件目录。
-
-    [root@linuxprobe ~]# mkdir /home/database
-    [root@linuxprobe ~]# chown -Rf linuxprobe:linuxprobe /home/database
-    [root@linuxprobe ~]# semanage fcontext -a -t samba_share_t /home/database
-    [root@linuxprobe ~]# restorecon -Rv /home/database
-    restorecon reset /home/database context unconfined_u:object_r:home_root_t:s0->unconfined_u:object_r:samba_share_t:s0
-
-第3步：设置SELinux服务与策略，使其允许通过Samba服务程序访问普通用户家目录。
-
-    [root@linuxprobe ~]# getsebool -a | grep samba
-    samba_create_home_dirs --> off
-<pre><code>samba_domain_controller --&gt; off
+[root@linuxprobe ~]# cat /etc/samba/smb.conf</code></pre>
+<h2 id="1-1配置共享资源"><a href="#1-1配置共享资源" class="headerlink" title="1.1配置共享资源"></a>1.1配置共享资源</h2><p>用于设置Samba服务程序的参数以及作用：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>[database]</td>
+<td>共享名称为database</td>
+</tr>
+<tr>
+<td>comment = Do not arbitrarily modify the database file</td>
+<td>警告用户不要随意修改数据库</td>
+</tr>
+<tr>
+<td>path = /home/database</td>
+<td>共享目录为/home/database</td>
+</tr>
+<tr>
+<td>public = no</td>
+<td>关闭“所有人可见”</td>
+</tr>
+<tr>
+<td>writable = yes</td>
+<td>允许写入操作</td>
+</tr>
+</tbody></table>
+<p>第1步：创建用于访问共享资源的账户信息。在RHEL 7系统中，Samba服务程序默认使用的是用户口令认证模式（user）。这种认证模式可以确保仅让有密码且受信任的用户访问共享资源，而且验证过程也十分简单。不过，只有建立账户信息数据库之后，才能使用用户口令认证模式。另外，Samba服务程序的数据库要求账户必须在当前系统中已经存在，否则日后创建文件时将导致文件的权限属性混乱不堪，由此引发错误。</p>
+<p>pdbedit命令用于管理SMB服务程序的账户信息数据库，格式为“pdbedit [选项] 账户”。在第一次把账户信息写入到数据库时需要使用-a参数，以后在执行修改密码、删除账户等操作时就不再需要该参数了。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a 用户名</td>
+<td>建立Samba用户</td>
+</tr>
+<tr>
+<td>-x 用户名</td>
+<td>删除Samba用户</td>
+</tr>
+<tr>
+<td>-L</td>
+<td>列出用户列表</td>
+</tr>
+<tr>
+<td>-Lv</td>
+<td>列出用户详细信息的列表</td>
+</tr>
+</tbody></table>
+<pre><code>[root@linuxprobe ~]# id linuxprobe
+uid=1000(linuxprobe) gid=1000(linuxprobe) groups=1000(linuxprobe)
+[root@linuxprobe ~]# pdbedit -a -u linuxprobe
+new password:此处输入该账户在Samba服务数据库中的密码
+retype new password:再次输入密码进行确认
+Unix username: linuxprobe
+NT username: 
+Account Flags: [U ]
+……
+Logon hours : FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF</code></pre>
+<p>第2步：创建用于共享资源的文件目录。</p>
+<pre><code>[root@linuxprobe ~]# mkdir /home/database
+[root@linuxprobe ~]# chown -Rf linuxprobe:linuxprobe /home/database
+[root@linuxprobe ~]# semanage fcontext -a -t samba_share_t /home/database
+[root@linuxprobe ~]# restorecon -Rv /home/database
+restorecon reset /home/database context unconfined_u:object_r:home_root_t:s0-&gt;unconfined_u:object_r:samba_share_t:s0</code></pre>
+<p>第3步：设置SELinux服务与策略，使其允许通过Samba服务程序访问普通用户家目录。</p>
+<pre><code>[root@linuxprobe ~]# getsebool -a | grep samba
+samba_create_home_dirs --&gt; off
+samba_domain_controller --&gt; off
 samba_enable_home_dirs --&gt; off
 ……
 [root@linuxprobe ~]# setsebool -P samba_enable_home_dirs on</code></pre>
@@ -1344,6 +1367,8 @@ Red Hat Enterprise Linux Server release 7.0 (Maipo)</code></pre>
     <title>linux就该这么学：安装samba服务时packagekit报错解决方法</title>
     <url>/2021/02/12/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AE%89%E8%A3%85samba%E6%9C%8D%E5%8A%A1%E6%97%B6packagekit%E6%8A%A5%E9%94%99%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/</url>
     <content><![CDATA[<p>在linux虚拟机Redhat7.0版本系统终端中输入命令：yum install samba，安装samba服务时，在安装过程中，出现以下报错信息：</p>
+<a id="more"></a>
+
 <pre><code>Error: initscripts conflicts with redhat-release-server-7.0-1.el7.x86_64
  You could try using --skip-broken to work around the problem
 Found 2 pre-existing rpmdb problem(s), &#39;yum check&#39; output follows:
@@ -1351,7 +1376,7 @@ PackageKit-0.8.9-11.el7.x86_64 has missing requires of PackageKit-backend
 rhn-check-2.0.2-5.el7.noarch has missing requires of yum-rhn-plugin &gt;= (&#39;0&#39;, &#39;1.6.4&#39;, &#39;1&#39;)</code></pre>
 <p>有2个problem，1个error；先解决problem：</p>
 <pre><code>（1）在http://rpm.pbone.net/网站中下载PackageKit-yum-0.8.9-11.el7.x86_64.rpm,然后将rpm文件拖入linux系统中，输入命令：rpm -Uvh PackageKit-yum-0.8.9-11.el7.x86_64.rpm，解决第1个problem。
-（2）在终端中输入命令：yum install yum-rhn-plugin，，解决第2个problem。</code></pre>
+（2）在终端中输入命令：yum install yum-rhn-plugin，解决第2个problem。</code></pre>
 <p>再解决initscripts conflicts的error：</p>
 <pre><code>首先，先查一下本机的initscripts的版本，有没有更适合自己系统的，输入以下命令：yum list initscripts，
 
@@ -1711,6 +1736,76 @@ anaconda-ks.cfg Downloads Pictures Public
       </tags>
   </entry>
   <entry>
+    <title>linux虚拟机外网网络访问设置指南</title>
+    <url>/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/</url>
+    <content><![CDATA[<p>要达到的效果就是在Linux虚拟机中可以上网：ping <a href="http://www.baidu.com/">http://www.baidu.com</a></p>
+<p>VMware中安装完 redhat7 后， 默认初始配置如下：</p>
+<a id="more"></a>
+
+<h1 id="1-VMware-网络配置"><a href="#1-VMware-网络配置" class="headerlink" title="1.VMware 网络配置"></a>1.VMware 网络配置</h1><p>（编辑 –&gt; 虚拟网络编辑器）查看</p>
+<p>默认配置为： (这些配置都不需要发生变更， 看看就好)</p>
+<pre><code>子网IP：192.168.154.0
+
+子网掩码 : 255.255.255.0
+
+可设置的IP网段为： 192.168.154.128 ~ 254
+
+&#123;% asset_img 1.jpg %&#125;
+
+点开 NAT设置可以看到 GATEWAY : 192.168.154.2:</code></pre>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/2.jpg" class>
+
+<p>下面介绍 redhat 本身配置m修改配置参数如下：</p>
+<p>注意各个参数与第一步 VMware 中的默认配置的联系 :</p>
+<pre><code>BOOTPROTO ： dhcp --&gt; static （静态IP）
+
+ONBOOT : no --&gt; YES (开机自动连接网络)
+
+IPADDR : 192.168.154.128 ~ 254 之间即可
+
+NETMASK : 子网， 与 VMware 默认一致
+
+GATEWAY : 网关， 与VMware 默认一致
+
+DNS1 : 首选 DNS, 不配置会出现外网不通， 只能与内网互通的问题.
+
+这里DNS要说一下的是，其他资料上有说要跟本机上网的DNS一致，还有说跟网关一致，或者改成8.8.8.8，都试过，ping www.baidu.com 都可以，不同的机器可能有不同，希望可以共同探讨。
+
+NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进行设置，而不是通过网络管理器进行管理。“ONBOOT=yes”告诉我们，系统将在启动时开启该接口。</code></pre>
+<p>编辑/etc/sysconfig/network-scipts/网卡名称：</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/3.jpg" class>
+
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/4.jpg" class>
+
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/5.jpg" class>
+
+<p>重启网络服务命令： systemctl restart network；</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/6.jpg" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>linux虚拟机外网网络访问设置指南</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux就该这么学：管道符、重定向与环境变量</title>
     <url>/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
     <content><![CDATA[<h1 id="1-输入输出重定向"><a href="#1-输入输出重定向" class="headerlink" title="1.输入输出重定向"></a>1.输入输出重定向</h1><p>输入重定向：是指把文件导入到命令中； 输出重定向：是指把原本要输出到屏幕的数据写入到指定文件中。输出重定向又分为标准输出重定向和错误输出重定向。<br>输入重定向中用到的符号及其作用：</p>
@@ -1822,76 +1917,6 @@ anaconda-ks.cfg Downloads Pictures Public
       </categories>
       <tags>
         <tag>第3章节：管道符、重定向与环境变量</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux虚拟机外网网络访问设置指南</title>
-    <url>/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/</url>
-    <content><![CDATA[<p>要达到的效果就是在Linux虚拟机中可以上网：ping <a href="http://www.baidu.com/">http://www.baidu.com</a></p>
-<p>VMware中安装完 redhat7 后， 默认初始配置如下：</p>
-<a id="more"></a>
-
-<h1 id="1-VMware-网络配置"><a href="#1-VMware-网络配置" class="headerlink" title="1.VMware 网络配置"></a>1.VMware 网络配置</h1><p>（编辑 –&gt; 虚拟网络编辑器）查看</p>
-<p>默认配置为： (这些配置都不需要发生变更， 看看就好)</p>
-<pre><code>子网IP：192.168.154.0
-
-子网掩码 : 255.255.255.0
-
-可设置的IP网段为： 192.168.154.128 ~ 254
-
-&#123;% asset_img 1.jpg %&#125;
-
-点开 NAT设置可以看到 GATEWAY : 192.168.154.2:</code></pre>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/2.jpg" class>
-
-<p>下面介绍 redhat 本身配置m修改配置参数如下：</p>
-<p>注意各个参数与第一步 VMware 中的默认配置的联系 :</p>
-<pre><code>BOOTPROTO ： dhcp --&gt; static （静态IP）
-
-ONBOOT : no --&gt; YES (开机自动连接网络)
-
-IPADDR : 192.168.154.128 ~ 254 之间即可
-
-NETMASK : 子网， 与 VMware 默认一致
-
-GATEWAY : 网关， 与VMware 默认一致
-
-DNS1 : 首选 DNS, 不配置会出现外网不通， 只能与内网互通的问题.
-
-这里DNS要说一下的是，其他资料上有说要跟本机上网的DNS一致，还有说跟网关一致，或者改成8.8.8.8，都试过，ping www.baidu.com 都可以，不同的机器可能有不同，希望可以共同探讨。
-
-NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进行设置，而不是通过网络管理器进行管理。“ONBOOT=yes”告诉我们，系统将在启动时开启该接口。</code></pre>
-<p>编辑/etc/sysconfig/network-scipts/网卡名称：</p>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/3.jpg" class>
-
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/4.jpg" class>
-
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/5.jpg" class>
-
-<p>重启网络服务命令： systemctl restart network；</p>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/6.jpg" class>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>linux虚拟机外网网络访问设置指南</tag>
       </tags>
   </entry>
   <entry>
@@ -2175,12 +2200,6 @@ esac</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>图片加载命令</title>
-    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
-]]></content>
-  </entry>
-  <entry>
     <title>用hexo和github免费创建自己的博客</title>
     <url>/2020/12/06/%E7%94%A8hexo%E5%92%8Cgithub%E5%85%8D%E8%B4%B9%E5%88%9B%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2/</url>
     <content><![CDATA[<h2 id="1-安装Nodejs"><a href="#1-安装Nodejs" class="headerlink" title="1.安装Nodejs"></a>1.安装Nodejs</h2><p>官方网站: <a href="https://nodejs.org/">https://nodejs.org</a>, 安装步骤非常简单，一直next，下一步就可以了，默认安装就行。</p>
@@ -2203,6 +2222,407 @@ deploy:
       </categories>
       <tags>
         <tag>博客</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>图片加载命令</title>
+    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
+]]></content>
+  </entry>
+  <entry>
+    <title>linux就该这么学-13：使用Bind提供域名解析服务</title>
+    <url>/2021/02/13/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-13%EF%BC%9A%E4%BD%BF%E7%94%A8Bind%E6%8F%90%E4%BE%9B%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90%E6%9C%8D%E5%8A%A1/</url>
+    <content><![CDATA[<h1 id="1-DNS域名解析服务"><a href="#1-DNS域名解析服务" class="headerlink" title="1.DNS域名解析服务"></a>1.DNS域名解析服务</h1><p>DNS：Domain Name System，域名系统。</p>
+<a id="more"></a>
+
+<p>主服务器：在特定区域内具有唯一性，负责维护该区域内的域名与IP地址之间的对应关系。</p>
+<p>从服务器：从主服务器中获得域名与IP地址的对应关系并进行维护，以防主服务器宕机等情况。</p>
+<p>缓存服务器：通过向其他域名解析服务器查询获得域名与IP地址的对应关系，并将经常查询的域名信息保存到服务器本地，以此来提高重复查询时的效率。</p>
+<p>在执行用户发起的域名查询请求时，具有递归查询和迭代查询两种方式。所谓递归查询，是指DNS服务器在收到用户发起的请求时，必须向用户返回一个准确的查询结果。如果DNS服务器本地没有存储与之对应的信息，则该服务器需要询问其他服务器，并将返回的查询结果提交给用户。而迭代查询则是指，DNS服务器在收到用户发起的请求时，并不直接回复查询结果，而是告诉另一台DNS服务器的地址，用户再向这台DNS服务器提交请求，这样依次反复，直到返回查询结果。</p>
+<h1 id="2-安装Bind服务程序"><a href="#2-安装Bind服务程序" class="headerlink" title="2.安装Bind服务程序"></a>2.安装Bind服务程序</h1><p>BIND：Berkeley Internet Name Domain，伯克利因特网名称域。</p>
+<p>chroot：俗称牢笼机制。</p>
+<pre><code>[root@linuxprobe ~]# yum install bind-chroot</code></pre>
+<p>在bind服务程序中有下面这三个比较关键的文件：</p>
+<pre><code>主配置文件（/etc/named.conf）：只有58行，而且在去除注释信息和空行之后，实际有效的参数仅有30行左右，这些参数用来定义bind服务程序的运行。
+
+区域配置文件（/etc/named.rfc1912.zones）：用来保存域名和IP地址对应关系的所在位置。类似于图书的目录，对应着每个域和相应IP地址所在的具体位置，当需要查看或修改时，可根据这个位置找到相关文件。
+
+数据配置文件目录（/var/named）：该目录用来保存域名和IP地址真实对应关系的数据配置文件。</code></pre>
+<p>在Linux系统中，bind服务程序的名称为named。首先需要在/etc目录中找到该服务程序的主配置文件，然后把第11行和第17行的地址均修改为any，分别表示服务器上的所有IP地址均可提供DNS域名解析服务，以及允许所有人对本服务器发送DNS查询请求。这两个地方一定要修改准确。</p>
+<pre><code> [root@linuxprobe ~]# vim /etc/named.conf
+ 1 //
+ 2 // named.conf
+ 3 //
+ 4 // Provided by Red Hat bind package to configure the ISC BIND named(8) DNS
+ 5 // server as a caching only nameserver (as a localhost DNS resolver only).
+ 6 //
+ 7 // See /usr/share/doc/bind*/sample/ for example named configuration files.
+ 8 //
+ 9 
+ 10 options &#123;
+ 11 listen-on port 53 &#123; any; &#125;;
+ 12 listen-on-v6 port 53 &#123; ::1; &#125;;
+ 13 directory &quot;/var/named&quot;;
+ 14 dump-file &quot;/var/named/data/cache_dump.db&quot;;
+ 15 statistics-file &quot;/var/named/data/named_stats.txt&quot;;
+ 16 memstatistics-file &quot;/var/named/data/named_mem_stats.txt&quot;;
+ 17 allow-query &#123; any; &#125;;</code></pre>
+<h2 id="2-1正向解析实验"><a href="#2-1正向解析实验" class="headerlink" title="2.1正向解析实验"></a>2.1正向解析实验</h2><p>正向解析是指根据域名（主机名）查找到对应的IP地址。</p>
+<p>第1步：编辑区域配置文件。该文件中默认已经有了一些无关紧要的解析参数，旨在让用户有一个参考。我们可以将下面的参数添加到区域配置文件的最下面，当然，也可以将该文件中的原有信息全部清空，而只保留自己的域名解析信息：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/named.rfc1912.zones
+zone &quot;linuxprobe.com&quot; IN &#123;
+type master;
+file &quot;linuxprobe.com.zone&quot;;
+allow-update &#123;none;&#125;;
+&#125;;</code></pre>
+<p>第2步：编辑数据配置文件。我们可以从/var/named目录中复制一份正向解析的模板文件（named.localhost），然后把域名和IP地址的对应数据填写数据配置文件中并保存。在复制时记得加上-a参数，这可以保留原始文件的所有者、所属组、权限属性等信息，以便让bind服务程序顺利读取文件内容：</p>
+<pre><code>[root@linuxprobe ~]# cd /var/named/
+[root@linuxprobe named]# ls -al named.localhost
+-rw-r-----. 1 root named 152 Jun 21 2007 named.localhost
+[root@linuxprobe named]# cp -a named.localhost linuxprobe.com.zone</code></pre>
+<img src="/2021/02/13/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-13%EF%BC%9A%E4%BD%BF%E7%94%A8Bind%E6%8F%90%E4%BE%9B%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90%E6%9C%8D%E5%8A%A1/1.png" class>
+
+<p>在保存并退出后文件后记得重启named服务程序，让新的解析数据生效:</p>
+<pre><code>[root@linuxprobe named]# vim linuxprobe.com.zone
+[root@linuxprobe named]# systemctl restart named</code></pre>
+<p>第3步：检验解析结果;为了检验解析结果，一定要先把Linux系统网卡中的DNS地址参数修改成本机IP地址，这样就可以使用由本机提供的DNS查询服务了。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/sysconfig/network-scripts/ifcfg-eno16777728（网卡名称）
+TYPE=Ethernet
+BOOTPROTO=none
+DEFROUTE=yes
+IPV4_FAILURE_FATAL=no
+IPV6INIT=yes
+IPV6_AUTOCONF=yes
+IPV6_DEFROUTE=yes
+IPV6_FAILURE_FATAL=no
+NAME=eno16777728
+UUID=f6b8c6f1-3067-47f6-984e-3d0a1f4d7c23
+ONBOOT=yes
+IPADDR0=192.168.10.10
+GATEWAY0=192.168.10.2
+PREFIX0=24
+HWADDR=00:0C:29:2B:CC:85
+DNS=192.168.10.10
+……</code></pre>
+<p>nslookup命令用于检测能否从DNS服务器中查询到域名与IP地址的解析记录，进而更准确地检验DNS服务器是否已经能够为用户提供服务。</p>
+<pre><code>[root@linuxprobe ~]# systemctl restart network
+[root@linuxprobe ~]# nslookup
+&gt; www.linuxprobe.com
+Server: 127.0.0.1
+Address: 127.0.0.1#53
+Name: www.linuxprobe.com
+Address: 192.168.10.10
+&gt; bbs.linuxprobe.com
+Server: 127.0.0.1
+Address: 127.0.0.1#53
+Name: bbs.linuxprobe.com
+Address: 192.168.10.20</code></pre>
+<h2 id="2-2反向解析实验"><a href="#2-2反向解析实验" class="headerlink" title="2.2反向解析实验"></a>2.2反向解析实验</h2><p>反向解析：将用户提交的IP地址解析为对应的域名信息。</p>
+<p>第1步：编辑区域配置文件。除了不要写错格式之外，还需要记住此处定义的数据配置文件名称，因为一会儿还需要在/var/named目录中建立与其对应的同名文件。反向解析是把IP地址解析成域名格式，因此在定义zone（区域）时应该要把IP地址反写，比如原来是192.168.10.0，反写后应该就是10.168.192，而且只需写出IP地址的网络位即可。把下列参数添加至正向解析参数的后面。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/named.rfc1912.zones
+zone &quot;linuxprobe.com&quot; IN &#123;
+type master;
+file &quot;linuxprobe.com.zone&quot;;
+allow-update &#123;none;&#125;;
+&#125;;
+zone &quot;10.168.192.in-addr.arpa&quot; IN &#123;
+type master;
+file &quot;192.168.10.arpa&quot;;
+&#125;;</code></pre>
+<p>第2步：编辑数据配置文件。首先从/var/named目录中复制一份反向解析的模板文件（named.loopback），然后把下面的参数填写到文件中。其中，IP地址仅需要写主机位！</p>
+<img src="/2021/02/13/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-13%EF%BC%9A%E4%BD%BF%E7%94%A8Bind%E6%8F%90%E4%BE%9B%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90%E6%9C%8D%E5%8A%A1/2.png" class>
+
+<pre><code>[root@linuxprobe named]# cp -a named.loopback 192.168.10.arpa
+[root@linuxprobe named]# vim 192.168.10.arpa</code></pre>
+<img src="/2021/02/13/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-13%EF%BC%9A%E4%BD%BF%E7%94%A8Bind%E6%8F%90%E4%BE%9B%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90%E6%9C%8D%E5%8A%A1/3.png" class>
+
+<pre><code>[root@linuxprobe named]# systemctl restart named</code></pre>
+<p>第3步：检验解析结果。在前面的正向解析实验中，已经把系统网卡中的DNS地址参数修改成了本机IP地址，因此可以直接使用nslookup命令来检验解析结果，仅需输入IP地址即可查询到对应的域名信息。</p>
+<pre><code>[root@linuxprobe ~]# nslookup
+&gt; 192.168.10.10
+Server: 127.0.0.1
+Address: 127.0.0.1#53
+10.10.168.192.in-addr.arpa name = ns.linuxprobe.com.
+10.10.168.192.in-addr.arpa name = www.linuxprobe.com.
+10.10.168.192.in-addr.arpa name = mail.linuxprobe.com.
+&gt; 192.168.10.20
+Server: 127.0.0.1
+Address: 127.0.0.1#53
+20.10.168.192.in-addr.arpa name = bbs.linuxprobe.com.</code></pre>
+<h1 id="3-部署从服务器"><a href="#3-部署从服务器" class="headerlink" title="3.部署从服务器"></a>3.部署从服务器</h1><p>在本实验中，主服务器与从服务器分别使用的操作系统和IP地址如下：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>主服务器</td>
+<td>RHEL 7</td>
+<td>192.168.10.10</td>
+</tr>
+<tr>
+<td>从服务器</td>
+<td>RHEL 7</td>
+<td>192.168.10.20</td>
+</tr>
+</tbody></table>
+<p>第1步：在<strong>主服务器</strong>的区域配置文件中允许该从服务器的更新请求，即修改allow-update {允许更新区域信息的主机地址;};参数，然后重启主服务器的DNS服务程序。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/named.rfc1912.zones
+zone &quot;linuxprobe.com&quot; IN &#123;
+type master;
+file &quot;linuxprobe.com.zone&quot;;
+allow-update &#123; 192.168.10.20; &#125;;
+&#125;;
+zone &quot;10.168.192.in-addr.arpa&quot; IN &#123;
+type master;
+file &quot;192.168.10.arpa&quot;;
+allow-update &#123; 192.168.10.20; &#125;;
+&#125;;
+[root@linuxprobe ~]# systemctl restart named</code></pre>
+<p>第2步：在从服务器终端中输入命令：yum install bind-chroot，安装bind服务程序；再根据上面步骤编辑配置文件vim /etc/named.conf；</p>
+<p>第3步：安装完之后，在<strong>从服务器</strong>中填写主服务器的IP地址与要抓取的区域信息，然后重启服务。注意此时的服务类型应该是slave（从），而不再是master（主）。masters参数后面应该为主服务器的IP地址，而且file参数后面定义的是同步数据配置文件后要保存到的位置，稍后可以在该目录内看到同步的文件。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/named.rfc1912.zones
+zone &quot;linuxprobe.com&quot; IN &#123;
+type slave;
+masters &#123; 192.168.10.10; &#125;;
+file &quot;slaves/linuxprobe.com.zone&quot;;
+&#125;;
+zone &quot;10.168.192.in-addr.arpa&quot; IN &#123;
+type slave;
+masters &#123; 192.168.10.10; &#125;;
+file &quot;slaves/192.168.10.arpa&quot;;
+&#125;;
+[root@linuxprobe ~]# systemctl restart named</code></pre>
+<p>第4步：检验解析结果。当<strong>从服务器</strong>的DNS服务程序在重启后，一般就已经自动从主服务器上同步了数据配置文件，而且该文件默认会放置在区域配置文件中所定义的目录位置（/var/named/slaves）中。</p>
+<p>第5步：随后在终端中输入命令：nmtui，修改从服务器的网络参数，把DNS地址参数修改成192.168.10.20，这样即可使用<strong>从服务器</strong>自身提供的DNS域名解析服务。最后就可以使用nslookup命令顺利看到解析结果了。</p>
+<pre><code>[root@linuxprobe ~]# cd /var/named/slaves
+[root@linuxprobe slaves]# ls 
+192.168.10.arpa linuxprobe.com.zone
+[root@linuxprobe slaves]# nslookup
+&gt; www.linuxprobe.com
+Server: 192.168.10.20
+Address: 192.168.10.20#53
+Name: www.linuxprobe.com
+Address: 192.168.10.10
+&gt; 192.168.10.10
+Server: 192.168.10.20
+Address: 192.168.10.20#53
+10.10.168.192.in-addr.arpa name = www.linuxprobe.com.</code></pre>
+<h1 id="4-安全的加密传输"><a href="#4-安全的加密传输" class="headerlink" title="4.安全的加密传输"></a>4.安全的加密传输</h1><table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>主服务器</td>
+<td>RHEL 7</td>
+<td>192.168.10.10</td>
+</tr>
+<tr>
+<td>从服务器</td>
+<td>RHEL 7</td>
+<td>192.168.10.20</td>
+</tr>
+</tbody></table>
+<p>在从服务器上配妥bind服务程序并重启后，即可看到从主服务器中获取到的数据配置文件。</p>
+<pre><code>[root@linuxprobe ~]# ls -al /var/named/slaves/
+total 12
+drwxrwx---. 2 named named 54 Jun 7 16:02 .
+drwxr-x---. 6 root named 4096 Jun 7 15:58 ..
+-rw-r--r--. 1 named named 432 Jun 7 16:02 192.168.10.arpa
+-rw-r--r--. 1 named named 439 Jun 7 16:02 linuxprobe.com.zone
+[root@linuxprobe ~]# rm -rf /var/named/slaves/*</code></pre>
+<p>第1步：在<strong>主服务器</strong>中生成密钥。dnssec-keygen命令用于生成安全的DNS服务密钥，其格式为“dnssec-keygen [参数]”，常用的参数以及作用如下：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>指定加密算法，包括RSAMD5（RSA）、RSASHA1、DSA、NSEC3RSASHA1、NSEC3DSA等</td>
+</tr>
+<tr>
+<td>-b</td>
+<td>密钥长度（HMAC-MD5的密钥长度在1~512位之间）</td>
+</tr>
+<tr>
+<td>-n</td>
+<td>密钥的类型（HOST表示与主机相关）</td>
+</tr>
+</tbody></table>
+<p>使用下述命令生成一个主机名称为master-slave的128位HMAC-MD5算法的密钥文件。在执行该命令后默认会在当前目录中生成公钥和私钥文件，我们需要把私钥文件中Key参数后面的值记录下来；</p>
+<pre><code>[root@linuxprobe ~]# dnssec-keygen -a HMAC-MD5 -b 128 -n HOST master-slave
+Kmaster-slave.+157+46845
+[root@linuxprobe ~]# ls -al Kmaster-slave.+157+46845.*
+-rw-------. 1 root root 56 Jun 7 16:06 Kmaster-slave.+157+46845.key
+-rw-------. 1 root root 165 Jun 7 16:06 Kmaster-slave.+157+46845.private
+[root@linuxprobe ~]# cat Kmaster-slave.+157+46845.private
+Private-key-format: v1.3
+Algorithm: 157 (HMAC_MD5)
+Key: 1XEEL3tG5DNLOw+1WHfE3Q==
+Bits: AAA=
+Created: 20170607080621
+Publish: 20170607080621
+Activate: 20170607080621</code></pre>
+<p>第2步：在<strong>主服务器</strong>中创建密钥验证文件。进入bind服务程序用于保存配置文件的目录，把刚刚生成的密钥名称、加密算法和私钥加密字符串按照下面格式写入到tansfer.key传输配置文件中。为了安全起见，我们需要将文件的所属组修改成named，并将文件权限设置得要小一点，然后把该文件做一个硬链接到/etc目录中。</p>
+<pre><code>[root@linuxprobe ~]# cd /var/named/chroot/etc/
+[root@linuxprobe etc]# vim transfer.key
+key &quot;master-slave&quot; &#123;
+algorithm hmac-md5;
+secret &quot;1XEEL3tG5DNLOw+1WHfE3Q==&quot;;
+&#125;;
+[root@linuxprobe etc]# chown root:named transfer.key
+[root@linuxprobe etc]# chmod 640 transfer.key
+[root@linuxprobe etc]# ln transfer.key /etc/transfer.key</code></pre>
+<p>第3步：开启并加载Bind服务的密钥验证功能。首先需要在主服务器的主配置文件中加载密钥验证文件，然后进行设置，使得只允许带有master-slave密钥认证的DNS服务器同步数据配置文件：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/named.conf
+  9 include &quot;/etc/transfer.key&quot;;
+ 10 options &#123;
+ 11 listen-on port 53 &#123; any; &#125;;
+ 12 listen-on-v6 port 53 &#123; ::1; &#125;;
+ 13 directory &quot;/var/named&quot;;
+ 14 dump-file &quot;/var/named/data/cache_dump.db&quot;;
+ 15 statistics-file &quot;/var/named/data/named_stats.txt&quot;;
+ 16 memstatistics-file &quot;/var/named/data/named_mem_stats.txt&quot;;
+ 17 allow-query &#123; any; &#125;;
+ 18 allow-transfer &#123; key master-slave; &#125;;
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart named</code></pre>
+<p>至此，DNS主服务器的TSIG密钥加密传输功能就已经配置完成。此时清空DNS从服务器同步目录中所有的数据配置文件，然后再次重启bind服务程序；</p>
+<pre><code>[root@linuxprobe ~]# rm -rf /var/named/slaves/*
+[root@linuxprobe ~]# ls  /var/named/slaves/
+[root@linuxprobe ~]# systemctl restart named</code></pre>
+<p>第4步：配置<strong>从服务器</strong>，使其支持密钥验证。配置DNS从服务器和主服务器的方法大致相同，都需要在bind服务程序的配置文件目录中创建密钥认证文件，并设置相应的权限，然后把该文件做一个硬链接到/etc目录中。</p>
+<pre><code>[root@linuxprobe ~]# cd /var/named/chroot/etc
+[root@linuxprobe etc]# vim transfer.key
+key &quot;master-slave&quot; &#123;
+algorithm hmac-md5;
+secret &quot;1XEEL3tG5DNLOw+1WHfE3Q==&quot;;
+&#125;;
+[root@linuxprobe etc]# chown root:named transfer.key
+[root@linuxprobe etc]# chmod 640 transfer.key
+[root@linuxprobe etc]# ln transfer.key /etc/transfer.key</code></pre>
+<p>第5步：开启并加载从服务器的密钥验证功能。这一步的操作步骤也同样是在主配置文件中加载密钥认证文件，然后按照指定格式写上主服务器的IP地址和密钥名称。注意，密钥名称等参数位置不要太靠前，大约在第43行比较合适，否则bind服务程序会因为没有加载完预设参数而报错：</p>
+<pre><code>[root@linuxprobe etc]# vim /etc/named.conf
+  9 include &quot;/etc/transfer.key&quot;;
+ 10 options &#123;
+ 11 listen-on port 53 &#123; 127.0.0.1; &#125;;
+ 12 listen-on-v6 port 53 &#123; ::1; &#125;;
+ 13 directory &quot;/var/named&quot;;
+ 14 dump-file &quot;/var/named/data/cache_dump.db&quot;;
+ 15 statistics-file &quot;/var/named/data/named_stats.txt&quot;;
+ 16 memstatistics-file &quot;/var/named/data/named_mem_stats.txt&quot;;
+ 17 allow-query &#123; localhost; &#125;;
+    …………
+ 41 session-keyfile &quot;/run/named/session.key&quot;;
+ 42 &#125;;
+ 43 server 192.168.10.10
+ 44 &#123;
+ 45 keys &#123; master-slave; &#125;;
+ 46 &#125;; 
+ 47 logging &#123;</code></pre>
+<p>第6步：DNS从服务器同步域名区域数据。现在，两台服务器的bind服务程序都已经配置妥当，并匹配到了相同的密钥认证文件。接下来在从服务器上重启bind服务程序，可以发现又能顺利地同步到数据配置文件了。</p>
+<pre><code>[root@linuxprobe ~]# systemctl restart named
+[root@linuxprobe ~]# ls /var/named/slaves/
+ 192.168.10.arpa  linuxprobe.com.zone</code></pre>
+<h1 id="5-分离解析技术"><a href="#5-分离解析技术" class="headerlink" title="5.分离解析技术"></a>5.分离解析技术</h1><table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DNS服务器</td>
+<td>RHEL 7</td>
+<td>北京网络：122.71.115.10</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>美国网络：106.185.25.10</td>
+</tr>
+<tr>
+<td>北京用户</td>
+<td>windows 7</td>
+<td>122.71.115.1</td>
+</tr>
+<tr>
+<td>海外用户</td>
+<td>windows 7</td>
+<td>106.185.25.1</td>
+</tr>
+</tbody></table>
+<p>第1步：安装bind域名解析服务，并修改bind服务程序的主配置文件，把第11行的监听端口与第17行的允许查询主机修改为any。由于配置的DNS分离解析功能与DNS根服务器配置参数有冲突，所以需要把第51~54行的根域信息删除。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/named.conf
+………………省略部分输出信息………………
+ 44 logging &#123;
+ 45 channel default_debug &#123;
+ 46 file &quot;data/named.run&quot;;
+ 47 severity dynamic;
+ 48 &#125;;
+ 49 &#125;;
+ 50 
+ 51 zone &quot;.&quot; IN &#123;
+ 52 type hint;
+ 53 file &quot;named.ca&quot;;
+ 54 &#125;;
+ 55 
+ 56 include &quot;/etc/named.rfc1912.zones&quot;;
+ 57 include &quot;/etc/named.root.key&quot;;
+ 58
+………………省略部分输出信息………………</code></pre>
+<p>第2步：编辑区域配置文件。把区域配置文件中原有的数据清空，然后按照以下格式写入参数。首先使用acl参数分别定义两个变量名称（china与american），当下面需要匹配IP地址时只需写入变量名称即可，这样不仅容易阅读识别，而且也利于修改维护。这里的难点是理解view参数的作用。它的作用是通过判断用户的IP地址是中国的还是美国的，然后去分别加载不同的数据配置文件（linuxprobe.com.china或linuxprobe.com.american）。这样，当把相应的IP地址分别写入到数据配置文件后，即可实现DNS的分离解析功能。这样一来，当中国的用户访问linuxprobe.com域名时，便会按照linuxprobe.com.china数据配置文件内的IP地址找到对应的服务器。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/named.rfc1912.zones
+1 acl &quot;china&quot; &#123; 122.71.115.0/24; &#125;;
+2 acl &quot;american&quot; &#123; 106.185.25.0/24;&#125;;
+3 view &quot;china&quot;&#123;
+4 match-clients &#123; &quot;china&quot;; &#125;;
+5 zone &quot;linuxprobe.com&quot; &#123;
+6 type master;
+7 file &quot;linuxprobe.com.china&quot;;
+8 &#125;;
+9 &#125;;
+10 view &quot;american&quot; &#123;
+11 match-clients &#123; &quot;american&quot;; &#125;;
+12 zone &quot;linuxprobe.com&quot; &#123;
+13 type master;
+14 file &quot;linuxprobe.com.american&quot;;
+15 &#125;;
+16 &#125;;</code></pre>
+<p>第3步：建立数据配置文件。分别通过模板文件创建出两份不同名称的区域数据文件，其名称应与上面区域配置文件中的参数相对应。</p>
+<pre><code>[root@linuxprobe ~]# cd /var/named
+[root@linuxprobe named]# cp -a named.localhost linuxprobe.com.china
+[root@linuxprobe named]# cp -a named.localhost linuxprobe.com.american
+[root@linuxprobe named]# vim linuxprobe.com.china</code></pre>
+<img src="/2021/02/13/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-13%EF%BC%9A%E4%BD%BF%E7%94%A8Bind%E6%8F%90%E4%BE%9B%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90%E6%9C%8D%E5%8A%A1/4.png" class>
+
+<pre><code>[root@linuxprobe named]# vim linuxprobe.com.american</code></pre>
+<img src="/2021/02/13/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-13%EF%BC%9A%E4%BD%BF%E7%94%A8Bind%E6%8F%90%E4%BE%9B%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90%E6%9C%8D%E5%8A%A1/5.png" class>
+
+<p>第4步：重新启动named服务程序，验证结果。</p>
+<pre><code>[root@linuxprobe named]# systemctl restart named</code></pre>
+<p>第5步：将客户端主机（Windows系统或Linux系统均可）的IP地址分别设置为122.71.115.1与106.185.25.1，将DNS地址分别设置为服务器主机的两个IP地址。这样，当尝试使用nslookup命令解析域名时就能清晰地看到解析结果，分别如下图所示。</p>
+<img src="/2021/02/13/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-13%EF%BC%9A%E4%BD%BF%E7%94%A8Bind%E6%8F%90%E4%BE%9B%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90%E6%9C%8D%E5%8A%A1/6.png" class>
+
+<img src="/2021/02/13/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-13%EF%BC%9A%E4%BD%BF%E7%94%A8Bind%E6%8F%90%E4%BE%9B%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90%E6%9C%8D%E5%8A%A1/7.png" class>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第13章节：使用Bind提供域名解析服务</tag>
       </tags>
   </entry>
   <entry>
