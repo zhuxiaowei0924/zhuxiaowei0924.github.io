@@ -14,11 +14,11 @@ categories:
 
 <!--more-->
 
-简单邮件传输协议（Simple Mail Transfer Protocol，SMTP）：用于发送和中转发出的电子邮件，占用服务器的25/TCP端口。
-
-邮局协议版本3（Post Office Protocol 3）：用于将电子邮件存储到本地主机，占用服务器的110/TCP端口。
-
-Internet消息访问协议版本4（Internet Message Access Protocol 4）：用于在本地主机上访问邮件，占用服务器的143/TCP端口。
+	简单邮件传输协议（Simple Mail Transfer Protocol，SMTP）：用于发送和中转发出的电子邮件，占用服务器的25/TCP端口。
+	
+	邮局协议版本3（Post Office Protocol 3）：用于将电子邮件存储到本地主机，占用服务器的110/TCP端口。
+	
+	Internet消息访问协议版本4（Internet Message Access Protocol 4）：用于在本地主机上访问邮件，占用服务器的143/TCP端口。
 
 MUA：Mail User Agent，邮件用户代理；	MDA：Mail Delivery Agent，邮件投递代理；	
 
@@ -120,13 +120,13 @@ Postfix服务程序主配置文件中的重要参数：
 
 | 参数 | 作用 |
 | ---  | --- |
-| myhostname	邮局系统的主机名
-| mydomain	邮局系统的域名
-| myorigin	从本机发出邮件的域名名称
-| inet_interfaces	监听的网卡接口
-| mydestination	可接收邮件的主机名或域名
-| mynetworks	设置可转发哪些主机的邮件
-| relay_domains	设置可转发哪些网域的邮件
+| myhostname  | 邮局系统的主机名 |
+| mydomain  | 邮局系统的域名 |
+| myorigin  | 从本机发出邮件的域名名称 |
+| inet_interfaces  | 监听的网卡接口 |
+| mydestination  | 可接收邮件的主机名或域名 |
+| mynetworks  | 设置可转发哪些主机的邮件 |
+| relay_domains  | 设置可转发哪些网域的邮件 |
 
 在Postfix服务程序的主配置文件中，总计需要修改5处。首先是在第76行定义一个名为myhostname的变量，用来保存服务器的主机名称。
 
