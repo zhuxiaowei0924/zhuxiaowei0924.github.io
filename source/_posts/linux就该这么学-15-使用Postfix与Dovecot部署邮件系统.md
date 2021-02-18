@@ -2,7 +2,7 @@
 title: 'linux就该这么学-15:使用Postfix与Dovecot部署邮件系统'
 date: 2021-02-16 15:14:21
 tags:
-- 第13章节：使用Bind提供域名解析服务
+- 第15章节：使用Postfix与Dovecot部署邮件系统
 categories:
 - linux就该这么学
 
