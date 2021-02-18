@@ -567,694 +567,6 @@ Mar 30 05:33:26 localhost dhcpd: DHCPDISCOVER from **00:0c:29:27:c6:12** via eno
       </tags>
   </entry>
   <entry>
-    <title>linux就该这么学-15:使用Postfix与Dovecot部署邮件系统</title>
-    <url>/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/</url>
-    <content><![CDATA[<h1 id="1-电子邮件系统"><a href="#1-电子邮件系统" class="headerlink" title="1.电子邮件系统"></a>1.电子邮件系统</h1><p>电子邮件系统基于邮件协议来完成电子邮件的传输，常见的邮件协议有下面这些：</p>
-<a id="more"></a>
-
-<pre><code>简单邮件传输协议（Simple Mail Transfer Protocol，SMTP）：用于发送和中转发出的电子邮件，占用服务器的25/TCP端口。
-
-邮局协议版本3（Post Office Protocol 3）：用于将电子邮件存储到本地主机，占用服务器的110/TCP端口。
-
-Internet消息访问协议版本4（Internet Message Access Protocol 4）：用于在本地主机上访问邮件，占用服务器的143/TCP端口。</code></pre>
-<p>MUA：Mail User Agent，邮件用户代理；    MDA：Mail Delivery Agent，邮件投递代理；    </p>
-<p>MTA：Mail Transfer Agent，邮件传输代理。</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/1.png" class>
-
-<p>在生产环境中部署企业级的电子邮件系统时，有4个注意事项请留意。</p>
-<pre><code>1.添加反垃圾与反病毒模块：它能够很有效地阻止垃圾邮件或病毒邮件对企业信箱的干扰。
-2.对邮件加密：可有效保护邮件内容不被黑客盗取和篡改。
-3.添加邮件监控审核模块：可有效地监控企业全体员工的邮件中是否有敏感词、是否有透露企业资料等违规行为。
-4.保障稳定性：电子邮件系统的稳定性至关重要，运维人员应做到保证电子邮件系统的稳定运行，并及时做好防范分布式拒绝服务（Distributed Denial of Service，DDoS）攻击的准备。</code></pre>
-<h1 id="2-部署基础的电子邮件系统"><a href="#2-部署基础的电子邮件系统" class="headerlink" title="2.部署基础的电子邮件系统"></a>2.部署基础的电子邮件系统</h1><p>一个最基础的电子邮件系统肯定要能提供发件服务和收件服务，为此需要使用基于SMTP协议的Postfix服务程序提供发件服务功能，并使用基于POP3协议的Dovecot服务程序提供收件服务功能。</p>
-<p>要想更好地检验电子邮件系统的配置效果，需要先部署bind服务程序，为电子邮件服务器和客户端提供DNS域名解析服务。</p>
-<p>第1步：部署bind服务程序。</p>
-<pre><code>[root@linuxprobe ~]# yum install bind-chroot</code></pre>
-<p>第2步：配置服务器主机名称，需要保证服务器主机名称与发信域名保持一致：</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/hostname
-mail.linuxprobe.com
-[root@linuxprobe ~]# hostname
-mail.linuxprobe.com
-[root@linuxprobe ~]# vim /etc/hosts
-192.168.10.10 mail.linuxprobe.com</code></pre>
-<p>第3步：清空iptables防火墙默认策略，并保存策略状态，避免因防火墙中默认存在的策略阻止了客户端DNS解析域名及收发邮件：</p>
-<pre><code>[root@localhost ~]# iptables -F
-[root@localhost ~]# service iptables save
-iptables: Saving firewall rules to /etc/sysconfig/iptables:[  OK  ]</code></pre>
-<p>第4步：为电子邮件系统提供域名解析。</p>
-<pre><code>[root@linuxprobe ~]# cat /etc/named.conf
- 10 options &#123;
- 11 listen-on port 53 &#123; any; &#125;;
- 12 listen-on-v6 port 53 &#123; ::1; &#125;;
- 13 directory &quot;/var/named&quot;;
- 14 dump-file &quot;/var/named/data/cache_dump.db&quot;;
- 15 statistics-file &quot;/var/named/data/named_stats.txt&quot;;
- 16 memstatistics-file &quot;/var/named/data/named_mem_stats.txt&quot;;
- 17 allow-query &#123; any; &#125;;
- 18 
- ………………省略部分输出信息………………
-
-[root@linuxprobe ~]# cat /etc/named.rfc1912.zones
-zone &quot;linuxprobe.com&quot; IN &#123;
-type master;
-file &quot;linuxprobe.com.zone&quot;;
-allow-update &#123;none;&#125;;
-&#125;;
-
-[root@linuxprobe ~]# cat /var/named/linuxprobe.com.zone</code></pre>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/2.png" class>
-
-<pre><code>[root@linuxprobe ~]# systemctl restart named
-[root@linuxprobe ~]# systemctl enable named
-ln -s &#39;/usr/lib/systemd/system/named.service&#39; 
-&#39;/etc/systemd/system/multi-user.target.wants/named.service&#39;</code></pre>
-<p>测试时重启named服务时，显示报错：Job for named.service failed because the control process exited with error code. See “systemctl status named.service” and “journalctl -xe” for details.用named-checkconf -z /etc/named.conf（纠错命令）查看发现是由于配置文件内容写错导致！</p>
-<p>这样电子邮件系统所对应的服务器主机名即为mail.linuxprobe.com，而邮件域为@linuxprobe.com。把服务器的DNS地址修改成本地IP地址：</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/3.jpg" class>
-
-<p>修改完IP地址后，需要重启网卡，之后可用ping mail.linuxprobe.com或nslookup命令测试下配置是否成功：</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/4.png" class>
-
-<p>用nslookup命令测试时，出现以下报错：server can’t find mail.linuxprobe.com:NXDOMAIN，并提示当前的server 192.168.10.2 不能使用；此时可编辑/etc/resolv.conf文件，将报错的nameserver 192.168.10.2删除，保留nameserver 192.168.10.10即可！之后再重启网卡，测试一下！</p>
-<h2 id="2-1配置Postfix服务程序"><a href="#2-1配置Postfix服务程序" class="headerlink" title="2.1配置Postfix服务程序"></a>2.1配置Postfix服务程序</h2><p>第1步：安装Postfix服务程序；在安装完Postfix服务程序后，需要禁用iptables防火墙，否则外部用户无法访问电子邮件系统。</p>
-<pre><code>[root@linuxprobe ~]# yum install postfix
-Loaded plugins: langpacks, product-id, subscription-manager
-rhel7 | 4.1 kB 00:00
-(1/2): rhel7/group_gz | 134 kB 00:00
-(2/2): rhel7/primary_db | 3.4 MB 00:00
-Package 2:postfix-2.10.1-6.el7.x86_64 already installed and latest version
-Nothing to do
-[root@linuxprobe ~]# systemctl disable iptables</code></pre>
-<p>第2步：配置Postfix服务程序，Postfix服务程序主配置文件（/etc/ postfix/main.cf）。</p>
-<p>Postfix服务程序主配置文件中的重要参数：</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>myhostname</td>
-<td>邮局系统的主机名</td>
-</tr>
-<tr>
-<td>mydomain</td>
-<td>邮局系统的域名</td>
-</tr>
-<tr>
-<td>myorigin</td>
-<td>从本机发出邮件的域名名称</td>
-</tr>
-<tr>
-<td>inet_interfaces</td>
-<td>监听的网卡接口</td>
-</tr>
-<tr>
-<td>mydestination</td>
-<td>可接收邮件的主机名或域名</td>
-</tr>
-<tr>
-<td>mynetworks</td>
-<td>设置可转发哪些主机的邮件</td>
-</tr>
-<tr>
-<td>relay_domains</td>
-<td>设置可转发哪些网域的邮件</td>
-</tr>
-</tbody></table>
-<p>在Postfix服务程序的主配置文件中，总计需要修改5处。首先是在第76行定义一个名为myhostname的变量，用来保存服务器的主机名称。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/postfix/main.cf
-………………省略部分输出信息………………
-68 # INTERNET HOST AND DOMAIN NAMES
-69 # 
-70 # The myhostname parameter specifies the internet hostname of this
-71 # mail system. The default is to use the fully-qualified domain name
-72 # from gethostname(). $myhostname is used as a default value for many
-73 # other configuration parameters.
-74 #
-75 #myhostname = host.domain.tld
-76 myhostname = mail.linuxprobe.com
-………………省略部分输出信息………………</code></pre>
-<p>然后在第83行定义一个名为mydomain的变量，用来保存邮件域的名称。大家也要记住这个变量名称，下面将调用它：</p>
-<pre><code>78 # The mydomain parameter specifies the local internet domain name.
-79 # The default is to use $myhostname minus the first component.
-80 # $mydomain is used as a default value for many other configuration
-81 # parameters.
-82 #
-83 mydomain = linuxprobe.com</code></pre>
-<p>在第99行调用前面的mydomain变量，用来定义发出邮件的域。调用变量的好处是避免重复写入信息，以及便于日后统一修改：</p>
-<pre><code>94 # For the sake of consistency between sender and recipient addresses,
-95 # myorigin also specifies the default domain name that is appended
-96 # to recipient addresses that have no @domain part.
-97 #
-98 #myorigin = $myhostname
-99 myorigin = $mydomain</code></pre>
-<p>第4处修改是在第116行定义网卡监听地址。可以指定要使用服务器的哪些IP地址对外提供电子邮件服务；也可以干脆写成all，代表所有IP地址都能提供电子邮件服务：</p>
-<pre><code>111 # Note: you need to stop/start Postfix when this parameter changes.
-112 #
-113 #inet_interfaces = all
-114 #inet_interfaces = $myhostname
-115 #inet_interfaces = $myhostname, localhost
-116 inet_interfaces = all</code></pre>
-<p>最后一处修改是在第164行定义可接收邮件的主机名或域名列表。这里可以直接调用前面定义好的myhostname和mydomain变量（如果不想调用变量，也可以直接调用变量中的值）：</p>
-<pre><code>162 # See also below, section &quot;REJECTING MAIL FOR UNKNOWN LOCAL USERS&quot;.
-163 #
-164 mydestination = $myhostname , $mydomain
-165 #mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
-166 #mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain,</code></pre>
-<p>第3步：创建电子邮件系统的登录账户。Postfix与vsftpd服务程序一样，都可以调用本地系统的账户和密码，因此在本地系统创建常规账户即可。最后重启配置妥当的postfix服务程序，并将其添加到开机启动项中。大功告成！</p>
-<pre><code>[root@linuxprobe ~]# useradd boss
-[root@linuxprobe ~]# echo &quot;linuxprobe&quot; | passwd --stdin boss
-Changing password for user boss. passwd: all authentication tokens updated successfully.
-[root@linuxprobe ~]# systemctl restart postfix
-[root@linuxprobe ~]# systemctl enable postfix
-ln -s &#39;/usr/lib/systemd/system/postfix.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/postfix.service&#39;</code></pre>
-<h2 id="2-2配置Dovecot服务程序"><a href="#2-2配置Dovecot服务程序" class="headerlink" title="2.2配置Dovecot服务程序"></a>2.2配置Dovecot服务程序</h2><p>第1步：安装Dovecot服务程序软件包。大家可自行配置Yum软件仓库、挂载光盘镜像到指定目录，然后输入要安装的dovecot软件包名称即可：</p>
-<pre><code>[root@linuxprobe ~]# yum install dovecot</code></pre>
-<p>第2步：配置部署Dovecot服务程序。在Dovecot服务程序的主配置文件中进行如下修改。首先是第24行，把Dovecot服务程序支持的电子邮件协议修改为imap、pop3和lmtp。然后在这一行下面添加一行参数，允许用户使用明文进行密码验证。之所以这样操作，是因为Dovecot服务程序为了保证电子邮件系统的安全而默认强制用户使用加密方式进行登录，而由于当前还没有加密系统，因此需要添加该参数来允许用户的明文登录。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/dovecot/dovecot.conf
-………………省略部分输出信息………………
-23 # Protocols we want to be serving.
-24 protocols = imap pop3 lmtp
-25 disable_plaintext_auth = no
-………………省略部分输出信息………………</code></pre>
-<p>在主配置文件中的第48行，设置允许登录的网段地址，也就是说我们可以在这里限制只有来自于某个网段的用户才能使用电子邮件系统。如果想允许所有人都能使用，则不用修改本参数：</p>
-<pre><code>44 # Space separated list of trusted network ranges. Connections from these
-45 # IPs are allowed to override their IP addresses and ports (for logging and
-46 # for authentication checks). disable_plaintext_auth is also ignored for
-47 # these networks. Typically you&#39;d specify your IMAP proxy servers here.
-48 login_trusted_networks = 192.168.10.0/24</code></pre>
-<p>第3步：配置邮件格式与存储路径。在Dovecot服务程序单独的子配置文件中，定义一个路径，用于指定要将收到的邮件存放到服务器本地的哪个位置。这个路径默认已经定义好了，我们只需要将该配置文件中第24行前面的井号（#）删除即可。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/dovecot/conf.d/10-mail.conf
-21 # See doc/wiki/Variables.txt for full list. Some examples:
-22 #
-23 # mail_location = maildir:~/Maildir
-24 mail_location = mbox:~/mail:INBOX=/var/mail/%u
-25 # mail_location = mbox:/var/mail/%d/%1n/%n:INDEX=/var/indexes/%d/%1n/%n
-………………省略部分输出信息………………</code></pre>
-<p>然后切换到配置Postfix服务程序时创建的boss账户，并在家目录中建立用于保存邮件的目录。记得要重启Dovecot服务并将其添加到开机启动项中。</p>
-<pre><code>[root@linuxprobe ~]# su - linuxprobe
-Last login: Sat Aug 15 16:15:58 CST 2017 on pts/1
-[linuxprobe@mail ~]$ mkdir -p mail/.imap/INBOX
-[linuxprobe@mail ~]$ exit
-[root@linuxprobe ~]# systemctl restart dovecot 
-[root@linuxprobe ~]# systemctl enable dovecot 
-ln -s &#39;/usr/lib/systemd/system/dovecot.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/dovecot.service&#39;</code></pre>
-<h2 id="2-3使用电子邮件系统"><a href="#2-3使用电子邮件系统" class="headerlink" title="2.3使用电子邮件系统"></a>2.3使用电子邮件系统</h2><p> 服务器与客户端的操作系统与IP地址：</p>
-<table>
-<thead>
-<tr>
-<th>主机名称</th>
-<th>操作系统</th>
-<th>IP地址</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>电子邮件系统及DNS服务器</td>
-<td>RHEL 7</td>
-<td>192.168.10.10</td>
-</tr>
-<tr>
-<td>客户端主机</td>
-<td>Windows 10</td>
-<td>192.168.10.30</td>
-</tr>
-</tbody></table>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png" class>
-
-<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#x6c;&#x69;&#x6e;&#x75;&#120;&#112;&#x72;&#111;&#98;&#x65;&#64;&#108;&#105;&#110;&#117;&#120;&#x70;&#x72;&#x6f;&#98;&#x65;&#x2e;&#x63;&#x6f;&#x6d;">&#x6c;&#x69;&#x6e;&#x75;&#120;&#112;&#x72;&#111;&#98;&#x65;&#64;&#108;&#105;&#110;&#117;&#120;&#x70;&#x72;&#x6f;&#98;&#x65;&#x2e;&#x63;&#x6f;&#x6d;</a>,linuxprobe是linux用户名）和用户密码：</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png" class>
-
-<p>第2步：设置接收服务器类型为POP3，输入邮件帐号和密码，设置POP服务器和SMTP服务器地址，两个为同一地址，如192.168.10.10，SSL端口处不勾选，之后创建成功！</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/7.png" class>
-
-<p>第3步：账号建立后，即可从win 10系统向linux发送邮件：</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/8.png" class>
-
-<p>第4步：发送邮件后，可在linux系统内部输入mail命令，并输入对应邮件数值编号查看邮件：</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/9.png" class>
-
-<p>第5步：从linux系统向win10电脑发送邮件，只需输入mail 邮件地址，然后输入subject和正文；最后输入点（.)结束：</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/10.png" class>
-
-<h1 id="3-设置用户别名邮箱"><a href="#3-设置用户别名邮箱" class="headerlink" title="3.设置用户别名邮箱"></a>3.设置用户别名邮箱</h1><p>用户别名功能是一项简单实用的邮件账户伪装技术，可以用来设置多个虚拟信箱的账户以接受发送的邮件，从而保证自身的邮件地址不被泄露，还可以用来接收自己的多个信箱中的邮件。</p>
-<pre><code>[root@linuxprobe ~]# cat /etc/aliases
-#
-# Aliases in this file will NOT be expanded in the header from
-# Mail, but WILL be visible over networks or from /bin/mail.
-#
-# &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; The program &quot;newaliases&quot; must be run after
-# &gt;&gt; NOTE &gt;&gt; this file is updated for any changes to
-# &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; show through to sendmail.
-#
-# Basic system aliases -- these MUST be present.
-mailer-daemon: postmaster
-postmaster: root
-# General redirections for pseudo accounts.
-bin: root
-daemon: root
-adm: root
-lp: root
-sync: root
-shutdown: root
-halt: root
-mail: root
-news: root
-……</code></pre>
-<p>保存并退出aliases邮件别名服务的配置文件后，需要再执行一下newaliases命令，其目的是让新的用户别名配置文件立即生效。</p>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第13章节：使用Bind提供域名解析服务</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学：iptables与firewalld防火墙</title>
-    <url>/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/</url>
-    <content><![CDATA[<h1 id="1-Iptables"><a href="#1-Iptables" class="headerlink" title="1.Iptables"></a>1.Iptables</h1><h2 id="（1）策略与规则链"><a href="#（1）策略与规则链" class="headerlink" title="（1）策略与规则链"></a>（1）策略与规则链</h2><p>iptables服务把用于处理或过滤流量的策略条目称之为规则，多条规则可以组成一个规则链，而规则链则依据数据包处理位置的不同进行分类，具体如下：</p>
-<a id="more"></a>
-
-<pre><code>在进行路由选择前处理数据包（PREROUTING）；
-
-处理流入的数据包（INPUT）；
-
-处理流出的数据包（OUTPUT）；
-
-处理转发的数据包（FORWARD）；
-
-在进行路由选择后处理数据包（POSTROUTING）。</code></pre>
-<p>iptables服务的术语分别是ACCEPT（允许流量通过）、REJECT（拒绝流量通过）、LOG（记录日志信息）、DROP（拒绝流量通过）。REJECT和DROP的不同点：就DROP来说，它是直接将流量丢弃而且不响应；REJECT则会在拒绝流量后再回复一条“您的信息已经收到，但是被扔掉了”信息，从而让流量发送方清晰地看到数据被拒绝的响应信息。</p>
-<h2 id="（2）基本命令参数"><a href="#（2）基本命令参数" class="headerlink" title="（2）基本命令参数"></a>（2）基本命令参数</h2><p>防火墙策略规则的匹配顺序是从上至下的，因此要把较为严格、优先级较高的策略规则放到前面，以免发生错误。</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-P</td>
-<td>设置默认策略</td>
-</tr>
-<tr>
-<td>-F</td>
-<td>清空规则链</td>
-</tr>
-<tr>
-<td>-L</td>
-<td>查看规则链</td>
-</tr>
-<tr>
-<td>-A</td>
-<td>在规则链的末尾加入新规则</td>
-</tr>
-<tr>
-<td>-I num</td>
-<td>在规则链的头部加入新规则</td>
-</tr>
-<tr>
-<td>-D num</td>
-<td>删除某一条规则</td>
-</tr>
-<tr>
-<td>-s</td>
-<td>匹配来源地址IP/MASK，加叹号“!”表示除这个IP外</td>
-</tr>
-<tr>
-<td>-d</td>
-<td>匹配目标地址</td>
-</tr>
-<tr>
-<td>-p</td>
-<td>匹配协议，如TCP、UDP、ICMP</td>
-</tr>
-<tr>
-<td>–dport num</td>
-<td>匹配目标端口号</td>
-</tr>
-<tr>
-<td>–sport num</td>
-<td>匹配来源端口号</td>
-</tr>
-</tbody></table>
-<p>规则链的默认策略拒绝动作只能是DROP，而不能是REJECT。</p>
-<p>防火墙策略规则是按照从上到下的顺序匹配的，因此一定要把允许动作放到拒绝动作前面，否则所有的流量就将被拒绝掉，从而导致任何主机都无法访问我们的服务。</p>
-<p>向INPUT规则链中添加拒绝192.168.10.5主机访问本机80端口（Web服务）的策略规则：</p>
-<pre><code>[root@linuxprobe ~]# iptables -I INPUT -p tcp -s 192.168.10.5 --dport 80 -j REJECT</code></pre>
-<p>向INPUT规则链中添加拒绝所有主机访问本机1000～1024端口的策略规则：</p>
-<pre><code>[root@linuxprobe ~]# iptables -A INPUT -p tcp --dport 1000:1024 -j REJECT
-[root@linuxprobe ~]# iptables -A INPUT -p udp --dport 1000:1024 -j REJECT</code></pre>
-<p>使用iptables命令配置的防火墙规则默认会在系统下一次重启时失效，如果想让配置的防火墙策略永久生效，还要执行保存命令：</p>
-<pre><code>[root@linuxprobe ~]# service iptables save
-iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
-<h1 id="2-Firewalld"><a href="#2-Firewalld" class="headerlink" title="2.Firewalld"></a>2.Firewalld</h1><table>
-<thead>
-<tr>
-<th>区域</th>
-<th>默认规则策略</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>trusted</td>
-<td>允许所有的数据包</td>
-</tr>
-<tr>
-<td>home</td>
-<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh、mdns、ipp-client、amba-client与dhcpv6-client服务相关，则允许流量</td>
-</tr>
-<tr>
-<td>internal</td>
-<td>等同于home区域</td>
-</tr>
-<tr>
-<td>work</td>
-<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh、ipp-client与dhcpv6-client服务相关，则允许流量</td>
-</tr>
-<tr>
-<td>public</td>
-<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh、dhcpv6-client服务相关，则允许流量</td>
-</tr>
-<tr>
-<td>external</td>
-<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh服务相关，则允许流量</td>
-</tr>
-<tr>
-<td>dmz</td>
-<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh服务相关，则允许流量</td>
-</tr>
-<tr>
-<td>block</td>
-<td>拒绝流入的流量，除非与流出的流量相关</td>
-</tr>
-<tr>
-<td>drop</td>
-<td>拒绝流入的流量，除非与流出的流量相关</td>
-</tr>
-</tbody></table>
-<h2 id="2-1图形管理工具"><a href="#2-1图形管理工具" class="headerlink" title="2.1图形管理工具"></a>2.1图形管理工具</h2><img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/1.png" class>
-
-<p>我们先将当前区域中请求http服务的流量设置为允许，但仅限当前生效：</p>
-<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/2.png" class>
-
-<p>试添加一条防火墙策略规则，使其放行访问8080～8088端口（TCP协议）的流量，并将其设置为永久生效，配置完毕之后，还需要在Options菜单中单击Reload Firewalld命令，让配置的防火墙策略立即生效：</p>
-<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/3.png" class>
-
-<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/4.png" class>
-
-<p>使用iptables命令实现SNAT技术(Source Network Address Translation，源网络地址转换),可以使得多个内网中的用户通过同一个外网IP接入Internet:</p>
-<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/5.png" class>
-
-<p>将本机888端口的流量转发到22端口，且要求当前和长期均有效:</p>
-<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/6.png" class>
-
-<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/7.png" class>
-
-<p>配置富规则，让192.168.10.20主机访问到本机的1234端口号:</p>
-<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/8.png" class>
-
-<p>把网卡与防火墙策略区域进行绑定:</p>
-<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/9.png" class>
-
-<h2 id="2-3服务的访问控制列表"><a href="#2-3服务的访问控制列表" class="headerlink" title="2.3服务的访问控制列表"></a>2.3服务的访问控制列表</h2><p>TCP Wrappers是RHEL 7系统中默认启用的一款流量监控程序，它能够根据来访主机的地址与本机的目标服务程序作出允许或拒绝的操作。换句话说，Linux系统中其实有两个层面的防火墙，第一种是前面讲到的基于TCP/IP协议的流量过滤工具，而TCP Wrappers服务则是能允许或禁止Linux系统提供服务的防火墙，从而在更高层面保护了Linux系统的安全运行。</p>
-<p>在配置TCP Wrappers服务时需要遵循两个原则：</p>
-<pre><code>（1）编写拒绝策略规则时，填写的是服务名称，而非协议名称；
-（2）建议先编写拒绝策略规则（/etc/hosts.deny），再编写允许策略规则（/etc/hosts.allow），以便直观地看到相应的效果。</code></pre>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第8章节：iptables与firewalld防火墙</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学：linux命令</title>
-    <url>/2020/12/28/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Alinux%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<h1 id="1-命令格式"><a href="#1-命令格式" class="headerlink" title="1.命令格式"></a>1.命令格式</h1><p>格式要求： 命令名称 [命令参数]  [命令对象]<br>注意：<br>（1）命令名称、命令参数、命令对象之间需用空格键分隔；<br>（2）多个参数之间也要有空格，参数有长格式和短格式之分，分别用（–）和（-）作为前缀；长格式和长格式之间、长格式和短格式之间不能合并，短格式和短格式之间可以合并，共用一个空格，合并后仅保留一个-即可。</p>
-<a id="more"></a>
-<p>在命令行终端中输入”man 命令”来查看命令自身的帮助信息，在命令帮助信息的界面中，常用操作按键如下所示：</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>空格键</td>
-<td>向下翻一页</td>
-</tr>
-<tr>
-<td>PaGe down</td>
-<td>向下翻一页</td>
-</tr>
-<tr>
-<td>PaGe up</td>
-<td>向上翻一页</td>
-</tr>
-<tr>
-<td>home</td>
-<td>直接前往首页</td>
-</tr>
-<tr>
-<td>end</td>
-<td>直接前往尾页</td>
-</tr>
-<tr>
-<td>/</td>
-<td>从上往下搜索某个关键词，如“/linux”</td>
-</tr>
-<tr>
-<td>？</td>
-<td>从下往上搜索某个关键词</td>
-</tr>
-<tr>
-<td>n</td>
-<td>定位到下一个搜索到的关键词</td>
-</tr>
-<tr>
-<td>N</td>
-<td>定位到上一个搜索到的关键词</td>
-</tr>
-<tr>
-<td>q</td>
-<td>退出帮助文档</td>
-</tr>
-</tbody></table>
-<h1 id="2-常用的工作命令"><a href="#2-常用的工作命令" class="headerlink" title="2.常用的工作命令"></a>2.常用的工作命令</h1><ol>
-<li>echo：用于在终端输出字符串或变量提取后的值，如： echo 字符串/$变量</li>
-<li>date：用于显示及设置系统的时间或日期；<br> 直接输入date命令用于查看当前系统时间；<br> date “+%Y-%m-%d %H:%M:%S”:按照“年-月-日 小时:分钟:秒”的格式查看当前系统时间；<br> date -s “20200105 8:30:00”：将系统时间设置为2020年1月5日8点30分；<br> date “+%j”:用于查看今天是当年中的第几天；</li>
-<li>reboot：用于重启系统；</li>
-<li>poweroff：用于系统关机；</li>
-<li>wget命令：用于在终端中下载网络文件（需连接网络才可以下载），如：wget http：//<a href="http://www.linuxprobe.com/docs/linuxprobe.pdf%EF%BC%9B">www.linuxprobe.com/docs/linuxprobe.pdf；</a></li>
-</ol>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-b</td>
-<td>后台下载模式</td>
-</tr>
-<tr>
-<td>-P</td>
-<td>下载到指定目录</td>
-</tr>
-<tr>
-<td>-c</td>
-<td>断点续传</td>
-</tr>
-<tr>
-<td>-p</td>
-<td>下载页面内的所有资源，包括图片、视频</td>
-</tr>
-<tr>
-<td>-r</td>
-<td>递归下载</td>
-</tr>
-</tbody></table>
-<ol start="6">
-<li>ps:用于查看系统中的进程状态；</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-a</td>
-<td>显示所有进程（包括其他用户）</td>
-</tr>
-<tr>
-<td>-u</td>
-<td>用户及其他详细信息</td>
-</tr>
-<tr>
-<td>-x</td>
-<td>显示没有控制终端的进程</td>
-</tr>
-</tbody></table>
-<p>进程状态：R（运行）、S（休眠）、D（不可中断）、Z（僵死）、T（停止）；<br>7. top：用于动态地监视进程活动与系统负载等信息；<br>8. pidof：用于查询某个指定服务进程的PID值，如pidof sshd；<br>9. kill：用于终止某个指定PID的服务进程，如kill 2156；<br>10. killall：用于终止某个指定名称的服务所对应的全部进程；</p>
-<h1 id="3-系统状态检测命令"><a href="#3-系统状态检测命令" class="headerlink" title="3.系统状态检测命令"></a>3.系统状态检测命令</h1><ol>
-<li>ifconfig：用于获取网卡配置与网络状态等信息，可以查看到网卡名称、IP地址和物理地址；</li>
-<li>uname：用于查看系统内核与系统版本等信息，加上-a参数能完整地查看当前系统的内核名称等信息；</li>
-<li>uptime：用于查看系统的负载信息；负载值越低越好，尽量不要长期超过1，生产环境中不要超过5；</li>
-<li>free：用于显示当前系统中内存的使用量信息，结合-h参数能以更人性化的方式树池当前内存的实时信息；</li>
-<li>who：用于查看当前登入主机的用户终端信息；</li>
-<li>last：用于查看所有系统的登陆记录，但仅供参考，其中内容可能会被篡改；</li>
-<li>history：用于显示历史执行过的命令（默认为最近1000条的命令），使用-c参数则会清空所有的历史记录，使用“！编码数字”的方式可以重复执行某一次的命令；<br> 注：只有在终端关闭的时候，才会同步信息；</li>
-<li>sosreport：用于收集系统配置及架构信息并输出诊断文档；</li>
-</ol>
-<h1 id="4-工作目录切换命令"><a href="#4-工作目录切换命令" class="headerlink" title="4.工作目录切换命令"></a>4.工作目录切换命令</h1><ol>
-<li>pwd：用于显示用户当前所处的工作目录；</li>
-<li>cd：用于切换工作路径，其中cd -：表示返回到上一次所处的目录； cd..:表示进入上级目录； cd~：表示切换到当前用户的家目录；</li>
-<li>ls：用于显示目录中的文件信息，其中ls -a：表示查看全部文件（包括隐藏文件)；  ls -l：查看文件的属性、大小等详细信息； ls -d：查看目录及其详细信息；</li>
-</ol>
-<h1 id="5-文本文件编辑命令"><a href="#5-文本文件编辑命令" class="headerlink" title="5.文本文件编辑命令"></a>5.文本文件编辑命令</h1><ol>
-<li>cat：用于查看纯文本文件（内容较少的），cat -n：显示行号；</li>
-<li>more：用于查看纯文本文件（内容较多的）；按回车键向下走一行，空格键向下走一页；</li>
-<li>head：用于查看文本文档的前N行内容，如 head -n 20 initial.cfg:查看initial.cfg文件的前20行内容；</li>
-<li>tail：用于查看文本文档的后N行内容，如 tail -n 20 initial.cfg:查看initial.cfg文件的后20行内容；tail -f 文件名：用于实时查看最新日志文件；</li>
-<li>tr：用于替换文本文件中的字符，格式为：tr [原始字符] [目标字符]，如 tr[a-z] [A-Z];</li>
-<li>wc:用于统计指定文本的行数、字数和字节数；</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-l</td>
-<td>只显示行数</td>
-</tr>
-<tr>
-<td>-w</td>
-<td>只显示单词数</td>
-</tr>
-<tr>
-<td>-c</td>
-<td>只显示字节数</td>
-</tr>
-<tr>
-<td>-d</td>
-<td>同时修改atime和mtime</td>
-</tr>
-</tbody></table>
-<ol start="7">
-<li>stat：用于查看文件的具体存储信息和时间等信息；其中Access表示最后一次访问文件的时间；Modify表示真实修改文件内容的时间；Change表示修改文件属性信息的时间。</li>
-<li>cut：用于按“列”提取文本字符；-d参数：用于设置间隔符号； -f参数：用于设置想看的列数；</li>
-<li>diff：用于比较多个文本文件的差异； –brief参数:用于确认两个文件是否不同；  -c参数：用于比较多个文件的差异之处。查询结果中有“！”开头的行，表示内容有不同。</li>
-</ol>
-<h1 id="6-文件目录管理命令"><a href="#6-文件目录管理命令" class="headerlink" title="6.文件目录管理命令"></a>6.文件目录管理命令</h1><p>1.touch：用于创建空白文件或设置文件的时间；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-a</td>
-<td>修改读取时间</td>
-</tr>
-<tr>
-<td>-m</td>
-<td>修改修改时间</td>
-</tr>
-<tr>
-<td>-c</td>
-<td>修改更改权限时间</td>
-</tr>
-<tr>
-<td>-d</td>
-<td>同时修改atime和mtime</td>
-</tr>
-</tbody></table>
-<p>2.mkdir：用于创建空白目录；mkdir -p：能够递归创建具有嵌套关系的文件目录。<br>3.cp：用于复制文件或目录；格式为：cp [选项] 源文件 目标文件<br>复制操作分为3种情况：<br>（1）如果目标文件为目录，则把源文件复制到该目录中；<br>（2）如果目标文件为文件，则会询问是否要覆盖它；<br>（3）如果目标文件不存在，则执行正常的复制操作；<br>4.mv：用于剪切文件或将文件重命名，格式为：mv [选项]  源文件 [目标路径|目标文件名]<br>5.rm：用于删除文件或目录； -f：强制删除； -r：用于删除文件夹或目录；<br>6.dd：用于按照指定大小和个数的数据块来复制文件或转换文件；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>if</td>
-<td>输入的文件名称</td>
-</tr>
-<tr>
-<td>of</td>
-<td>输出的文件名称</td>
-</tr>
-<tr>
-<td>bs</td>
-<td>每个“块”的大小</td>
-</tr>
-<tr>
-<td>count</td>
-<td>复制“块”的个数</td>
-</tr>
-</tbody></table>
-<p>如：dd if=/dev/zero of=560_file count=1 bs=560M</p>
-<p>7.file:用于查看文件的类型；</p>
-<h1 id="7-打包压缩与搜索命令"><a href="#7-打包压缩与搜索命令" class="headerlink" title="7.打包压缩与搜索命令"></a>7.打包压缩与搜索命令</h1><p>1.tar：用于将文件进行打包压缩或解压；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-c</td>
-<td>创建压缩文件</td>
-</tr>
-<tr>
-<td>-x</td>
-<td>解开压缩文件</td>
-</tr>
-<tr>
-<td>-z</td>
-<td>用Gzip压缩或解压</td>
-</tr>
-<tr>
-<td>-j</td>
-<td>用bzip2压缩或解压</td>
-</tr>
-<tr>
-<td>-v</td>
-<td>显示压缩或解压的过程</td>
-</tr>
-<tr>
-<td>-f</td>
-<td>目标文件名</td>
-</tr>
-<tr>
-<td>-C</td>
-<td>指定解压到的目录</td>
-</tr>
-</tbody></table>
-<p>将文件打包压缩：tar -czvf 压缩包名称.tar.gz 要打包的目录； 如： tar -czvf etc.tar.gz /etc<br>解压命令：tar -xzvf 压缩包名称.tar.gz; 如： tar xzvf etc.tar.gz -C /root/etc</p>
-<p>2.grep:用于在文本中执行关键词搜索； -n：用来显示搜索到信息的行号； -v：用于反选信息；<br>3.find：用于按照指定条件来查找文件；格式为：find [查找路径] 寻找条件 操作； 如： find /etc -name “host*” -print<br>-exec:用于将find命令搜索到的结果交由后面的命令作进一步处理，exec虽然是长格式，但只需要一个“-”。</p>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第2章节：linux命令</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux就该这么学：使用RAID与LVM磁盘阵列技术</title>
     <url>/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/</url>
     <content><![CDATA[<p>RAID：Redundant Array of Independent Disks，独立冗余磁盘阵列；<br>LVM：Logical Volume Manager，逻辑卷管理器；</p>
@@ -2408,6 +1720,167 @@ NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进
       </categories>
       <tags>
         <tag>linux虚拟机外网网络访问设置指南</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>liunx就该这么学-16：使用Squid部署代理缓存服务</title>
+    <url>/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/</url>
+    <content><![CDATA[<h1 id="1-代理缓存服务"><a href="#1-代理缓存服务" class="headerlink" title="1.代理缓存服务"></a>1.代理缓存服务</h1><a id="more"></a>
+
+<p>Squid是Linux系统中最为流行的一款高性能代理服务软件，通常用作Web网站的前置缓存服务，能够代替用户向网站服务器请求页面数据并进行缓存。简单来说，Squid服务程序会按照收到的用户请求向网站源服务器请求页面、图片等所需的数据，并将服务器返回的数据存储在运行Squid服务程序的服务器上。当有用户再请求相同的数据时，则可以直接将存储服务器本地的数据交付给用户，这样不仅减少了用户的等待时间，还缓解了网站服务器的负载压力。</p>
+<p>在使用Squid服务程序为用户提供缓存代理服务时，具有正向代理模式和反向代理模式之分。</p>
+<p>所谓正向代理模式，是指让用户通过Squid服务程序获取网站页面等资源，以及基于访问控制列表（ACL）功能对用户访问网站行为进行限制，在具体的服务方式上又分为标准代理模式与透明代理模式。标准正向代理模式是把网站数据缓存到服务器本地，提高数据资源被再次访问时的效率，但是用户在上网时必须在浏览器等软件中填写代理服务器的IP地址与端口号信息，否则默认不使用代理服务。而透明正向代理模式的作用与标准正向代理模式基本相同，区别是用户不需要手动指定代理服务器的IP地址与端口号，所以这种代理服务对于用户来讲是相对透明的。</p>
+<p>Squid服务程序提供正向代理服务：</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/1.png" class>
+
+<p>反向代理模式是指让多台节点主机反向缓存网站数据，从而加快用户访问速度。因为一般来讲，网站中会普遍加载大量的文字、图片等静态资源，而且它们相对来说都是比较稳定的数据信息，当用户发起网站页面中这些静态资源的访问请求时，我们可以使用Squid服务程序提供的反向代理模式来进行响应。而且，如果反向代理服务器中恰巧已经有了用户要访问的静态资源，则直接将缓存的这些静态资源发送给用户，这不仅可以加快用户的网站访问速度，还在一定程度上降低了网站服务器的负载压力。</p>
+<p>Squid服务程序提供的反向代理模式:</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/2.png" class>
+
+<h1 id="2-配置Squid服务程序"><a href="#2-配置Squid服务程序" class="headerlink" title="2.配置Squid服务程序"></a>2.配置Squid服务程序</h1><p>Squid服务程序的配置步骤虽然十分简单，但依然需要为大家交代一下实验所需的设备以及相应的设置。首先需要准备两台虚拟机，一台用作Squid服务器，另外一台用作Squid客户端；为了能够相互通信，需要将这两台虚拟机<strong>都设置为仅主机模式（Hostonly）</strong>，然后关闭其中一台虚拟机的电源，在添加一块新的网卡为<strong>桥接模式</strong>后开启电源：</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/3.png" class>
+
+<p>需要注意的是，这块新添加的网卡设备必须选择为桥接模式，否则这两台虚拟机都无法访问外网。</p>
+<p>设置好桥接模式后，虚拟机还不能连接外网，还需要到虚拟机的编辑-虚拟网络编辑器，对VMnet0的桥接网卡进行指定：</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/4.png" class>
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/5.png" class>
+
+<p>之后回到linux系统，在终端中输入命令：nm-connection-editor，新建网卡：</p>
+<pre><code>[root@linuxprobe ~]#nm-connection-editor</code></pre>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/6.png" class>
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/7.png" class>
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/8.png" class>
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/9.png" class>
+
+<p>设置完成后，保存退出，之后重新启动网卡；也可以ping下网站，看是否能够成功：</p>
+<pre><code>[root@linuxprobe ~]#systemctl restart network
+[root@linuxprobe ~]#ping -c 4 www.baidu.com</code></pre>
+<p>当前Squid服务器和客户端的操作系统和IP地址信息：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Squid服务器</td>
+<td>RHEL 7</td>
+<td>外网卡：桥接DHCP模式</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>内网卡：192.168.10.10</td>
+</tr>
+<tr>
+<td>Squid客户端</td>
+<td>Windows 7/RHEL 7</td>
+<td>192.168.10.20</td>
+</tr>
+</tbody></table>
+<p>这样一来，我们就有了一台既能访问内网，又能访问外网的Squid服务器了；但当前的Squid服务器只能和外网或虚拟机间进行通讯，无法和宿主机进行连接；如果Squid服务器需要和宿主机间通过主机模式（host only）进行通讯的话，还需要在宿主机的VMnet1网络适配器进行以下设置：</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/10.png" class>
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/11.png" class>
+
+<p>至此，Squid服务器既能访问外网和内网，又能和宿主机进行通讯。</p>
+<p>但有一个问题，Squid服务器目前有两个网卡，一个网卡连接外网，一个网卡连接内网；但/etc/sysconfig/network-scripts目录内只有内网网卡的配置文件，并没有生成外网网卡的配置文件；自己手动新建配置文件的话，重启网卡后反而无法连接外网，会报错，不太清楚原因所在，难道使用DHCP的外网网卡不需要配置文件？</p>
+<p>当配置好Yum软件仓库并挂载好设备镜像后，就可以安装Squid服务程序了:</p>
+<pre><code>[root@linuxprobe ~]# yum install squid</code></pre>
+<p>Squid服务程序的配置文件也是存放在/etc/squid/squid.conf;常用的Squid服务程序配置参数以及作用:</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>http_port 3128</td>
+<td>监听的端口号</td>
+</tr>
+<tr>
+<td>cache_mem 64M</td>
+<td>内存缓冲区的大小</td>
+</tr>
+<tr>
+<td>cache_dir ufs /var/spool/squid 2000 16 256</td>
+<td>硬盘缓冲区的大小</td>
+</tr>
+<tr>
+<td>cache_effective_user squid</td>
+<td>设置缓存的有效用户</td>
+</tr>
+<tr>
+<td>cache_effective_group squid</td>
+<td>设置缓存的有效用户组</td>
+</tr>
+<tr>
+<td>dns_nameservers</td>
+<td>IP地址    一般不设置，而是用服务器默认的DNS地址</td>
+</tr>
+<tr>
+<td>cache_access_log /var/log/squid/access.log</td>
+<td>访问日志文件的保存路径</td>
+</tr>
+<tr>
+<td>cache_log /var/log/squid/cache.log</td>
+<td>缓存日志文件的保存路径</td>
+</tr>
+<tr>
+<td>visible_hostname linuxprobe.com</td>
+<td>设置Squid服务器的名称</td>
+</tr>
+</tbody></table>
+<h1 id="3-正向代理"><a href="#3-正向代理" class="headerlink" title="3.正向代理"></a>3.正向代理</h1><h2 id="3-1标准正向代理"><a href="#3-1标准正向代理" class="headerlink" title="3.1标准正向代理"></a>3.1标准正向代理</h2><pre><code>[root@linuxprobe ~]# systemctl restart squid
+[root@linuxprobe ~]# systemctl enable squid
+ln -s &#39;/usr/lib/systemd/system/squid.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/squid.service&#39;</code></pre>
+<p>接下来在Squid客户端进行操作，首先是windows7系统：</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/12.png" class>
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/13.png" class>
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/14.png" class>
+
+<p>其次是RHEL 7系统,打开火狐浏览器:</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/15.png" class>
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/16.png" class>
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/17.png" class>
+
+<p>需要注意的是，虽然在浏览器中已经设置好代理服务器，但目前在客户端系统上还不能连接外网；此时需要回到Squid服务器中，输入以下命令，清空防火墙：</p>
+<pre><code>[root@linuxprobe ~]# iptables -F
+[root@linuxprobe ~]# service iptables save</code></pre>
+<p>至此，Squid客户端系统可以连接外网！</p>
+<p>Squid服务程序默认使用3128、3401与4827等端口号，因此可以把默认使用的端口号修改为其他值，以便起到一定的保护作用：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/squid/squid.conf
+………………省略部分输出信息………………
+http_port 10000
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart squid 
+[root@linuxprobe ~]# systemctl enable squid 
+ ln -s &#39;/usr/lib/systemd/system/squid.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/squid.service&#39;</code></pre>
+<p>尽管现在重启Squid服务程序后系统没有报错，但是用户还不能使用代理服务。SElinux安全子系统认为Squid服务程序使用3128端口号是理所当然的，因此在默认策略规则中也是允许的，但是现在Squid服务程序却尝试使用新的10000端口号，而该端口原本并不属于Squid服务程序应该使用的系统资源，因此还需要手动把新的端口号添加到Squid服务程序在SElinux域的允许列表中。</p>
+<pre><code>[root@linuxprobe ~]# semanage port -l | grep squid_port_t
+squid_port_t                   tcp      3128, 3401, 4827
+squid_port_t                   udp      3401, 4827
+[root@linuxprobe ~]# semanage port -a -t squid_port_t -p tcp 10000
+[root@linuxprobe ~]# semanage port -l | grep squid_port_t
+squid_port_t                   tcp      10000, 3128, 3401, 4827
+squid_port_t                   udp      3401, 4827</code></pre>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第16章节：使用Squid部署代理缓存服务</tag>
       </tags>
   </entry>
   <entry>
@@ -4098,6 +3571,694 @@ i love linux</code></pre>
       </categories>
       <tags>
         <tag>第11章节：使用Vsftpd服务传输文件</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学-15:使用Postfix与Dovecot部署邮件系统</title>
+    <url>/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/</url>
+    <content><![CDATA[<h1 id="1-电子邮件系统"><a href="#1-电子邮件系统" class="headerlink" title="1.电子邮件系统"></a>1.电子邮件系统</h1><p>电子邮件系统基于邮件协议来完成电子邮件的传输，常见的邮件协议有下面这些：</p>
+<a id="more"></a>
+
+<pre><code>简单邮件传输协议（Simple Mail Transfer Protocol，SMTP）：用于发送和中转发出的电子邮件，占用服务器的25/TCP端口。
+
+邮局协议版本3（Post Office Protocol 3）：用于将电子邮件存储到本地主机，占用服务器的110/TCP端口。
+
+Internet消息访问协议版本4（Internet Message Access Protocol 4）：用于在本地主机上访问邮件，占用服务器的143/TCP端口。</code></pre>
+<p>MUA：Mail User Agent，邮件用户代理；    MDA：Mail Delivery Agent，邮件投递代理；    </p>
+<p>MTA：Mail Transfer Agent，邮件传输代理。</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/1.png" class>
+
+<p>在生产环境中部署企业级的电子邮件系统时，有4个注意事项请留意。</p>
+<pre><code>1.添加反垃圾与反病毒模块：它能够很有效地阻止垃圾邮件或病毒邮件对企业信箱的干扰。
+2.对邮件加密：可有效保护邮件内容不被黑客盗取和篡改。
+3.添加邮件监控审核模块：可有效地监控企业全体员工的邮件中是否有敏感词、是否有透露企业资料等违规行为。
+4.保障稳定性：电子邮件系统的稳定性至关重要，运维人员应做到保证电子邮件系统的稳定运行，并及时做好防范分布式拒绝服务（Distributed Denial of Service，DDoS）攻击的准备。</code></pre>
+<h1 id="2-部署基础的电子邮件系统"><a href="#2-部署基础的电子邮件系统" class="headerlink" title="2.部署基础的电子邮件系统"></a>2.部署基础的电子邮件系统</h1><p>一个最基础的电子邮件系统肯定要能提供发件服务和收件服务，为此需要使用基于SMTP协议的Postfix服务程序提供发件服务功能，并使用基于POP3协议的Dovecot服务程序提供收件服务功能。</p>
+<p>要想更好地检验电子邮件系统的配置效果，需要先部署bind服务程序，为电子邮件服务器和客户端提供DNS域名解析服务。</p>
+<p>第1步：部署bind服务程序。</p>
+<pre><code>[root@linuxprobe ~]# yum install bind-chroot</code></pre>
+<p>第2步：配置服务器主机名称，需要保证服务器主机名称与发信域名保持一致：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/hostname
+mail.linuxprobe.com
+[root@linuxprobe ~]# hostname
+mail.linuxprobe.com
+[root@linuxprobe ~]# vim /etc/hosts
+192.168.10.10 mail.linuxprobe.com</code></pre>
+<p>第3步：清空iptables防火墙默认策略，并保存策略状态，避免因防火墙中默认存在的策略阻止了客户端DNS解析域名及收发邮件：</p>
+<pre><code>[root@localhost ~]# iptables -F
+[root@localhost ~]# service iptables save
+iptables: Saving firewall rules to /etc/sysconfig/iptables:[  OK  ]</code></pre>
+<p>第4步：为电子邮件系统提供域名解析。</p>
+<pre><code>[root@linuxprobe ~]# cat /etc/named.conf
+ 10 options &#123;
+ 11 listen-on port 53 &#123; any; &#125;;
+ 12 listen-on-v6 port 53 &#123; ::1; &#125;;
+ 13 directory &quot;/var/named&quot;;
+ 14 dump-file &quot;/var/named/data/cache_dump.db&quot;;
+ 15 statistics-file &quot;/var/named/data/named_stats.txt&quot;;
+ 16 memstatistics-file &quot;/var/named/data/named_mem_stats.txt&quot;;
+ 17 allow-query &#123; any; &#125;;
+ 18 
+ ………………省略部分输出信息………………
+
+[root@linuxprobe ~]# cat /etc/named.rfc1912.zones
+zone &quot;linuxprobe.com&quot; IN &#123;
+type master;
+file &quot;linuxprobe.com.zone&quot;;
+allow-update &#123;none;&#125;;
+&#125;;
+
+[root@linuxprobe ~]# cat /var/named/linuxprobe.com.zone</code></pre>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/2.png" class>
+
+<pre><code>[root@linuxprobe ~]# systemctl restart named
+[root@linuxprobe ~]# systemctl enable named
+ln -s &#39;/usr/lib/systemd/system/named.service&#39; 
+&#39;/etc/systemd/system/multi-user.target.wants/named.service&#39;</code></pre>
+<p>测试时重启named服务时，显示报错：Job for named.service failed because the control process exited with error code. See “systemctl status named.service” and “journalctl -xe” for details.用named-checkconf -z /etc/named.conf（纠错命令）查看发现是由于配置文件内容写错导致！</p>
+<p>这样电子邮件系统所对应的服务器主机名即为mail.linuxprobe.com，而邮件域为@linuxprobe.com。把服务器的DNS地址修改成本地IP地址：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/3.jpg" class>
+
+<p>修改完IP地址后，需要重启网卡，之后可用ping mail.linuxprobe.com或nslookup命令测试下配置是否成功：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/4.png" class>
+
+<p>用nslookup命令测试时，出现以下报错：server can’t find mail.linuxprobe.com:NXDOMAIN，并提示当前的server 192.168.10.2 不能使用；此时可编辑/etc/resolv.conf文件，将报错的nameserver 192.168.10.2删除，保留nameserver 192.168.10.10即可！之后再重启网卡，测试一下！</p>
+<h2 id="2-1配置Postfix服务程序"><a href="#2-1配置Postfix服务程序" class="headerlink" title="2.1配置Postfix服务程序"></a>2.1配置Postfix服务程序</h2><p>第1步：安装Postfix服务程序；在安装完Postfix服务程序后，需要禁用iptables防火墙，否则外部用户无法访问电子邮件系统。</p>
+<pre><code>[root@linuxprobe ~]# yum install postfix
+Loaded plugins: langpacks, product-id, subscription-manager
+rhel7 | 4.1 kB 00:00
+(1/2): rhel7/group_gz | 134 kB 00:00
+(2/2): rhel7/primary_db | 3.4 MB 00:00
+Package 2:postfix-2.10.1-6.el7.x86_64 already installed and latest version
+Nothing to do
+[root@linuxprobe ~]# systemctl disable iptables</code></pre>
+<p>第2步：配置Postfix服务程序，Postfix服务程序主配置文件（/etc/ postfix/main.cf）。</p>
+<p>Postfix服务程序主配置文件中的重要参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>myhostname</td>
+<td>邮局系统的主机名</td>
+</tr>
+<tr>
+<td>mydomain</td>
+<td>邮局系统的域名</td>
+</tr>
+<tr>
+<td>myorigin</td>
+<td>从本机发出邮件的域名名称</td>
+</tr>
+<tr>
+<td>inet_interfaces</td>
+<td>监听的网卡接口</td>
+</tr>
+<tr>
+<td>mydestination</td>
+<td>可接收邮件的主机名或域名</td>
+</tr>
+<tr>
+<td>mynetworks</td>
+<td>设置可转发哪些主机的邮件</td>
+</tr>
+<tr>
+<td>relay_domains</td>
+<td>设置可转发哪些网域的邮件</td>
+</tr>
+</tbody></table>
+<p>在Postfix服务程序的主配置文件中，总计需要修改5处。首先是在第76行定义一个名为myhostname的变量，用来保存服务器的主机名称。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/postfix/main.cf
+………………省略部分输出信息………………
+68 # INTERNET HOST AND DOMAIN NAMES
+69 # 
+70 # The myhostname parameter specifies the internet hostname of this
+71 # mail system. The default is to use the fully-qualified domain name
+72 # from gethostname(). $myhostname is used as a default value for many
+73 # other configuration parameters.
+74 #
+75 #myhostname = host.domain.tld
+76 myhostname = mail.linuxprobe.com
+………………省略部分输出信息………………</code></pre>
+<p>然后在第83行定义一个名为mydomain的变量，用来保存邮件域的名称。大家也要记住这个变量名称，下面将调用它：</p>
+<pre><code>78 # The mydomain parameter specifies the local internet domain name.
+79 # The default is to use $myhostname minus the first component.
+80 # $mydomain is used as a default value for many other configuration
+81 # parameters.
+82 #
+83 mydomain = linuxprobe.com</code></pre>
+<p>在第99行调用前面的mydomain变量，用来定义发出邮件的域。调用变量的好处是避免重复写入信息，以及便于日后统一修改：</p>
+<pre><code>94 # For the sake of consistency between sender and recipient addresses,
+95 # myorigin also specifies the default domain name that is appended
+96 # to recipient addresses that have no @domain part.
+97 #
+98 #myorigin = $myhostname
+99 myorigin = $mydomain</code></pre>
+<p>第4处修改是在第116行定义网卡监听地址。可以指定要使用服务器的哪些IP地址对外提供电子邮件服务；也可以干脆写成all，代表所有IP地址都能提供电子邮件服务：</p>
+<pre><code>111 # Note: you need to stop/start Postfix when this parameter changes.
+112 #
+113 #inet_interfaces = all
+114 #inet_interfaces = $myhostname
+115 #inet_interfaces = $myhostname, localhost
+116 inet_interfaces = all</code></pre>
+<p>最后一处修改是在第164行定义可接收邮件的主机名或域名列表。这里可以直接调用前面定义好的myhostname和mydomain变量（如果不想调用变量，也可以直接调用变量中的值）：</p>
+<pre><code>162 # See also below, section &quot;REJECTING MAIL FOR UNKNOWN LOCAL USERS&quot;.
+163 #
+164 mydestination = $myhostname , $mydomain
+165 #mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
+166 #mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain,</code></pre>
+<p>第3步：创建电子邮件系统的登录账户。Postfix与vsftpd服务程序一样，都可以调用本地系统的账户和密码，因此在本地系统创建常规账户即可。最后重启配置妥当的postfix服务程序，并将其添加到开机启动项中。大功告成！</p>
+<pre><code>[root@linuxprobe ~]# useradd boss
+[root@linuxprobe ~]# echo &quot;linuxprobe&quot; | passwd --stdin boss
+Changing password for user boss. passwd: all authentication tokens updated successfully.
+[root@linuxprobe ~]# systemctl restart postfix
+[root@linuxprobe ~]# systemctl enable postfix
+ln -s &#39;/usr/lib/systemd/system/postfix.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/postfix.service&#39;</code></pre>
+<h2 id="2-2配置Dovecot服务程序"><a href="#2-2配置Dovecot服务程序" class="headerlink" title="2.2配置Dovecot服务程序"></a>2.2配置Dovecot服务程序</h2><p>第1步：安装Dovecot服务程序软件包。大家可自行配置Yum软件仓库、挂载光盘镜像到指定目录，然后输入要安装的dovecot软件包名称即可：</p>
+<pre><code>[root@linuxprobe ~]# yum install dovecot</code></pre>
+<p>第2步：配置部署Dovecot服务程序。在Dovecot服务程序的主配置文件中进行如下修改。首先是第24行，把Dovecot服务程序支持的电子邮件协议修改为imap、pop3和lmtp。然后在这一行下面添加一行参数，允许用户使用明文进行密码验证。之所以这样操作，是因为Dovecot服务程序为了保证电子邮件系统的安全而默认强制用户使用加密方式进行登录，而由于当前还没有加密系统，因此需要添加该参数来允许用户的明文登录。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/dovecot/dovecot.conf
+………………省略部分输出信息………………
+23 # Protocols we want to be serving.
+24 protocols = imap pop3 lmtp
+25 disable_plaintext_auth = no
+………………省略部分输出信息………………</code></pre>
+<p>在主配置文件中的第48行，设置允许登录的网段地址，也就是说我们可以在这里限制只有来自于某个网段的用户才能使用电子邮件系统。如果想允许所有人都能使用，则不用修改本参数：</p>
+<pre><code>44 # Space separated list of trusted network ranges. Connections from these
+45 # IPs are allowed to override their IP addresses and ports (for logging and
+46 # for authentication checks). disable_plaintext_auth is also ignored for
+47 # these networks. Typically you&#39;d specify your IMAP proxy servers here.
+48 login_trusted_networks = 192.168.10.0/24</code></pre>
+<p>第3步：配置邮件格式与存储路径。在Dovecot服务程序单独的子配置文件中，定义一个路径，用于指定要将收到的邮件存放到服务器本地的哪个位置。这个路径默认已经定义好了，我们只需要将该配置文件中第24行前面的井号（#）删除即可。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/dovecot/conf.d/10-mail.conf
+21 # See doc/wiki/Variables.txt for full list. Some examples:
+22 #
+23 # mail_location = maildir:~/Maildir
+24 mail_location = mbox:~/mail:INBOX=/var/mail/%u
+25 # mail_location = mbox:/var/mail/%d/%1n/%n:INDEX=/var/indexes/%d/%1n/%n
+………………省略部分输出信息………………</code></pre>
+<p>然后切换到配置Postfix服务程序时创建的boss账户，并在家目录中建立用于保存邮件的目录。记得要重启Dovecot服务并将其添加到开机启动项中。</p>
+<pre><code>[root@linuxprobe ~]# su - linuxprobe
+Last login: Sat Aug 15 16:15:58 CST 2017 on pts/1
+[linuxprobe@mail ~]$ mkdir -p mail/.imap/INBOX
+[linuxprobe@mail ~]$ exit
+[root@linuxprobe ~]# systemctl restart dovecot 
+[root@linuxprobe ~]# systemctl enable dovecot 
+ln -s &#39;/usr/lib/systemd/system/dovecot.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/dovecot.service&#39;</code></pre>
+<h2 id="2-3使用电子邮件系统"><a href="#2-3使用电子邮件系统" class="headerlink" title="2.3使用电子邮件系统"></a>2.3使用电子邮件系统</h2><p> 服务器与客户端的操作系统与IP地址：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>电子邮件系统及DNS服务器</td>
+<td>RHEL 7</td>
+<td>192.168.10.10</td>
+</tr>
+<tr>
+<td>客户端主机</td>
+<td>Windows 10</td>
+<td>192.168.10.30</td>
+</tr>
+</tbody></table>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png" class>
+
+<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#108;&#x69;&#x6e;&#x75;&#120;&#112;&#114;&#111;&#x62;&#x65;&#x40;&#108;&#105;&#110;&#x75;&#x78;&#x70;&#x72;&#111;&#98;&#x65;&#46;&#99;&#111;&#109;">&#108;&#x69;&#x6e;&#x75;&#120;&#112;&#114;&#111;&#x62;&#x65;&#x40;&#108;&#105;&#110;&#x75;&#x78;&#x70;&#x72;&#111;&#98;&#x65;&#46;&#99;&#111;&#109;</a>,linuxprobe是linux用户名）和用户密码：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png" class>
+
+<p>第2步：设置接收服务器类型为POP3，输入邮件帐号和密码，设置POP服务器和SMTP服务器地址，两个为同一地址，如192.168.10.10，SSL端口处不勾选，之后创建成功！</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/7.png" class>
+
+<p>第3步：账号建立后，即可从win 10系统向linux发送邮件：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/8.png" class>
+
+<p>第4步：发送邮件后，可在linux系统内部输入mail命令，并输入对应邮件数值编号查看邮件：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/9.png" class>
+
+<p>第5步：从linux系统向win10电脑发送邮件，只需输入mail 邮件地址，然后输入subject和正文；最后输入点（.)结束：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/10.png" class>
+
+<h1 id="3-设置用户别名邮箱"><a href="#3-设置用户别名邮箱" class="headerlink" title="3.设置用户别名邮箱"></a>3.设置用户别名邮箱</h1><p>用户别名功能是一项简单实用的邮件账户伪装技术，可以用来设置多个虚拟信箱的账户以接受发送的邮件，从而保证自身的邮件地址不被泄露，还可以用来接收自己的多个信箱中的邮件。</p>
+<pre><code>[root@linuxprobe ~]# cat /etc/aliases
+#
+# Aliases in this file will NOT be expanded in the header from
+# Mail, but WILL be visible over networks or from /bin/mail.
+#
+# &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; The program &quot;newaliases&quot; must be run after
+# &gt;&gt; NOTE &gt;&gt; this file is updated for any changes to
+# &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; show through to sendmail.
+#
+# Basic system aliases -- these MUST be present.
+mailer-daemon: postmaster
+postmaster: root
+# General redirections for pseudo accounts.
+bin: root
+daemon: root
+adm: root
+lp: root
+sync: root
+shutdown: root
+halt: root
+mail: root
+news: root
+……</code></pre>
+<p>保存并退出aliases邮件别名服务的配置文件后，需要再执行一下newaliases命令，其目的是让新的用户别名配置文件立即生效。</p>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第15章节：使用Postfix与Dovecot部署邮件系统</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：iptables与firewalld防火墙</title>
+    <url>/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/</url>
+    <content><![CDATA[<h1 id="1-Iptables"><a href="#1-Iptables" class="headerlink" title="1.Iptables"></a>1.Iptables</h1><h2 id="（1）策略与规则链"><a href="#（1）策略与规则链" class="headerlink" title="（1）策略与规则链"></a>（1）策略与规则链</h2><p>iptables服务把用于处理或过滤流量的策略条目称之为规则，多条规则可以组成一个规则链，而规则链则依据数据包处理位置的不同进行分类，具体如下：</p>
+<a id="more"></a>
+
+<pre><code>在进行路由选择前处理数据包（PREROUTING）；
+
+处理流入的数据包（INPUT）；
+
+处理流出的数据包（OUTPUT）；
+
+处理转发的数据包（FORWARD）；
+
+在进行路由选择后处理数据包（POSTROUTING）。</code></pre>
+<p>iptables服务的术语分别是ACCEPT（允许流量通过）、REJECT（拒绝流量通过）、LOG（记录日志信息）、DROP（拒绝流量通过）。REJECT和DROP的不同点：就DROP来说，它是直接将流量丢弃而且不响应；REJECT则会在拒绝流量后再回复一条“您的信息已经收到，但是被扔掉了”信息，从而让流量发送方清晰地看到数据被拒绝的响应信息。</p>
+<h2 id="（2）基本命令参数"><a href="#（2）基本命令参数" class="headerlink" title="（2）基本命令参数"></a>（2）基本命令参数</h2><p>防火墙策略规则的匹配顺序是从上至下的，因此要把较为严格、优先级较高的策略规则放到前面，以免发生错误。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-P</td>
+<td>设置默认策略</td>
+</tr>
+<tr>
+<td>-F</td>
+<td>清空规则链</td>
+</tr>
+<tr>
+<td>-L</td>
+<td>查看规则链</td>
+</tr>
+<tr>
+<td>-A</td>
+<td>在规则链的末尾加入新规则</td>
+</tr>
+<tr>
+<td>-I num</td>
+<td>在规则链的头部加入新规则</td>
+</tr>
+<tr>
+<td>-D num</td>
+<td>删除某一条规则</td>
+</tr>
+<tr>
+<td>-s</td>
+<td>匹配来源地址IP/MASK，加叹号“!”表示除这个IP外</td>
+</tr>
+<tr>
+<td>-d</td>
+<td>匹配目标地址</td>
+</tr>
+<tr>
+<td>-p</td>
+<td>匹配协议，如TCP、UDP、ICMP</td>
+</tr>
+<tr>
+<td>–dport num</td>
+<td>匹配目标端口号</td>
+</tr>
+<tr>
+<td>–sport num</td>
+<td>匹配来源端口号</td>
+</tr>
+</tbody></table>
+<p>规则链的默认策略拒绝动作只能是DROP，而不能是REJECT。</p>
+<p>防火墙策略规则是按照从上到下的顺序匹配的，因此一定要把允许动作放到拒绝动作前面，否则所有的流量就将被拒绝掉，从而导致任何主机都无法访问我们的服务。</p>
+<p>向INPUT规则链中添加拒绝192.168.10.5主机访问本机80端口（Web服务）的策略规则：</p>
+<pre><code>[root@linuxprobe ~]# iptables -I INPUT -p tcp -s 192.168.10.5 --dport 80 -j REJECT</code></pre>
+<p>向INPUT规则链中添加拒绝所有主机访问本机1000～1024端口的策略规则：</p>
+<pre><code>[root@linuxprobe ~]# iptables -A INPUT -p tcp --dport 1000:1024 -j REJECT
+[root@linuxprobe ~]# iptables -A INPUT -p udp --dport 1000:1024 -j REJECT</code></pre>
+<p>使用iptables命令配置的防火墙规则默认会在系统下一次重启时失效，如果想让配置的防火墙策略永久生效，还要执行保存命令：</p>
+<pre><code>[root@linuxprobe ~]# service iptables save
+iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
+<h1 id="2-Firewalld"><a href="#2-Firewalld" class="headerlink" title="2.Firewalld"></a>2.Firewalld</h1><table>
+<thead>
+<tr>
+<th>区域</th>
+<th>默认规则策略</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>trusted</td>
+<td>允许所有的数据包</td>
+</tr>
+<tr>
+<td>home</td>
+<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh、mdns、ipp-client、amba-client与dhcpv6-client服务相关，则允许流量</td>
+</tr>
+<tr>
+<td>internal</td>
+<td>等同于home区域</td>
+</tr>
+<tr>
+<td>work</td>
+<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh、ipp-client与dhcpv6-client服务相关，则允许流量</td>
+</tr>
+<tr>
+<td>public</td>
+<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh、dhcpv6-client服务相关，则允许流量</td>
+</tr>
+<tr>
+<td>external</td>
+<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh服务相关，则允许流量</td>
+</tr>
+<tr>
+<td>dmz</td>
+<td>拒绝流入的流量，除非与流出的流量相关；而如果流量与ssh服务相关，则允许流量</td>
+</tr>
+<tr>
+<td>block</td>
+<td>拒绝流入的流量，除非与流出的流量相关</td>
+</tr>
+<tr>
+<td>drop</td>
+<td>拒绝流入的流量，除非与流出的流量相关</td>
+</tr>
+</tbody></table>
+<h2 id="2-1图形管理工具"><a href="#2-1图形管理工具" class="headerlink" title="2.1图形管理工具"></a>2.1图形管理工具</h2><img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/1.png" class>
+
+<p>我们先将当前区域中请求http服务的流量设置为允许，但仅限当前生效：</p>
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/2.png" class>
+
+<p>试添加一条防火墙策略规则，使其放行访问8080～8088端口（TCP协议）的流量，并将其设置为永久生效，配置完毕之后，还需要在Options菜单中单击Reload Firewalld命令，让配置的防火墙策略立即生效：</p>
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/3.png" class>
+
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/4.png" class>
+
+<p>使用iptables命令实现SNAT技术(Source Network Address Translation，源网络地址转换),可以使得多个内网中的用户通过同一个外网IP接入Internet:</p>
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/5.png" class>
+
+<p>将本机888端口的流量转发到22端口，且要求当前和长期均有效:</p>
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/6.png" class>
+
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/7.png" class>
+
+<p>配置富规则，让192.168.10.20主机访问到本机的1234端口号:</p>
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/8.png" class>
+
+<p>把网卡与防火墙策略区域进行绑定:</p>
+<img src="/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/9.png" class>
+
+<h2 id="2-3服务的访问控制列表"><a href="#2-3服务的访问控制列表" class="headerlink" title="2.3服务的访问控制列表"></a>2.3服务的访问控制列表</h2><p>TCP Wrappers是RHEL 7系统中默认启用的一款流量监控程序，它能够根据来访主机的地址与本机的目标服务程序作出允许或拒绝的操作。换句话说，Linux系统中其实有两个层面的防火墙，第一种是前面讲到的基于TCP/IP协议的流量过滤工具，而TCP Wrappers服务则是能允许或禁止Linux系统提供服务的防火墙，从而在更高层面保护了Linux系统的安全运行。</p>
+<p>在配置TCP Wrappers服务时需要遵循两个原则：</p>
+<pre><code>（1）编写拒绝策略规则时，填写的是服务名称，而非协议名称；
+（2）建议先编写拒绝策略规则（/etc/hosts.deny），再编写允许策略规则（/etc/hosts.allow），以便直观地看到相应的效果。</code></pre>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第8章节：iptables与firewalld防火墙</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：linux命令</title>
+    <url>/2020/12/28/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Alinux%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<h1 id="1-命令格式"><a href="#1-命令格式" class="headerlink" title="1.命令格式"></a>1.命令格式</h1><p>格式要求： 命令名称 [命令参数]  [命令对象]<br>注意：<br>（1）命令名称、命令参数、命令对象之间需用空格键分隔；<br>（2）多个参数之间也要有空格，参数有长格式和短格式之分，分别用（–）和（-）作为前缀；长格式和长格式之间、长格式和短格式之间不能合并，短格式和短格式之间可以合并，共用一个空格，合并后仅保留一个-即可。</p>
+<a id="more"></a>
+<p>在命令行终端中输入”man 命令”来查看命令自身的帮助信息，在命令帮助信息的界面中，常用操作按键如下所示：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>空格键</td>
+<td>向下翻一页</td>
+</tr>
+<tr>
+<td>PaGe down</td>
+<td>向下翻一页</td>
+</tr>
+<tr>
+<td>PaGe up</td>
+<td>向上翻一页</td>
+</tr>
+<tr>
+<td>home</td>
+<td>直接前往首页</td>
+</tr>
+<tr>
+<td>end</td>
+<td>直接前往尾页</td>
+</tr>
+<tr>
+<td>/</td>
+<td>从上往下搜索某个关键词，如“/linux”</td>
+</tr>
+<tr>
+<td>？</td>
+<td>从下往上搜索某个关键词</td>
+</tr>
+<tr>
+<td>n</td>
+<td>定位到下一个搜索到的关键词</td>
+</tr>
+<tr>
+<td>N</td>
+<td>定位到上一个搜索到的关键词</td>
+</tr>
+<tr>
+<td>q</td>
+<td>退出帮助文档</td>
+</tr>
+</tbody></table>
+<h1 id="2-常用的工作命令"><a href="#2-常用的工作命令" class="headerlink" title="2.常用的工作命令"></a>2.常用的工作命令</h1><ol>
+<li>echo：用于在终端输出字符串或变量提取后的值，如： echo 字符串/$变量</li>
+<li>date：用于显示及设置系统的时间或日期；<br> 直接输入date命令用于查看当前系统时间；<br> date “+%Y-%m-%d %H:%M:%S”:按照“年-月-日 小时:分钟:秒”的格式查看当前系统时间；<br> date -s “20200105 8:30:00”：将系统时间设置为2020年1月5日8点30分；<br> date “+%j”:用于查看今天是当年中的第几天；</li>
+<li>reboot：用于重启系统；</li>
+<li>poweroff：用于系统关机；</li>
+<li>wget命令：用于在终端中下载网络文件（需连接网络才可以下载），如：wget http：//<a href="http://www.linuxprobe.com/docs/linuxprobe.pdf%EF%BC%9B">www.linuxprobe.com/docs/linuxprobe.pdf；</a></li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-b</td>
+<td>后台下载模式</td>
+</tr>
+<tr>
+<td>-P</td>
+<td>下载到指定目录</td>
+</tr>
+<tr>
+<td>-c</td>
+<td>断点续传</td>
+</tr>
+<tr>
+<td>-p</td>
+<td>下载页面内的所有资源，包括图片、视频</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>递归下载</td>
+</tr>
+</tbody></table>
+<ol start="6">
+<li>ps:用于查看系统中的进程状态；</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>显示所有进程（包括其他用户）</td>
+</tr>
+<tr>
+<td>-u</td>
+<td>用户及其他详细信息</td>
+</tr>
+<tr>
+<td>-x</td>
+<td>显示没有控制终端的进程</td>
+</tr>
+</tbody></table>
+<p>进程状态：R（运行）、S（休眠）、D（不可中断）、Z（僵死）、T（停止）；<br>7. top：用于动态地监视进程活动与系统负载等信息；<br>8. pidof：用于查询某个指定服务进程的PID值，如pidof sshd；<br>9. kill：用于终止某个指定PID的服务进程，如kill 2156；<br>10. killall：用于终止某个指定名称的服务所对应的全部进程；</p>
+<h1 id="3-系统状态检测命令"><a href="#3-系统状态检测命令" class="headerlink" title="3.系统状态检测命令"></a>3.系统状态检测命令</h1><ol>
+<li>ifconfig：用于获取网卡配置与网络状态等信息，可以查看到网卡名称、IP地址和物理地址；</li>
+<li>uname：用于查看系统内核与系统版本等信息，加上-a参数能完整地查看当前系统的内核名称等信息；</li>
+<li>uptime：用于查看系统的负载信息；负载值越低越好，尽量不要长期超过1，生产环境中不要超过5；</li>
+<li>free：用于显示当前系统中内存的使用量信息，结合-h参数能以更人性化的方式树池当前内存的实时信息；</li>
+<li>who：用于查看当前登入主机的用户终端信息；</li>
+<li>last：用于查看所有系统的登陆记录，但仅供参考，其中内容可能会被篡改；</li>
+<li>history：用于显示历史执行过的命令（默认为最近1000条的命令），使用-c参数则会清空所有的历史记录，使用“！编码数字”的方式可以重复执行某一次的命令；<br> 注：只有在终端关闭的时候，才会同步信息；</li>
+<li>sosreport：用于收集系统配置及架构信息并输出诊断文档；</li>
+</ol>
+<h1 id="4-工作目录切换命令"><a href="#4-工作目录切换命令" class="headerlink" title="4.工作目录切换命令"></a>4.工作目录切换命令</h1><ol>
+<li>pwd：用于显示用户当前所处的工作目录；</li>
+<li>cd：用于切换工作路径，其中cd -：表示返回到上一次所处的目录； cd..:表示进入上级目录； cd~：表示切换到当前用户的家目录；</li>
+<li>ls：用于显示目录中的文件信息，其中ls -a：表示查看全部文件（包括隐藏文件)；  ls -l：查看文件的属性、大小等详细信息； ls -d：查看目录及其详细信息；</li>
+</ol>
+<h1 id="5-文本文件编辑命令"><a href="#5-文本文件编辑命令" class="headerlink" title="5.文本文件编辑命令"></a>5.文本文件编辑命令</h1><ol>
+<li>cat：用于查看纯文本文件（内容较少的），cat -n：显示行号；</li>
+<li>more：用于查看纯文本文件（内容较多的）；按回车键向下走一行，空格键向下走一页；</li>
+<li>head：用于查看文本文档的前N行内容，如 head -n 20 initial.cfg:查看initial.cfg文件的前20行内容；</li>
+<li>tail：用于查看文本文档的后N行内容，如 tail -n 20 initial.cfg:查看initial.cfg文件的后20行内容；tail -f 文件名：用于实时查看最新日志文件；</li>
+<li>tr：用于替换文本文件中的字符，格式为：tr [原始字符] [目标字符]，如 tr[a-z] [A-Z];</li>
+<li>wc:用于统计指定文本的行数、字数和字节数；</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-l</td>
+<td>只显示行数</td>
+</tr>
+<tr>
+<td>-w</td>
+<td>只显示单词数</td>
+</tr>
+<tr>
+<td>-c</td>
+<td>只显示字节数</td>
+</tr>
+<tr>
+<td>-d</td>
+<td>同时修改atime和mtime</td>
+</tr>
+</tbody></table>
+<ol start="7">
+<li>stat：用于查看文件的具体存储信息和时间等信息；其中Access表示最后一次访问文件的时间；Modify表示真实修改文件内容的时间；Change表示修改文件属性信息的时间。</li>
+<li>cut：用于按“列”提取文本字符；-d参数：用于设置间隔符号； -f参数：用于设置想看的列数；</li>
+<li>diff：用于比较多个文本文件的差异； –brief参数:用于确认两个文件是否不同；  -c参数：用于比较多个文件的差异之处。查询结果中有“！”开头的行，表示内容有不同。</li>
+</ol>
+<h1 id="6-文件目录管理命令"><a href="#6-文件目录管理命令" class="headerlink" title="6.文件目录管理命令"></a>6.文件目录管理命令</h1><p>1.touch：用于创建空白文件或设置文件的时间；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>修改读取时间</td>
+</tr>
+<tr>
+<td>-m</td>
+<td>修改修改时间</td>
+</tr>
+<tr>
+<td>-c</td>
+<td>修改更改权限时间</td>
+</tr>
+<tr>
+<td>-d</td>
+<td>同时修改atime和mtime</td>
+</tr>
+</tbody></table>
+<p>2.mkdir：用于创建空白目录；mkdir -p：能够递归创建具有嵌套关系的文件目录。<br>3.cp：用于复制文件或目录；格式为：cp [选项] 源文件 目标文件<br>复制操作分为3种情况：<br>（1）如果目标文件为目录，则把源文件复制到该目录中；<br>（2）如果目标文件为文件，则会询问是否要覆盖它；<br>（3）如果目标文件不存在，则执行正常的复制操作；<br>4.mv：用于剪切文件或将文件重命名，格式为：mv [选项]  源文件 [目标路径|目标文件名]<br>5.rm：用于删除文件或目录； -f：强制删除； -r：用于删除文件夹或目录；<br>6.dd：用于按照指定大小和个数的数据块来复制文件或转换文件；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>if</td>
+<td>输入的文件名称</td>
+</tr>
+<tr>
+<td>of</td>
+<td>输出的文件名称</td>
+</tr>
+<tr>
+<td>bs</td>
+<td>每个“块”的大小</td>
+</tr>
+<tr>
+<td>count</td>
+<td>复制“块”的个数</td>
+</tr>
+</tbody></table>
+<p>如：dd if=/dev/zero of=560_file count=1 bs=560M</p>
+<p>7.file:用于查看文件的类型；</p>
+<h1 id="7-打包压缩与搜索命令"><a href="#7-打包压缩与搜索命令" class="headerlink" title="7.打包压缩与搜索命令"></a>7.打包压缩与搜索命令</h1><p>1.tar：用于将文件进行打包压缩或解压；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-c</td>
+<td>创建压缩文件</td>
+</tr>
+<tr>
+<td>-x</td>
+<td>解开压缩文件</td>
+</tr>
+<tr>
+<td>-z</td>
+<td>用Gzip压缩或解压</td>
+</tr>
+<tr>
+<td>-j</td>
+<td>用bzip2压缩或解压</td>
+</tr>
+<tr>
+<td>-v</td>
+<td>显示压缩或解压的过程</td>
+</tr>
+<tr>
+<td>-f</td>
+<td>目标文件名</td>
+</tr>
+<tr>
+<td>-C</td>
+<td>指定解压到的目录</td>
+</tr>
+</tbody></table>
+<p>将文件打包压缩：tar -czvf 压缩包名称.tar.gz 要打包的目录； 如： tar -czvf etc.tar.gz /etc<br>解压命令：tar -xzvf 压缩包名称.tar.gz; 如： tar xzvf etc.tar.gz -C /root/etc</p>
+<p>2.grep:用于在文本中执行关键词搜索； -n：用来显示搜索到信息的行号； -v：用于反选信息；<br>3.find：用于按照指定条件来查找文件；格式为：find [查找路径] 寻找条件 操作； 如： find /etc -name “host*” -print<br>-exec:用于将find命令搜索到的结果交由后面的命令作进一步处理，exec虽然是长格式，但只需要一个“-”。</p>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第2章节：linux命令</tag>
       </tags>
   </entry>
 </search>
