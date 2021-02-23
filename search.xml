@@ -567,11 +567,6 @@ Mar 30 05:33:26 localhost dhcpd: DHCPDISCOVER from **00:0c:29:27:c6:12** via eno
       </tags>
   </entry>
   <entry>
-    <title>linux就该这么学-17：使用ISCSI服务部署网络存储</title>
-    <url>/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/</url>
-    <content><![CDATA[]]></content>
-  </entry>
-  <entry>
     <title>linux就该这么学-15:使用Postfix与Dovecot部署邮件系统</title>
     <url>/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/</url>
     <content><![CDATA[<h1 id="1-电子邮件系统"><a href="#1-电子邮件系统" class="headerlink" title="1.电子邮件系统"></a>1.电子邮件系统</h1><p>电子邮件系统基于邮件协议来完成电子邮件的传输，常见的邮件协议有下面这些：</p>
@@ -788,7 +783,7 @@ ln -s &#39;/usr/lib/systemd/system/dovecot.service&#39; &#39;/etc/systemd/system
 </tbody></table>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png" class>
 
-<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#x6c;&#x69;&#110;&#117;&#x78;&#x70;&#114;&#111;&#98;&#101;&#x40;&#x6c;&#105;&#110;&#x75;&#x78;&#x70;&#x72;&#x6f;&#98;&#x65;&#x2e;&#99;&#x6f;&#x6d;">&#x6c;&#x69;&#110;&#117;&#x78;&#x70;&#114;&#111;&#98;&#101;&#x40;&#x6c;&#105;&#110;&#x75;&#x78;&#x70;&#x72;&#x6f;&#98;&#x65;&#x2e;&#99;&#x6f;&#x6d;</a>,linuxprobe是linux用户名）和用户密码：</p>
+<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#108;&#105;&#110;&#117;&#x78;&#x70;&#x72;&#x6f;&#98;&#101;&#64;&#108;&#105;&#110;&#117;&#120;&#112;&#x72;&#111;&#98;&#x65;&#46;&#99;&#111;&#x6d;">&#108;&#105;&#110;&#117;&#x78;&#x70;&#x72;&#x6f;&#98;&#101;&#64;&#108;&#105;&#110;&#117;&#120;&#112;&#x72;&#111;&#98;&#x65;&#46;&#99;&#111;&#x6d;</a>,linuxprobe是linux用户名）和用户密码：</p>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png" class>
 
 <p>第2步：设置接收服务器类型为POP3，输入邮件帐号和密码，设置POP服务器和SMTP服务器地址，两个为同一地址，如192.168.10.10，SSL端口处不勾选，之后创建成功！</p>
@@ -1257,104 +1252,6 @@ iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
       </categories>
       <tags>
         <tag>第2章节：linux命令</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学：使用RAID与LVM磁盘阵列技术</title>
-    <url>/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/</url>
-    <content><![CDATA[<p>RAID：Redundant Array of Independent Disks，独立冗余磁盘阵列；<br>LVM：Logical Volume Manager，逻辑卷管理器；</p>
-<a id="more"></a>
-
-<h1 id="1-RAID-0"><a href="#1-RAID-0" class="headerlink" title="1.RAID 0"></a>1.RAID 0</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/1.png" class>
-
-<h1 id="2-RAID-1"><a href="#2-RAID-1" class="headerlink" title="2.RAID 1"></a>2.RAID 1</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/2.jpg" class>
-
-<h1 id="3-RAID-5"><a href="#3-RAID-5" class="headerlink" title="3.RAID 5"></a>3.RAID 5</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/3.png" class>
-
-<h1 id="4-RAID-10"><a href="#4-RAID-10" class="headerlink" title="4.RAID 10"></a>4.RAID 10</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/4.png" class>
-
-<p>mdadm命令用于管理Linux系统中的软件RAID硬盘阵列，格式为“mdadm [模式] &lt;RAID设备名称&gt; [选项] [成员设备名称]”.</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-a</td>
-<td>检测设备名称</td>
-</tr>
-<tr>
-<td>-n</td>
-<td>指定设备数量</td>
-</tr>
-<tr>
-<td>-l</td>
-<td>指定RAID级别</td>
-</tr>
-<tr>
-<td>-C</td>
-<td>创建</td>
-</tr>
-<tr>
-<td>-v</td>
-<td>显示过程</td>
-</tr>
-<tr>
-<td>-D</td>
-<td>查看详细信息</td>
-</tr>
-<tr>
-<td>-r</td>
-<td>移除设备</td>
-</tr>
-<tr>
-<td>-S</td>
-<td>停止RAID磁盘阵列</td>
-</tr>
-</tbody></table>
-<p>-C参数代表创建一个RAID阵列卡；-v参数显示创建的过程，同时在后面追加一个设备名称/dev/md0，这样/dev/md0就是创建后的RAID磁盘阵列的名称；-a yes参数代表自动创建设备文件；-n 4参数代表使用4块硬盘来部署这个RAID磁盘阵列；而-l 10参数则代表RAID 10方案；最后再加上4块硬盘设备的名称就搞定了。</p>
-<pre><code>[root@linuxprobe ~]# mdadm -Cv /dev/md0 -a yes -n 4 -l 10 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
-<p>之后格式化mkfs.ext4，创建挂载点mkdir /RAID，查看详细信息mdadm -D /dev/md0，并把挂载信息写入配置文件。</p>
-<h1 id="5-磁盘阵列-备份盘"><a href="#5-磁盘阵列-备份盘" class="headerlink" title="5.磁盘阵列+备份盘"></a>5.磁盘阵列+备份盘</h1><p>在下面的命令中，参数-n 3代表创建这个RAID 5磁盘阵列所需的硬盘数，参数-l 5代表RAID的级别，而参数-x 1则代表有一块备份盘。当查看/dev/md0（即RAID 5磁盘阵列的名称）磁盘阵列的时候就能看到有一块备份盘在等待中了：</p>
-<pre><code>mdadm -Cv /dev/md0 -n 3 -l 5 -x 1 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
-<h1 id="6-部署逻辑卷"><a href="#6-部署逻辑卷" class="headerlink" title="6.部署逻辑卷"></a>6.部署逻辑卷</h1>
-
-<pre><code>[root@linuxprobe ~]# pvcreate /dev/sdb /dev/sdc
-[root@linuxprobe ~]# vgcreate storage /dev/sdb /dev/sdc
-[root@linuxprobe ~]# lvcreate -n vo -l 37 storage（在对逻辑卷进行切割时有两种计量单位。第一种是以容量为单位，所使用的参数为-L。例如，使用-L 150M生成一个大小为150MB的逻辑卷。另外一种是以基本单元的个数为单位，所使用的参数为-l。每个基本单元的大小默认为4MB。例如，使用-l 37可以生成一个大小为37×4MB=148MB的逻辑卷。）</code></pre>
-<p>之后再格式化，挂载，写入配置文件中即可！</p>
-<h1 id="7-扩容逻辑卷"><a href="#7-扩容逻辑卷" class="headerlink" title="7.扩容逻辑卷"></a>7.扩容逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
-<pre><code>[root@linuxprobe ~]# lvextend -L 290M /dev/storage/vo （逻辑卷vo扩展至290MB）
-[root@linuxprobe ~]# e2fsck -f /dev/storage/vo （检查硬盘完整性）
-[root@linuxprobe ~]# resize2fs /dev/storage/vo （重置硬盘容量）</code></pre>
-<p>之后mount -a挂载硬盘设备即可！</p>
-<h1 id="8-缩小逻辑卷"><a href="#8-缩小逻辑卷" class="headerlink" title="8.缩小逻辑卷"></a>8.缩小逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
-<pre><code>[root@linuxprobe ~]# e2fsck -f /dev/storage/vo
-[root@linuxprobe ~]# resize2fs /dev/storage/vo 120M
-[root@linuxprobe ~]# lvreduce -L 120M /dev/storage/vo</code></pre>
-<p>之后mount -a挂载硬盘设备即可！</p>
-<h1 id="9-逻辑卷快照"><a href="#9-逻辑卷快照" class="headerlink" title="9.逻辑卷快照"></a>9.逻辑卷快照</h1><p>LVM的快照卷功能有两个特点：</p>
-<pre><code>快照卷的容量必须等同于逻辑卷的容量；
-
-快照卷仅一次有效，一旦执行还原操作后则会被立即自动删除。
-
-[root@linuxprobe ~]#  lvcreate -L 120M -s -n SNAP /dev/storage/vo （使用-s参数生成一个快照卷，使用-L参数指定切割的大小。另外，还需要在命令后面写上是针对哪个逻辑卷执行的快照操作。）
-[root@linuxprobe ~]# umount /linuxprobe （记得先卸载掉逻辑卷设备与目录的挂载。）
-[root@linuxprobe ~]# lvconvert --merge /dev/storage/SNAP
-[root@linuxprobe ~]# mount -a</code></pre>
-<h1 id="10-删除逻辑卷"><a href="#10-删除逻辑卷" class="headerlink" title="10.删除逻辑卷"></a>10.删除逻辑卷</h1><pre><code>[root@linuxprobe ~]# umount /linuxprobe （取消逻辑卷与目录的挂载关联）
-[root@linuxprobe ~]# vim /etc/fstab （删除配置文件中永久生效的设备参数）
-[root@linuxprobe ~]# lvremove /dev/storage/vo （删除逻辑卷设备，需要输入y来确认操作）
-[root@linuxprobe ~]# vgremove storage （删除卷组，此处只写卷组名称即可，不需要设备的绝对路径）
-[root@linuxprobe ~]# pvremove /dev/sdb /dev/sdc （删除物理卷设备）</code></pre>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第7章节：使用RAID与LVM磁盘阵列技术</tag>
       </tags>
   </entry>
   <entry>
@@ -1860,6 +1757,104 @@ Red Hat Enterprise Linux Server release 7.0 (Maipo)</code></pre>
       </tags>
   </entry>
   <entry>
+    <title>linux就该这么学：使用RAID与LVM磁盘阵列技术</title>
+    <url>/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/</url>
+    <content><![CDATA[<p>RAID：Redundant Array of Independent Disks，独立冗余磁盘阵列；<br>LVM：Logical Volume Manager，逻辑卷管理器；</p>
+<a id="more"></a>
+
+<h1 id="1-RAID-0"><a href="#1-RAID-0" class="headerlink" title="1.RAID 0"></a>1.RAID 0</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/1.png" class>
+
+<h1 id="2-RAID-1"><a href="#2-RAID-1" class="headerlink" title="2.RAID 1"></a>2.RAID 1</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/2.jpg" class>
+
+<h1 id="3-RAID-5"><a href="#3-RAID-5" class="headerlink" title="3.RAID 5"></a>3.RAID 5</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/3.png" class>
+
+<h1 id="4-RAID-10"><a href="#4-RAID-10" class="headerlink" title="4.RAID 10"></a>4.RAID 10</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/4.png" class>
+
+<p>mdadm命令用于管理Linux系统中的软件RAID硬盘阵列，格式为“mdadm [模式] &lt;RAID设备名称&gt; [选项] [成员设备名称]”.</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>检测设备名称</td>
+</tr>
+<tr>
+<td>-n</td>
+<td>指定设备数量</td>
+</tr>
+<tr>
+<td>-l</td>
+<td>指定RAID级别</td>
+</tr>
+<tr>
+<td>-C</td>
+<td>创建</td>
+</tr>
+<tr>
+<td>-v</td>
+<td>显示过程</td>
+</tr>
+<tr>
+<td>-D</td>
+<td>查看详细信息</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>移除设备</td>
+</tr>
+<tr>
+<td>-S</td>
+<td>停止RAID磁盘阵列</td>
+</tr>
+</tbody></table>
+<p>-C参数代表创建一个RAID阵列卡；-v参数显示创建的过程，同时在后面追加一个设备名称/dev/md0，这样/dev/md0就是创建后的RAID磁盘阵列的名称；-a yes参数代表自动创建设备文件；-n 4参数代表使用4块硬盘来部署这个RAID磁盘阵列；而-l 10参数则代表RAID 10方案；最后再加上4块硬盘设备的名称就搞定了。</p>
+<pre><code>[root@linuxprobe ~]# mdadm -Cv /dev/md0 -a yes -n 4 -l 10 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
+<p>之后格式化mkfs.ext4，创建挂载点mkdir /RAID，查看详细信息mdadm -D /dev/md0，并把挂载信息写入配置文件。</p>
+<h1 id="5-磁盘阵列-备份盘"><a href="#5-磁盘阵列-备份盘" class="headerlink" title="5.磁盘阵列+备份盘"></a>5.磁盘阵列+备份盘</h1><p>在下面的命令中，参数-n 3代表创建这个RAID 5磁盘阵列所需的硬盘数，参数-l 5代表RAID的级别，而参数-x 1则代表有一块备份盘。当查看/dev/md0（即RAID 5磁盘阵列的名称）磁盘阵列的时候就能看到有一块备份盘在等待中了：</p>
+<pre><code>mdadm -Cv /dev/md0 -n 3 -l 5 -x 1 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
+<h1 id="6-部署逻辑卷"><a href="#6-部署逻辑卷" class="headerlink" title="6.部署逻辑卷"></a>6.部署逻辑卷</h1>
+
+<pre><code>[root@linuxprobe ~]# pvcreate /dev/sdb /dev/sdc
+[root@linuxprobe ~]# vgcreate storage /dev/sdb /dev/sdc
+[root@linuxprobe ~]# lvcreate -n vo -l 37 storage（在对逻辑卷进行切割时有两种计量单位。第一种是以容量为单位，所使用的参数为-L。例如，使用-L 150M生成一个大小为150MB的逻辑卷。另外一种是以基本单元的个数为单位，所使用的参数为-l。每个基本单元的大小默认为4MB。例如，使用-l 37可以生成一个大小为37×4MB=148MB的逻辑卷。）</code></pre>
+<p>之后再格式化，挂载，写入配置文件中即可！</p>
+<h1 id="7-扩容逻辑卷"><a href="#7-扩容逻辑卷" class="headerlink" title="7.扩容逻辑卷"></a>7.扩容逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
+<pre><code>[root@linuxprobe ~]# lvextend -L 290M /dev/storage/vo （逻辑卷vo扩展至290MB）
+[root@linuxprobe ~]# e2fsck -f /dev/storage/vo （检查硬盘完整性）
+[root@linuxprobe ~]# resize2fs /dev/storage/vo （重置硬盘容量）</code></pre>
+<p>之后mount -a挂载硬盘设备即可！</p>
+<h1 id="8-缩小逻辑卷"><a href="#8-缩小逻辑卷" class="headerlink" title="8.缩小逻辑卷"></a>8.缩小逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
+<pre><code>[root@linuxprobe ~]# e2fsck -f /dev/storage/vo
+[root@linuxprobe ~]# resize2fs /dev/storage/vo 120M
+[root@linuxprobe ~]# lvreduce -L 120M /dev/storage/vo</code></pre>
+<p>之后mount -a挂载硬盘设备即可！</p>
+<h1 id="9-逻辑卷快照"><a href="#9-逻辑卷快照" class="headerlink" title="9.逻辑卷快照"></a>9.逻辑卷快照</h1><p>LVM的快照卷功能有两个特点：</p>
+<pre><code>快照卷的容量必须等同于逻辑卷的容量；
+
+快照卷仅一次有效，一旦执行还原操作后则会被立即自动删除。
+
+[root@linuxprobe ~]#  lvcreate -L 120M -s -n SNAP /dev/storage/vo （使用-s参数生成一个快照卷，使用-L参数指定切割的大小。另外，还需要在命令后面写上是针对哪个逻辑卷执行的快照操作。）
+[root@linuxprobe ~]# umount /linuxprobe （记得先卸载掉逻辑卷设备与目录的挂载。）
+[root@linuxprobe ~]# lvconvert --merge /dev/storage/SNAP
+[root@linuxprobe ~]# mount -a</code></pre>
+<h1 id="10-删除逻辑卷"><a href="#10-删除逻辑卷" class="headerlink" title="10.删除逻辑卷"></a>10.删除逻辑卷</h1><pre><code>[root@linuxprobe ~]# umount /linuxprobe （取消逻辑卷与目录的挂载关联）
+[root@linuxprobe ~]# vim /etc/fstab （删除配置文件中永久生效的设备参数）
+[root@linuxprobe ~]# lvremove /dev/storage/vo （删除逻辑卷设备，需要输入y来确认操作）
+[root@linuxprobe ~]# vgremove storage （删除卷组，此处只写卷组名称即可，不需要设备的绝对路径）
+[root@linuxprobe ~]# pvremove /dev/sdb /dev/sdc （删除物理卷设备）</code></pre>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第7章节：使用RAID与LVM磁盘阵列技术</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux就该这么学：安装samba服务时packagekit报错解决方法</title>
     <url>/2021/02/12/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AE%89%E8%A3%85samba%E6%9C%8D%E5%8A%A1%E6%97%B6packagekit%E6%8A%A5%E9%94%99%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/</url>
     <content><![CDATA[<p>在linux虚拟机Redhat7.0版本系统终端中输入命令：yum install samba，安装samba服务时，在安装过程中，出现以下报错信息：</p>
@@ -1941,120 +1936,6 @@ Permissive</code></pre>
       </categories>
       <tags>
         <tag>安装samba服务时packagekit报错解决方法</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学：管道符、重定向与环境变量</title>
-    <url>/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
-    <content><![CDATA[<h1 id="1-输入输出重定向"><a href="#1-输入输出重定向" class="headerlink" title="1.输入输出重定向"></a>1.输入输出重定向</h1><p>输入重定向：是指把文件导入到命令中； 输出重定向：是指把原本要输出到屏幕的数据写入到指定文件中。输出重定向又分为标准输出重定向和错误输出重定向。<br>输入重定向中用到的符号及其作用：</p>
-<a id="more"></a>
-
-
-<table>
-<thead>
-<tr>
-<th>符号</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>命令 &lt; 文件</td>
-<td>将文件作为命令的标准输入</td>
-</tr>
-<tr>
-<td>命令 &lt;&lt; 分界符（tag）</td>
-<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
-</tr>
-</tbody></table>
-<p>输入重定向中用到的符号及其作用：</p>
-<table>
-<thead>
-<tr>
-<th>符号</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>命令 &gt; 文件</td>
-<td>将输出重定向到文件（会清空原有数据）</td>
-</tr>
-<tr>
-<td>命令 &gt;&gt; 文件</td>
-<td>将输出以追加的方式重定向到文件</td>
-</tr>
-<tr>
-<td>n &gt; 文件</td>
-<td>将文件描述符为 n 的文件重定向到文件</td>
-</tr>
-<tr>
-<td>n &gt;&gt; 文件</td>
-<td>将文件描述符为 n 的文件以追加的方式重定向到文件</td>
-</tr>
-<tr>
-<td>n &gt;&amp; m</td>
-<td>将输出文件 m 和 n 合并</td>
-</tr>
-<tr>
-<td>n &lt;&amp; m</td>
-<td>将输入文件 m 和 n 合并</td>
-</tr>
-<tr>
-<td>&lt;&lt; tag</td>
-<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
-</tr>
-</tbody></table>
-<p>注意：文件描述符 0 通常是标准输入（STDIN），1 是标准输出（STDOUT），2 是标准错误输出（STDERR）。</p>
-<h1 id="2-管道命令符"><a href="#2-管道命令符" class="headerlink" title="2. 管道命令符"></a>2. 管道命令符</h1><p>命令符：可以把前一个命令原本要输出到屏幕的数据当作是后一个命令的标准输入；</p>
-<h1 id="3-命令行的通配符"><a href="#3-命令行的通配符" class="headerlink" title="3.命令行的通配符"></a>3.命令行的通配符</h1><p>星号（*）：代表匹配零个或多个字符； 问号（？）：代表匹配单个字符； [0-9]:代表匹配0-9之间的单个数字； [abc]:代表匹配a、b、c三个字符中的任意一个；<br>[^…]和[!…]表示匹配不在方括号里面的字符（不包括空字符）；这两种写法是等价的。</p>
-<h1 id="4-转义字符"><a href="#4-转义字符" class="headerlink" title="4.转义字符"></a>4.转义字符</h1><p>反斜杠（\）：使反斜杠后面变量称为单纯的字符串；<br>单引号（’’）：转义其中所有的变量为单纯的字符串；<br>双引号（””）:保留其中的变量属性，不尽兴转义处理；<br>反引号（``）:把其中的命令执行后返回结果。</p>
-<h1 id="5-环境变量"><a href="#5-环境变量" class="headerlink" title="5.环境变量"></a>5.环境变量</h1><p>变量是计算机系统用于保存可变值得数据类型，变量名称一般都是大写的；环境变量是用来定义系统运行环境的一些参数，比如每个用户不同的家目录、邮件存放位置等。</p>
-<p>前面讲过，在 Linux 系统中“一切皆文件”，Linux 命令也不例外。那么，当编辑完成 Linux 命令并回车后，系统底层到底发生了什么事情呢？</p>
-<p>简单来说，Linux 命令的执行过程分为如下 4 个步骤。</p>
-<pre><code>1) 判断路径
-    判断用户是否以绝对路径或相对路径的方式输入命令（如 /bin/ls），如果是的话直接执行。
-
-2) 检查别名
-    Linux 系统会检查用户输入的命令是否为“别名命令”。要知道，通过 alias 命令是可以给现有命令自定义别名的，即用一个自定义的命令名称来替换原本的命令名称。
-
-    例如，我们经常使用的 rm 命令，其实就是 rm -i 这个整体的别名：
-    [root@localhost ~]# alias rm
-    alias rm=&#39;rm -i&#39;
-
-    这使得当使用 rm 命令删除指定文件时，Linux 系统会要求我们再次确认是否执行删除操作。例如：
-    [root@localhost ~]# rm a.txt &lt;-- 假定当前目录中已经存在 a.txt 文件
-    rm: remove regular file &#39;a.txt&#39;? y  &lt;-- 手动输入 y，即确定删除
-    [root@localhost ~]#
-
-    这里可以使用 unalias 命令，将 Linux 系统设置的 rm 别名删除掉，执行命令如下：
-    [root@localhost ~]# alias rm
-    alias rm=&#39;rm -i&#39;
-    [root@localhost ~]# unalias rm
-    [root@localhost ~]# rm a.txt
-    [root@localhost ~]#  &lt;--直接删除，不再询问
-
-
-    注意，这里仅是为了演示 unalisa 的用法，建议读者删除 rm 别名之后，再手动添加到系统中，执行如下命令即可再次成功添加：
-    [root@localhost ~]# alias rm=&#39;rm -i&#39;
-
-3) 判断是内部命令还是外部命令
-    Linux命令行解释器（又称为 Shell）会判断用户输入的命令是内部命令还是外部命令。其中，内部命令指的是解释器内部的命令，会被直接执行；而用户通常输入的命令都是外部命令，这些命令交给步骤四继续处理。
-    内部命令由 Shell 自带，会随着系统启动，可以直接从内存中读取；而外部命令仅是在系统中有对应的可执行文件，执行时需要读取该文件。
-
-    判断一个命令属于内部命令还是外部命令，可以使用 type 命令实现。例如：
-    [root@localhost ~]# type pwd
-    pwd is a shell builtin  &lt;-- pwd是内部命令
-    [root@localhost ~]# type top
-    top is /usr/bin/top  &lt;-- top是外部命令
-
-4) 查找外部命令对应的可执行文件
-    当用户执行的是外部命令时，系统会在指定的多个路径中查找该命令的可执行文件，而定义这些路径的变量，就称为 PATH 环境变量，其作用就是告诉 Shell 待执行命令的可执行文件可能存放的位置，也就是说，Shell 会在 PATH 变量包含的多个路径中逐个查找，直到找到为止（如果找不到，Shell 会提供用户“找不到此命令”）</code></pre>
-<p>自己创建的变量不具有全局性，作用范围有限，默认情况下不能被其他用户使用，因此，可通过export命令（如：export WORKDIR）将其提升为全局变量，这样其他用户也可以使用了！</p>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第3章节：管道符、重定向与环境变量</tag>
       </tags>
   </entry>
   <entry>
@@ -2346,73 +2227,117 @@ anaconda-ks.cfg Downloads Pictures Public
       </tags>
   </entry>
   <entry>
-    <title>linux虚拟机外网网络访问设置指南</title>
-    <url>/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/</url>
-    <content><![CDATA[<p>要达到的效果就是在Linux虚拟机中可以上网：ping <a href="http://www.baidu.com/">http://www.baidu.com</a></p>
-<p>VMware中安装完 redhat7 后， 默认初始配置如下：</p>
+    <title>linux就该这么学：管道符、重定向与环境变量</title>
+    <url>/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
+    <content><![CDATA[<h1 id="1-输入输出重定向"><a href="#1-输入输出重定向" class="headerlink" title="1.输入输出重定向"></a>1.输入输出重定向</h1><p>输入重定向：是指把文件导入到命令中； 输出重定向：是指把原本要输出到屏幕的数据写入到指定文件中。输出重定向又分为标准输出重定向和错误输出重定向。<br>输入重定向中用到的符号及其作用：</p>
 <a id="more"></a>
 
-<h1 id="1-VMware-网络配置"><a href="#1-VMware-网络配置" class="headerlink" title="1.VMware 网络配置"></a>1.VMware 网络配置</h1><p>（编辑 –&gt; 虚拟网络编辑器）查看</p>
-<p>默认配置为： (这些配置都不需要发生变更， 看看就好)</p>
-<pre><code>子网IP：192.168.154.0
 
-子网掩码 : 255.255.255.0
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>命令 &lt; 文件</td>
+<td>将文件作为命令的标准输入</td>
+</tr>
+<tr>
+<td>命令 &lt;&lt; 分界符（tag）</td>
+<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
+</tr>
+</tbody></table>
+<p>输入重定向中用到的符号及其作用：</p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>命令 &gt; 文件</td>
+<td>将输出重定向到文件（会清空原有数据）</td>
+</tr>
+<tr>
+<td>命令 &gt;&gt; 文件</td>
+<td>将输出以追加的方式重定向到文件</td>
+</tr>
+<tr>
+<td>n &gt; 文件</td>
+<td>将文件描述符为 n 的文件重定向到文件</td>
+</tr>
+<tr>
+<td>n &gt;&gt; 文件</td>
+<td>将文件描述符为 n 的文件以追加的方式重定向到文件</td>
+</tr>
+<tr>
+<td>n &gt;&amp; m</td>
+<td>将输出文件 m 和 n 合并</td>
+</tr>
+<tr>
+<td>n &lt;&amp; m</td>
+<td>将输入文件 m 和 n 合并</td>
+</tr>
+<tr>
+<td>&lt;&lt; tag</td>
+<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
+</tr>
+</tbody></table>
+<p>注意：文件描述符 0 通常是标准输入（STDIN），1 是标准输出（STDOUT），2 是标准错误输出（STDERR）。</p>
+<h1 id="2-管道命令符"><a href="#2-管道命令符" class="headerlink" title="2. 管道命令符"></a>2. 管道命令符</h1><p>命令符：可以把前一个命令原本要输出到屏幕的数据当作是后一个命令的标准输入；</p>
+<h1 id="3-命令行的通配符"><a href="#3-命令行的通配符" class="headerlink" title="3.命令行的通配符"></a>3.命令行的通配符</h1><p>星号（*）：代表匹配零个或多个字符； 问号（？）：代表匹配单个字符； [0-9]:代表匹配0-9之间的单个数字； [abc]:代表匹配a、b、c三个字符中的任意一个；<br>[^…]和[!…]表示匹配不在方括号里面的字符（不包括空字符）；这两种写法是等价的。</p>
+<h1 id="4-转义字符"><a href="#4-转义字符" class="headerlink" title="4.转义字符"></a>4.转义字符</h1><p>反斜杠（\）：使反斜杠后面变量称为单纯的字符串；<br>单引号（’’）：转义其中所有的变量为单纯的字符串；<br>双引号（””）:保留其中的变量属性，不尽兴转义处理；<br>反引号（``）:把其中的命令执行后返回结果。</p>
+<h1 id="5-环境变量"><a href="#5-环境变量" class="headerlink" title="5.环境变量"></a>5.环境变量</h1><p>变量是计算机系统用于保存可变值得数据类型，变量名称一般都是大写的；环境变量是用来定义系统运行环境的一些参数，比如每个用户不同的家目录、邮件存放位置等。</p>
+<p>前面讲过，在 Linux 系统中“一切皆文件”，Linux 命令也不例外。那么，当编辑完成 Linux 命令并回车后，系统底层到底发生了什么事情呢？</p>
+<p>简单来说，Linux 命令的执行过程分为如下 4 个步骤。</p>
+<pre><code>1) 判断路径
+    判断用户是否以绝对路径或相对路径的方式输入命令（如 /bin/ls），如果是的话直接执行。
 
-可设置的IP网段为： 192.168.154.128 ~ 254
+2) 检查别名
+    Linux 系统会检查用户输入的命令是否为“别名命令”。要知道，通过 alias 命令是可以给现有命令自定义别名的，即用一个自定义的命令名称来替换原本的命令名称。
 
-&#123;% asset_img 1.jpg %&#125;
+    例如，我们经常使用的 rm 命令，其实就是 rm -i 这个整体的别名：
+    [root@localhost ~]# alias rm
+    alias rm=&#39;rm -i&#39;
 
-点开 NAT设置可以看到 GATEWAY : 192.168.154.2:</code></pre>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/2.jpg" class>
+    这使得当使用 rm 命令删除指定文件时，Linux 系统会要求我们再次确认是否执行删除操作。例如：
+    [root@localhost ~]# rm a.txt &lt;-- 假定当前目录中已经存在 a.txt 文件
+    rm: remove regular file &#39;a.txt&#39;? y  &lt;-- 手动输入 y，即确定删除
+    [root@localhost ~]#
 
-<p>下面介绍 redhat 本身配置m修改配置参数如下：</p>
-<p>注意各个参数与第一步 VMware 中的默认配置的联系 :</p>
-<pre><code>BOOTPROTO ： dhcp --&gt; static （静态IP）
-
-ONBOOT : no --&gt; YES (开机自动连接网络)
-
-IPADDR : 192.168.154.128 ~ 254 之间即可
-
-NETMASK : 子网， 与 VMware 默认一致
-
-GATEWAY : 网关， 与VMware 默认一致
-
-DNS1 : 首选 DNS, 不配置会出现外网不通， 只能与内网互通的问题.
-
-这里DNS要说一下的是，其他资料上有说要跟本机上网的DNS一致，还有说跟网关一致，或者改成8.8.8.8，都试过，ping www.baidu.com 都可以，不同的机器可能有不同，希望可以共同探讨。
-
-NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进行设置，而不是通过网络管理器进行管理。“ONBOOT=yes”告诉我们，系统将在启动时开启该接口。</code></pre>
-<p>编辑/etc/sysconfig/network-scipts/网卡名称：</p>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/3.jpg" class>
-
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/4.jpg" class>
-
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/5.jpg" class>
-
-<p>重启网络服务命令： systemctl restart network；</p>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/6.jpg" class>
+    这里可以使用 unalias 命令，将 Linux 系统设置的 rm 别名删除掉，执行命令如下：
+    [root@localhost ~]# alias rm
+    alias rm=&#39;rm -i&#39;
+    [root@localhost ~]# unalias rm
+    [root@localhost ~]# rm a.txt
+    [root@localhost ~]#  &lt;--直接删除，不再询问
 
 
+    注意，这里仅是为了演示 unalisa 的用法，建议读者删除 rm 别名之后，再手动添加到系统中，执行如下命令即可再次成功添加：
+    [root@localhost ~]# alias rm=&#39;rm -i&#39;
 
+3) 判断是内部命令还是外部命令
+    Linux命令行解释器（又称为 Shell）会判断用户输入的命令是内部命令还是外部命令。其中，内部命令指的是解释器内部的命令，会被直接执行；而用户通常输入的命令都是外部命令，这些命令交给步骤四继续处理。
+    内部命令由 Shell 自带，会随着系统启动，可以直接从内存中读取；而外部命令仅是在系统中有对应的可执行文件，执行时需要读取该文件。
 
+    判断一个命令属于内部命令还是外部命令，可以使用 type 命令实现。例如：
+    [root@localhost ~]# type pwd
+    pwd is a shell builtin  &lt;-- pwd是内部命令
+    [root@localhost ~]# type top
+    top is /usr/bin/top  &lt;-- top是外部命令
 
-
-
-
-
-
-
-
-
-
-
-
+4) 查找外部命令对应的可执行文件
+    当用户执行的是外部命令时，系统会在指定的多个路径中查找该命令的可执行文件，而定义这些路径的变量，就称为 PATH 环境变量，其作用就是告诉 Shell 待执行命令的可执行文件可能存放的位置，也就是说，Shell 会在 PATH 变量包含的多个路径中逐个查找，直到找到为止（如果找不到，Shell 会提供用户“找不到此命令”）</code></pre>
+<p>自己创建的变量不具有全局性，作用范围有限，默认情况下不能被其他用户使用，因此，可通过export命令（如：export WORKDIR）将其提升为全局变量，这样其他用户也可以使用了！</p>
 ]]></content>
       <categories>
         <category>linux就该这么学</category>
       </categories>
       <tags>
-        <tag>linux虚拟机外网网络访问设置指南</tag>
+        <tag>第3章节：管道符、重定向与环境变量</tag>
       </tags>
   </entry>
   <entry>
@@ -2693,6 +2618,76 @@ esac</code></pre>
       </categories>
       <tags>
         <tag>第4章节：vim编辑器与Shell命令脚本</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux虚拟机外网网络访问设置指南</title>
+    <url>/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/</url>
+    <content><![CDATA[<p>要达到的效果就是在Linux虚拟机中可以上网：ping <a href="http://www.baidu.com/">http://www.baidu.com</a></p>
+<p>VMware中安装完 redhat7 后， 默认初始配置如下：</p>
+<a id="more"></a>
+
+<h1 id="1-VMware-网络配置"><a href="#1-VMware-网络配置" class="headerlink" title="1.VMware 网络配置"></a>1.VMware 网络配置</h1><p>（编辑 –&gt; 虚拟网络编辑器）查看</p>
+<p>默认配置为： (这些配置都不需要发生变更， 看看就好)</p>
+<pre><code>子网IP：192.168.154.0
+
+子网掩码 : 255.255.255.0
+
+可设置的IP网段为： 192.168.154.128 ~ 254
+
+&#123;% asset_img 1.jpg %&#125;
+
+点开 NAT设置可以看到 GATEWAY : 192.168.154.2:</code></pre>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/2.jpg" class>
+
+<p>下面介绍 redhat 本身配置m修改配置参数如下：</p>
+<p>注意各个参数与第一步 VMware 中的默认配置的联系 :</p>
+<pre><code>BOOTPROTO ： dhcp --&gt; static （静态IP）
+
+ONBOOT : no --&gt; YES (开机自动连接网络)
+
+IPADDR : 192.168.154.128 ~ 254 之间即可
+
+NETMASK : 子网， 与 VMware 默认一致
+
+GATEWAY : 网关， 与VMware 默认一致
+
+DNS1 : 首选 DNS, 不配置会出现外网不通， 只能与内网互通的问题.
+
+这里DNS要说一下的是，其他资料上有说要跟本机上网的DNS一致，还有说跟网关一致，或者改成8.8.8.8，都试过，ping www.baidu.com 都可以，不同的机器可能有不同，希望可以共同探讨。
+
+NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进行设置，而不是通过网络管理器进行管理。“ONBOOT=yes”告诉我们，系统将在启动时开启该接口。</code></pre>
+<p>编辑/etc/sysconfig/network-scipts/网卡名称：</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/3.jpg" class>
+
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/4.jpg" class>
+
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/5.jpg" class>
+
+<p>重启网络服务命令： systemctl restart network；</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/6.jpg" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>linux虚拟机外网网络访问设置指南</tag>
       </tags>
   </entry>
   <entry>
@@ -3119,6 +3114,277 @@ secret &quot;1XEEL3tG5DNLOw+1WHfE3Q==&quot;;
       </categories>
       <tags>
         <tag>第13章节：使用Bind提供域名解析服务</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学-17：使用ISCSI服务部署网络存储</title>
+    <url>/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/</url>
+    <content><![CDATA[<h1 id="1-ISCSI技术介绍"><a href="#1-ISCSI技术介绍" class="headerlink" title="1.ISCSI技术介绍"></a>1.ISCSI技术介绍</h1><p>为了进一步提升硬盘存储设备的读写速度和性能，人们一直在努力改进物理硬盘设备的接口协议。当前的硬盘接口类型主要有IDE、SCSI和SATA这3种。</p>
+<a id="more"></a>
+
+<pre><code>IDE是一种成熟稳定、价格便宜的并行传输接口。
+
+SATA是一种传输速度更快、数据校验更完整的串行传输接口。
+
+SCSI是一种用于计算机和硬盘、光驱等设备之间系统级接口的通用标准，具有系统资源占用率低、转速高、传输速度快等优点。</code></pre>
+<p>iSCSI：Internet Small Computer System Interface，互联网小型计算机系统接口！</p>
+<p>这是一种将SCSI接口与以太网技术相结合的新型存储技术，可以用来在网络中传输SCSI接口的命令和数据。这样，不仅克服了传统SCSI接口设备的物理局限性，实现了跨区域的存储资源共享，还可以在不停机的状态下扩展存储容量。</p>
+<h1 id="2-创建RAID磁盘阵列"><a href="#2-创建RAID磁盘阵列" class="headerlink" title="2.创建RAID磁盘阵列"></a>2.创建RAID磁盘阵列</h1><p>第1步：首先在虚拟机中添加4块新硬盘，用于创建RAID 5磁盘阵列和备份盘：</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/1.jpg" class>
+
+<p>第2步：启动虚拟机系统，使用mdadm命令创建RAID磁盘阵列。其中，-Cv参数为创建阵列并显示过程，/dev/md0为生成的阵列组名称，-n 3参数为创建RAID 5磁盘阵列所需的硬盘个数，-l 5参数为RAID磁盘阵列的级别，-x 1参数为磁盘阵列的备份盘个数。在命令后面要逐一写上使用的硬盘名称。</p>
+<pre><code>[root@linuxprobe ~]# mdadm -Cv /dev/md0 -n 3 -l 5 -x 1 /dev/sdb /dev/sdc /dev/sdd /dev/sde
+mdadm: layout defaults to left-symmetric
+mdadm: layout defaults to left-symmetric
+mdadm: chunk size defaults to 512K
+mdadm: size set to 20954624K
+mdadm: Defaulting to version 1.2 metadata
+mdadm: array /dev/md0 started.</code></pre>
+<p>在上述命令成功执行之后，得到一块名称为/dev/md0的新设备，大家可使用mdadm -D命令来查看设备的详细信息。另外，由于在使用远程设备时极有可能出现设备识别顺序发生变化的情况，因此，如果直接在fstab挂载配置文件中写入/dev/sdb、/dev/sdc等设备名称的话，就有可能在下一次挂载了错误的存储设备。而UUID值是设备的唯一标识符，可以用于精确地区分本地或远程设备。于是我们可以把这个值记录下来，一会儿准备填写到挂载配置文件中。</p>
+<pre><code>[root@linuxprobe ~]# mdadm -D /dev/md0
+/dev/md0:
+        Version : 1.2
+…………
+**UUID : 3370f643:c10efd6a:44e91f2a:20c71f3e**
+         Events : 26
+    Number   Major   Minor   RaidDevice State
+       0       8       16        0      active sync   /dev/sdb
+       1       8       32        1      active sync   /dev/sdc
+       4       8       48        2      active sync   /dev/sdd
+       3       8       64        -      spare   /dev/sde</code></pre>
+<h1 id="3-配置iSCSI服务端"><a href="#3-配置iSCSI服务端" class="headerlink" title="3.配置iSCSI服务端"></a>3.配置iSCSI服务端</h1><p>iSCSI技术在工作形式上分为服务端（target）与客户端（initiator）。iSCSI服务端即用于存放硬盘存储资源的服务器，它作为前面创建的RAID磁盘阵列的存储端，能够为用户提供可用的存储资源。iSCSI客户端则是用户使用的软件，用于访问远程服务端的存储资源。</p>
+<p> iSCSI服务端和客户端的操作系统以及IP地址：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>iSCSI服务端</td>
+<td>RHEL 7</td>
+<td>192.168.10.10</td>
+</tr>
+<tr>
+<td>iSCSI客户端</td>
+<td>RHEL 7</td>
+<td>192.168.10.20</td>
+</tr>
+</tbody></table>
+<p>第1步：配置好Yum软件仓库后安装iSCSI服务端程序以及配置命令工具。通过在yum命令的后面添加-y参数，在安装过程中就不需要再进行手动确认了：</p>
+<pre><code>[root@linuxprobe ~]# yum -y install targetd targetcli
+Loaded plugins: langpacks, product-id, subscription-manager
+………………省略部分输出信息………………
+ python-setproctitle.x86_64 0:1.1.6-5.el7 
+ python-urwid.x86_64 0:1.1.1-3.el7 
+Complete!</code></pre>
+<p>安装完成后启动iSCSI的服务端程序targetd，然后把这个服务程序加入到开机启动项中，以便下次在服务器重启后依然能够为用户提供iSCSI共享存储资源服务：</p>
+<pre><code>[root@linuxprobe ~]# systemctl start targetd
+[root@linuxprobe ~]# systemctl enable targetd
+ ln -s &#39;/usr/lib/systemd/system/targetd.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/targetd.service&#39;</code></pre>
+<p>第2步：配置iSCSI服务端共享资源。在执行targetcli命令后就能看到交互式的配置界面了。在该界面中可以使用很多Linux命令，比如利用ls查看目录参数的结构，使用cd切换到不同的目录中。/backstores/block是iSCSI服务端配置共享设备的位置。我们需要把刚刚创建的RAID 5磁盘阵列md0文件加入到配置共享设备的“资源池”中，并将该文件重新命名为disk0，这样用户就不会知道是由服务器中的哪块硬盘来提供共享存储资源，而只会看到一个名为disk0的存储设备。</p>
+<pre><code>[root@linuxprobe ~]# targetcli
+Warning: Could not load preferences file /root/.targetcli/prefs.bin.
+targetcli shell version 2.1.fb34
+Copyright 2011-2013 by Datera, Inc and others.
+For help on commands, type &#39;help&#39;.
+/&gt; ls
+o- / ..................................................................... [...]
+o- backstores .......................................................... [...]
+| o- block .............................................. [Storage Objects: 0]
+| o- fileio ............................................. [Storage Objects: 0]
+| o- pscsi .............................................. [Storage Objects: 0]
+| o- ramdisk ............................................ [Storage Objects: 0]
+o- iscsi ........................................................ [Targets: 0]
+o- loopback ..................................................... [Targets: 0
+/&gt; cd /backstores/block
+/backstores/block&gt; create disk0 /dev/md0
+Created block storage object disk0 using /dev/md0.
+/backstores/block&gt; cd /
+/&gt; ls
+o- / ..................................................................... [...]
+  o- backstores .......................................................... [...]
+  | o- block .............................................. [Storage Objects: 1]
+  | | o- disk0 ..................... [/dev/md0 (40.0GiB) write-thru deactivated]
+  | o- fileio ............................................. [Storage Objects: 0]
+  | o- pscsi .............................................. [Storage Objects: 0]
+  | o- ramdisk ............................................ [Storage Objects: 0]
+  o- iscsi ........................................................ [Targets: 0]
+  o- loopback ..................................................... [Targets: 0]</code></pre>
+<p>第3步：创建iSCSI target名称及配置共享资源。iSCSI target名称是由系统自动生成的，这是一串用于描述共享资源的唯一字符串。稍后用户在扫描iSCSI服务端时即可看到这个字符串，因此我们不需要记住它。系统在生成这个target名称后，还会在/iscsi参数目录中创建一个与其字符串同名的新“目录”用来存放共享资源。我们需要把前面加入到iSCSI共享资源池中的硬盘设备添加到这个新目录中，这样用户在登录iSCSI服务端后，即可默认使用这硬盘设备提供的共享存储资源了。</p>
+<pre><code>/&gt; cd iscsi
+/iscsi&gt; 
+/iscsi&gt; create
+Created target iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80.
+Created TPG 1.
+/iscsi&gt; cd iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80/
+/iscsi/iqn.20....d497c356ad80&gt; ls
+o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 ...... [TPGs: 1]
+  o- tpg1 ............................................... [no-gen-acls, no-auth]
+    o- acls .......................................................... [ACLs: 0]
+    o- luns .......................................................... [LUNs: 0]
+    o- portals .................................................... [Portals: 0]
+/iscsi/iqn.20....d497c356ad80&gt; cd tpg1/luns
+/iscsi/iqn.20...d80/tpg1/luns&gt; create /backstores/block/disk0 
+Created LUN 0.</code></pre>
+<p>第4步：设置访问控制列表（ACL）。iSCSI协议是通过客户端名称进行验证的，也就是说，用户在访问存储共享资源时不需要输入密码，只要iSCSI客户端的名称与服务端中设置的访问控制列表中某一名称条目一致即可，因此需要在iSCSI服务端的配置文件中写入一串能够验证用户信息的名称。acls参数目录用于存放能够访问iSCSI服务端共享存储资源的客户端名称。刘遄老师推荐在刚刚系统生成的iSCSI target后面追加上类似于:client的参数，这样既能保证客户端的名称具有唯一性，又非常便于管理和阅读：</p>
+<pre><code>/iscsi/iqn.20...d80/tpg1/luns&gt; cd ..
+/iscsi/iqn.20...c356ad80/tpg1&gt; cd acls 
+/iscsi/iqn.20...d80/tpg1/acls&gt; create iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
+Created Node ACL for iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
+Created mapped LUN 0</code></pre>
+<p>第5步：设置iSCSI服务端的监听IP地址和端口号。即在portals参数目录中写上服务器的IP地址。接下来将由系统自动开启服务器192.168.10.10的3260端口将向外提供iSCSI共享存储资源服务：</p>
+<pre><code>/iscsi/iqn.20...d80/tpg1/acls&gt; cd ..
+/iscsi/iqn.20...c356ad80/tpg1&gt; cd portals 
+/iscsi/iqn.20.../tpg1/portals&gt; create 192.168.10.10
+Using default IP port 3260
+Created network portal 192.168.10.10:3260.</code></pre>
+<p>第6步：配置妥当后检查配置信息，重启iSCSI服务端程序并配置防火墙策略。在参数文件配置妥当后，可以浏览刚刚配置的信息，确保与下面的信息基本一致。在确认信息无误后输入exit命令来退出配置。注意，千万不要习惯性地按Ctrl + C组合键结束进程，这样不会保存配置文件，我们的工作也就白费了。最后重启iSCSI服务端程序，再设置firewalld防火墙策略，使其放行3260/tcp端口号的流量。</p>
+<pre><code>/iscsi/iqn.20.../tpg1/portals&gt; ls /
+o- / ........................... [...]
+  o- backstores................. [...]
+  | o- block ................... [Storage Objects: 1]
+  | | o- disk0 ................. [/dev/md0 (40.0GiB) write-thru activated]
+  | o- fileio .................. [Storage Objects: 0]
+  | o- pscsi ................... [Storage Objects: 0]
+  | o- ramdisk ................. [Storage Objects: 0]
+  o- iscsi ..................... [Targets: 1]
+  | o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 .... [TPGs: 1]
+  |   o- tpg1 .................. [no-gen-acls, no-auth]
+  |     o- acls ........................................................ [ACLs: 1]
+  |     | o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client [Mapped LUNs: 1]
+  |     |   o- mapped_lun0 ............................................. [lun0 block/disk0 (rw)]  
+    o- luns .................... [LUNs: 1]
+  |     | o- lun0 .............. [block/disk0 (/dev/md0)]
+  |     o- portals ............. [Portals: 1]
+  |       o- 192.168.10.10:3260  [OK]
+  o- loopback .................. [Targets: 0]
+/&gt; exit
+Global pref auto_save_on_exit=true
+Last 10 configs saved in /etc/target/backup.
+Configuration saved to /etc/target/saveconfig.json
+[root@linuxprobe ~]# systemctl restart targetd
+[root@linuxprobe ~]# firewall-cmd --permanent --add-port=3260/tcp 
+success 
+[root@linuxprobe ~]# firewall-cmd --reload 
+success</code></pre>
+<p>但在配置这部分时，遇到一个问题：在targetcli界面输入“exit”时，并没有显示配置已保存，反而提示有报错：’Implict and Explict’ is not in list；网上搜索查询得知是由于系统内核版本（kernel-3.10.0-123.el7.x86_64）太低导致，需要升级kernel内核：在升级内核时，也比较麻烦，一台虚拟机系统在终端中输入命令：yum update kernel，即成功升级版本（kernel 3.10.0-1160.15.2.el7.x86_64）；而另一台虚拟机则使用此种方式不成功，查询资料，采用另一种方式：</p>
+<p>1.直接运行yum update kernel，显示报错error:kernel conflicts kmod等等……；</p>
+<p>2.输入：yum clean all，可能有些效果，但无法彻底解决；</p>
+<p>3.上面报错：kernel conflicts kmod，可能是由于系统中安装有多个kmod版本导致；</p>
+<p>4.输入：rpm -qa kmod，查询系统中安装的kmod数量，然后使用 rpm -e kmod-version，卸载低版本，之后重新输入；yum update kernel，升级内核！</p>
+<p>5.升级完成后，输入：awk -F&#39; ‘$1==”menuentry “ {print $2}’ /etc/grub2.cfg ，查看下内核的默认启动顺序；</p>
+<p>6.默认启动的顺序是从0开始，新内核是从头插入，所以需要选择0，输入命令：grub2-set-default 0</p>
+<p>7.重启系统，开机后输入：uname -r，查看系统版本号！</p>
+<h1 id="4-配置linux客户端"><a href="#4-配置linux客户端" class="headerlink" title="4.配置linux客户端"></a>4.配置linux客户端</h1><p>第1步：在RHEL 7系统中，已经默认安装了iSCSI客户端服务程序initiator。如果您的系统没有安装的话，可以使用Yum软件仓库手动安装。</p>
+<pre><code>[root@linuxprobe ~]# yum install iscsi-initiator-utils 
+Loaded plugins: langpacks, product-id, subscription-manager 
+Package iscsi-initiator-utils-6.2.0.873-21.el7.x86_64 already installed and latest version 
+Nothing to do</code></pre>
+<p>第2步：编辑iSCSI客户端中的initiator名称文件，把服务端的访问控制列表名称填写进来，然后重启客户端iscsid服务程序并将其加入到开机启动项中：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
+[root@linuxprobe ~]# systemctl restart iscsid
+[root@linuxprobe ~]# systemctl enable iscsid
+ ln -s &#39;/usr/lib/systemd/system/iscsid.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/iscsid.service&#39;</code></pre>
+<p>第3步：iSCSI客户端访问并使用共享存储资源的步骤很简单，只需要记住刘遄老师的一个小口诀“先发现，再登录，最后挂载并使用”。iscsiadm是用于管理、查询、插入、更新或删除iSCSI数据库配置文件的命令行工具，用户需要先使用这个工具扫描发现远程iSCSI服务端，然后查看找到的服务端上有哪些可用的共享存储资源。其中，-m discovery参数的目的是扫描并发现可用的存储资源，-t st参数为执行扫描操作的类型，-p 192.168.10.10参数为iSCSI服务端的IP地址：</p>
+<pre><code>[root@linuxprobe ~]# iscsiadm -m discovery -t st -p 192.168.10.10
+192.168.10.10:3260,1 iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80</code></pre>
+<p>第4步：在使用iscsiadm命令发现了远程服务器上可用的存储资源后，接下来准备登录iSCSI服务端。其中，-m node参数为将客户端所在主机作为一台节点服务器，-T  iqn.2003-01. org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80参数为要使用的存储资源（大家可以直接复制前面命令中扫描发现的结果，以免录入错误），-p 192.168.10.10参数依然为对方iSCSI服务端的IP地址。最后使用–login或-l参数进行登录验证。</p>
+<pre><code>[root@linuxprobe ~]# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 -p 192.168.10.10 --login
+Logging in to [iface: default, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260] (multiple)
+Login to [iface: default, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260] successful.</code></pre>
+<p>第5步：在iSCSI客户端成功登录之后，会在客户端主机上多出一块名为/dev/sdb的设备文件。</p>
+<pre><code>[root@linuxprobe ~]# file /dev/sdb 
+/dev/sdb: block special</code></pre>
+<p>第6步：格式化、挂载硬盘；</p>
+<pre><code>[root@linuxprobe ~]# mkfs.xfs /dev/sdb
+[root@linuxprobe ~]# mkdir /iscsi
+[root@linuxprobe ~]# mount /dev/sdb /iscsi
+[root@linuxprobe ~]# df -h</code></pre>
+<p>需要提醒大家的是，由于udev服务是按照系统识别硬盘设备的顺序来命名硬盘设备的，当客户端主机同时使用多个远程存储资源时，如果下一次识别远程设备的顺序发生了变化，则客户端挂载目录中的文件也将随之混乱。为了防止发生这样的问题，我们应该在/etc/fstab配置文件中使用设备的UUID唯一标识符进行挂载，这样，不论远程设备资源的识别顺序再怎么变化，系统也能正确找到设备所对应的目录。</p>
+<p>blkid命令用于查看设备的名称、文件系统及UUID。可以使用管道符（详见第3章）进行过滤，只显示与/dev/sdb设备相关的信息：</p>
+<pre><code>[root@linuxprobe ~]# blkid | grep /dev/sdb
+/dev/sdb: UUID=&quot;eb9cbf2f-fce8-413a-b770-8b0f243e8ad6&quot; TYPE=&quot;xfs&quot; </code></pre>
+<p>由于/dev/sdb是一块网络存储设备，而iSCSI协议是基于TCP/IP网络传输数据的，因此必须在/etc/fstab配置文件中添加上_netdev参数，表示当系统联网后再进行挂载操作，以免系统开机时间过长或开机失败：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/fstab
+/dev/mapper/rhel-swap swap swap defaults 0 0
+/dev/cdrom /media/cdrom iso9660 defaults 0 0 
+**UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0**</code></pre>
+<p>如果我们不再需要使用iSCSI共享设备资源了，可以用iscsiadm命令的-u参数将其设备卸载：</p>
+<pre><code>[root@linuxprobe ~]# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 -u
+
+Logging out of session [sid: 7, target : iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260]
+
+Logout of [sid: 7, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80,portal:192.168.10.10,3260] successful.</code></pre>
+<h1 id="5-配置windows客户端"><a href="#5-配置windows客户端" class="headerlink" title="5.配置windows客户端"></a>5.配置windows客户端</h1><p>使用Windows系统的客户端也可以正常访问iSCSI服务器上的共享存储资源，而且操作原理及步骤与Linux系统的客户端基本相同。在进行下面的实验之前，请先关闭Linux系统客户端，以免这两台客户端主机同时使用iSCSI共享存储资源而产生潜在问题。</p>
+<p>iSCSI服务器和客户端的操作系统以及IP地址：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>iSCSI服务端</td>
+<td>RHEL 7</td>
+<td>192.168.10.10</td>
+</tr>
+<tr>
+<td>windows客户端</td>
+<td>windows 7</td>
+<td>192.168.10.30</td>
+</tr>
+</tbody></table>
+<p>第1步：运行iSCSI发起程序。在Windows 7/10操作系统中已经默认安装了iSCSI客户端程序，我们只需在控制面板中找到“系统和安全”标签，然后单击“管理工具”，进入到“管理工具”页面后即可看到“iSCSI发起程序”图标。双击该图标。在第一次运行iSCSI发起程序时，系统会提示“Microsoft iSCSI服务端未运行”，单击“是”按钮即可自动启动并运行iSCSI发起程序：</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/2.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/3.png" class>
+
+<p>第2步：扫描发现iSCSI服务端上可用的存储资源。不论是Windows系统还是Linux系统，要想使用iSCSI共享存储资源都必须先进行扫描发现操作。运行iSCSI发起程序后在“目标”选项卡的“目标”文本框中写入iSCSI服务端的IP地址，然后单击“快速连接”按钮:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/4.png" class>
+
+<p>在弹出的“快速连接”提示框中可看到共享的硬盘存储资源，单击“完成”按钮即可:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/5.png" class>
+
+<p>回到“目标”选项卡页面，可以看到共享存储资源的名称已经出现.</p>
+<p>第3步：准备连接iSCSI服务端的共享存储资源。由于在iSCSI服务端程序上设置了ACL，使得只有客户端名称与ACL策略中的名称保持一致时才能使用远程存储资源，因此需要在“配置”选项卡中单击“更改”按钮，把iSCSI发起程序的名称修改为服务端:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/6.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/7.png" class>
+
+<p>在确认客户端发起程序的名称修改正确后即可返回到“目标”选项卡页面中，然后单击“连接”按钮进行连接请求，成功连接到远程共享存储资源的页面:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/8.png" class>
+
+<p>第4步：访问iSCSI远程共享存储资源。右键单击桌面上的“计算机”图标，打开计算机管理程序:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/9.png" class>
+
+<p>开始对磁盘进行初始化操作:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/10.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/11.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/12.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/13.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/14.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/15.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/16.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/17.png" class>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第17章节：使用ISCSI服务部署网络存储</tag>
       </tags>
   </entry>
   <entry>
