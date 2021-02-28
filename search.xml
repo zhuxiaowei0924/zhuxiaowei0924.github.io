@@ -783,7 +783,7 @@ ln -s &#39;/usr/lib/systemd/system/dovecot.service&#39; &#39;/etc/systemd/system
 </tbody></table>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png" class>
 
-<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#108;&#x69;&#110;&#x75;&#x78;&#x70;&#114;&#111;&#98;&#x65;&#x40;&#108;&#x69;&#x6e;&#117;&#120;&#x70;&#x72;&#x6f;&#x62;&#101;&#46;&#99;&#x6f;&#x6d;">&#108;&#x69;&#110;&#x75;&#x78;&#x70;&#114;&#111;&#98;&#x65;&#x40;&#108;&#x69;&#x6e;&#117;&#120;&#x70;&#x72;&#x6f;&#x62;&#101;&#46;&#99;&#x6f;&#x6d;</a>,linuxprobe是linux用户名）和用户密码：</p>
+<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#108;&#x69;&#110;&#117;&#x78;&#x70;&#x72;&#111;&#98;&#x65;&#64;&#108;&#105;&#110;&#x75;&#x78;&#x70;&#x72;&#x6f;&#98;&#x65;&#46;&#x63;&#111;&#x6d;">&#108;&#x69;&#110;&#117;&#x78;&#x70;&#x72;&#111;&#98;&#x65;&#64;&#108;&#105;&#110;&#x75;&#x78;&#x70;&#x72;&#x6f;&#98;&#x65;&#46;&#x63;&#111;&#x6d;</a>,linuxprobe是linux用户名）和用户密码：</p>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png" class>
 
 <p>第2步：设置接收服务器类型为POP3，输入邮件帐号和密码，设置POP服务器和SMTP服务器地址，两个为同一地址，如192.168.10.10，SSL端口处不勾选，之后创建成功！</p>
@@ -2598,12 +2598,6 @@ NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进
       </tags>
   </entry>
   <entry>
-    <title>图片加载命令</title>
-    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
-]]></content>
-  </entry>
-  <entry>
     <title>liunx就该这么学：vim编辑器与Shell命令脚本</title>
     <url>/2021/01/09/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Avim%E7%BC%96%E8%BE%91%E5%99%A8%E4%B8%8EShell%E5%91%BD%E4%BB%A4%E8%84%9A%E6%9C%AC/</url>
     <content><![CDATA[<h1 id="1-Vim文本编辑器"><a href="#1-Vim文本编辑器" class="headerlink" title="1.Vim文本编辑器"></a>1.Vim文本编辑器</h1><p>注意：在linux系统中一切都是文件，而配置一个服务就是在修改其配置文件的参数；</p>
@@ -2882,6 +2876,12 @@ esac</code></pre>
       <tags>
         <tag>第4章节：vim编辑器与Shell命令脚本</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>图片加载命令</title>
+    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
+]]></content>
   </entry>
   <entry>
     <title>用hexo和github免费创建自己的博客</title>
