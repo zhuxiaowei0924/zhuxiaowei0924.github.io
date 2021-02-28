@@ -1,0 +1,671 @@
+---
+title: linux就该这么学-20：使用LNMP架构部署动态网站环境
+date: 2021-02-27 14:20:38
+tags:
+- 第20章节：使用LNMP架构部署动态网站环境
+categories:
+- linux就该这么学
+---
+
+# 1. 源码包程序
+
+使用源码包来安装服务程序具有两个优势。
+
+<!--more-->
+
+	源码包的可移植性非常好，几乎可以在任何Linux系统中安装使用，而RPM软件包是针对特定系统和架构编写的指令集，必须严格地符合执行环境才能顺利安装（即只会去“生硬地”安装服务程序）。
+	
+	使用源码包安装服务程序时会有一个编译过程，因此可以更好地适应安装主机的系统环境，运行效率和优化程度都会强于使用RPM软件包安装的服务程序。也就是说，可以将采用源码包安装服务程序的方式看作是针对系统的“量体裁衣”。
+
+一般来讲，在安装软件时，如果能通过Yum软件仓库来安装，就用Yum方式；反之则去寻找合适的RPM软件包来安装；如果是在没有资源可用，那就只能使用源码包来安装了。
+
+使用源码包安装服务程序的过程看似复杂，其实在归纳汇总后只需要4～5个步骤即可完成安装：
+
+第1步：下载及解压源码包文件。为了方便在网络中传输，源码包文件通常会在归档后使用gzip或bzip2等格式进行压缩，因此一般会具有.tar.gz与.tar.bz2的后缀。要想使用源码包安装服务程序，必须先把里面的内容解压出来，然后再切换到源码包文件的目录中：
+
+	[root@linuxprobe ~]# tar xzvf FileName.tar.gz
+	
+	[root@linuxprobe ~]# cd FileDirectory
+
+第2步：编译源码包代码。在正式使用源码包安装服务程序之前，还需要使用编译脚本针对当前系统进行一系列的评估工作，包括对源码包文件、软件之间及函数库之间的依赖关系、编译器、汇编器及连接器进行检查。我们还可以根据需要来追加--prefix参数，以指定稍后源码包程序的安装路径，从而对服务程序的安装过程更加可控。当编译工作结束后，如果系统环境符合安装要求，一般会自动在当前目录下生成一个Makefile安装文件。
+
+	[root@linuxprobe ~]# ./configure --prefix=/usr/local/program
+
+第3步：生成二进制安装程序。刚刚生成的Makefile文件中会保存有关系统环境、软件依赖关系和安装规则等内容，接下来便可以使用make命令来根据Makefile文件内容提供的合适规则编译生成出真正可供用户安装服务程序的二进制可执行文件了。
+
+	[root@linuxprobe ~]# make
+
+第4步：运行二进制的服务程序安装包。由于不需要再检查系统环境，也不需要再编译代码，因此运行二进制的服务程序安装包应该是速度最快的步骤。如果在源码包编译阶段使用了--prefix参数，那么此时服务程序就会被安装到那个目录，如果没有自行使用参数定义目录的话，一般会被默认安装到/usr/local/bin目录中。
+
+	[root@linuxprobe ~]# make install
+
+第5步：清理源码包临时文件。由于在安装服务程序的过程中进行了代码编译的工作，因此在安装后目录中会遗留下很多临时垃圾文件，本着尽量不要浪费磁盘存储空间的原则，可以使用make clean命令对临时文件进行彻底的清理工作。
+
+	[root@linuxprobe ~]# make clean
+
+# 2. LNMP动态网站架构
+
+LNMP动态网站部署架构是一套由Linux + Nginx + MySQL + PHP组成的动态网站系统解决方案。
+
+第1步：在使用源码包安装服务程序之前，首先要让安装主机具备编译程序源码的环境，他需要具备C语言、C++语言、Perl语言的编译器，以及各种常见的编译支持函数库程序。因此请先配置妥当Yum软件仓库，然后把下面列出的这些软件包都统统安装上：
+
+	[root@linuxprobe ~]# yum install -y apr* autoconf automake bison bzip2 bzip2* compat* cpp curl curl-devel fontconfig fontconfig-devel freetype freetype* freetype-devel gcc gcc-c++ gd gettext gettext-devel glibc kernel kernel-headers keyutils keyutils-libs-devel krb5-devel libcom_err-devel libpng libpng-devel libjpeg* libsepol-devel libselinux-devel libstdc++-devel libtool* libgomp libxml2 libxml2-devel libXpm* libtiff libtiff* make mpfr ncurses* ntp openssl openssl-devel patch pcre-devel perl php-common php-gd policycoreutils telnet t1lib t1lib* nasm nasm* wget zlib-devel
+	………………省略部分安装过程………………
+	Complete!
+
+第2步：刘遄老师已经把安装LNMP动态网站部署架构所需的16个软件源码包和1个用于检查效果的论坛网站系统软件包上传到与本书配套的站点服务器上。大家可以在Windows系统中下载后通过ssh服务传送到打算部署LNMP动态网站架构的Linux服务器中，也可以直接在Linux服务器中使用wget命令下载这些源码包文件。根据第6章讲解的FHS协议，建议把要安装的软件包存放在/usr/local/src目录中：
+
+	[root@linuxprobe ~]# cd /usr/local/src
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/cmake-2.8.11.2.tar.gz
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/Discuz_X3.2_SC_GBK.zip
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/freetype-2.5.3.tar.gz
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/jpegsrc.v9a.tar.gz
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/libgd-2.1.0.tar.gz
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/libmcrypt-2.5.8.tar.gz
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/libpng-1.6.12.tar.gz
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/libvpx-v1.3.0.tar.bz2
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/mysql-5.6.19.tar.gz
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/nginx-1.6.0.tar.gz
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/openssl-1.0.1h.tar.gz
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/php-5.5.14.tar.gz
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/pcre-8.35.tar.gz
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/t1lib-5.1.2.tar.gz
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/tiff-4.0.3.tar.gz
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/yasm-1.2.0.tar.gz
+	[root@linuxprobe src] # wget https://www.linuxprobe.com/Software/zlib-1.2.8.tar.gz
+	[root@linuxprobe src]# ls
+	zlib-1.2.8.tar.gz       libmcrypt-2.5.8.tar.gz  pcre-8.35.tar.gz
+	cmake-2.8.11.2.tar.gz   libpng-1.6.12.tar.gz    php-5.5.14.tar.gz
+	Discuz_X3.2_SC_GBK.zip  libvpx-v1.3.0.tar.bz2   t1lib-5.1.2.tar.gz
+	freetype-2.5.3.tar.gz   mysql-5.6.19.tar.gz     tiff-4.0.3.tar.gz
+	jpegsrc.v9a.tar.gz      nginx-1.6.0.tar.gz      yasm-1.2.0.tar.gz
+	libgd-2.1.0.tar.gz      openssl-1.0.1h.tar.gz
+
+第3步：CMake是Linux系统中一款常用的编译工具。要想通过源码包安装服务程序，就一定要严格遵守上面总结的安装步骤—下载及解压源码包文件、编译源码包代码、生成二进制安装程序、运行二进制的服务程序安装包。接下来在解压、编译各个软件包源码程序时，都会生成大量的输出信息，下文中将其省略，请读者以实际操作为准。
+
+	[root@linuxprobe src]# tar xzvf cmake-2.8.11.2.tar.gz
+	[root@linuxprobe src]# cd cmake-2.8.11.2/
+	[root@linuxprobe cmake-2.8.11.2]# ./configure
+	[root@linuxprobe cmake-2.8.11.2]# make 
+	[root@linuxprobe cmake-2.8.11.2]# make install
+
+## 2.1 配置Mysql服务
+
+第1步：在使用Yum软件仓库安装服务程序时，系统会自动根据RPM软件包中的指令集完整软件配置等工作。但是一旦选择使用源码包的方式来安装，这一切就需要自己来完成了。针对MySQL数据库来讲，我们需要在系统中创建一个名为mysql的用户，专门用于负责运行MySQL数据库。请记得要把这类账户的Bash终端设置成nologin解释器，避免黑客通过该用户登录到服务器中，从而提高系统安全性。
+
+	[root@linuxprobe cmake-2.8.11.2]# cd ..
+	[root@linuxprobe src]# useradd mysql -s /sbin/nologin
+
+第2步：创建一个用于保存MySQL数据库程序和数据库文件的目录，并把该目录的所有者和所属组身份修改为mysql。其中，/usr/local/mysql是用于保存MySQL数据库服务程序的目录，/usr/local/mysql/var则是用于保存真实数据库文件的目录。
+
+	[root@linuxprobe src]# mkdir -p /usr/local/mysql/var
+	[root@linuxprobe src]# chown -Rf mysql:mysql /usr/local/mysql
+
+第3步：接下来解压、编译、安装MySQL数据库服务程序。在编译数据库时使用的是cmake命令，其中，-DCMAKE_INSTALL_PREFIX参数用于定义数据库服务程序的保存目录，-DMYSQL_DATADIR参数用于定义真实数据库文件的目录，-DSYSCONFDIR则是定义MySQL数据库配置文件的保存目录。由于MySQL数据库服务程序比较大，因此编译的过程比较漫长，在此期间可以稍微休息一下。
+
+	[root@linuxprobe src]# tar xzvf mysql-5.6.19.tar.gz
+	[root@linuxprobe src]# cd mysql-5.6.19/
+	[root@linuxprobe mysql-5.6.19]# cmake . -DCMAKE_INSTALL_PREFIX=/usr/local/mysql -DMYSQL_DATADIR=/usr/local/mysql/var -DSYSCONFDIR=/etc
+	[root@linuxprobe mysql-5.6.19]# make
+	[root@linuxprobe mysql-5.6.19]# make install
+
+第4步：为了让MySQL数据库程序正常运转起来，需要先删除/etc目录中的默认配置文件，然后在MySQL数据库程序的保存目录scripts内找到一个名为mysql_install_db的脚本程序，执行这个脚本程序并使用--user参数指定MySQL服务的对应账号名称（在前面步骤已经创建），使用--basedir参数指定MySQL服务程序的保存目录，使用--datadir参数指定MySQL真实数据库的文件保存目录，这样即可生成系统数据库文件，也会生成出新的MySQL服务配置文件。
+
+	[root@linuxprobe mysql-5.6.19]# rm -rf /etc/my.cnf
+	[root@linuxprobe mysql-5.6.19]# cd /usr/local/mysql
+	[root@linuxprobe mysql]# ./scripts/mysql_install_db --user=mysql --basedir=/usr/local/mysql --datadir=/usr/local/mysql/var
+
+第5步：把系统新生成的MySQL数据库配置文件链接到/etc目录中，然后把程序目录中的开机程序文件复制到/etc/rc.d/init.d目录中，以便通过service命令来管理MySQL数据库服务程序。记得把数据库脚本文件的权限修改成755以便于让用户有执行该脚本的权限：
+
+	[root@linuxprobe mysql]# ln -s my.cnf /etc/my.cnf 
+	[root@linuxprobe mysql]# cp ./support-files/mysql.server /etc/rc.d/init.d/mysqld
+	[root@linuxprobe mysql]# chmod 755 /etc/rc.d/init.d/mysqld
+
+第6步：编辑刚复制的MySQL数据库脚本文件，把第46、47行的basedir与datadir参数分别修改为MySQL数据库程序的保存目录和真实数据库的文件内容。
+
+	[root@linuxprobe mysql]# vim /etc/rc.d/init.d/mysqld 
+	………………省略部分输出信息………………
+	 39 #
+	 40 # If you want to affect other MySQL variables, you should make your changes
+	 41 # in the /etc/my.cnf, ~/.my.cnf or other MySQL configuration files.
+	 42 
+	 43 # If you change base dir, you must also change datadir. These may get
+	 44 # overwritten by settings in the MySQL configuration files.
+	 45 
+	 46 basedir=/usr/local/mysql
+	 47 datadir=/usr/local/mysql/var
+	 48 
+	………………省略部分输出信息………………
+
+第7步：配置好脚本文件后便可以用service命令启动mysqld数据库服务了。mysqld是MySQL数据库程序的服务名称，注意不要写错。顺带再使用chkconfig命令把mysqld服务程序加入到开机启动项中。
+
+	[root@Linuxprobe mysql]# service mysqld start
+	Starting MySQL. SUCCESS! 
+	[root@linuxprobe mysql]# chkconfig mysqld on
+
+启动mysql服务时，报错：The server quit without updating PID file！报错原因是由于：进程里可能已经存在mysql进程；
+
+解决方法：用命令“ps -ef | grep mysqld”查看是否有mysqld进程，如果有使用“kill -9  进程号”杀死，然后重新启动mysqld！
+
+第8步：MySQL数据库程序自带了许多命令，但是Bash终端的PATH变量并不会包含这些命令所存放的目录，因此我们也无法顺利地对MySQL数据库进行初始化，也就不能使用MySQL数据库自带的命令了。想要把命令所保存的目录永久性地定义到PATH变量中，需要编辑/etc/profile文件并写入追加的命令目录，这样当物理设备在下一次重启时就会永久生效了。如果不想通过重启设备的方式来生效，也可以使用source命令加载一下/ect/profile文件，此时新的PATH变量也可以立即生效了。
+
+	[root@linuxprobe mysql]# vim /etc/profile
+	………………省略部分输出信息………………
+	 64 
+	 65 for i in /etc/profile.d/*.sh ; do
+	 66 if [ -r "$i" ]; then
+	 67 if [ "${-#*i}" != "$-" ]; then
+	 68 . "$i"
+	 69 else
+	 70 . "$i" >/dev/null
+	 71 fi
+	 72 fi
+	 73 done
+	 74 export PATH=$PATH:/usr/local/mysql/bin
+	 75 unset i
+	 76 unset -f pathmunge
+	[root@linuxprobe mysql]# source /etc/profile
+
+第9步：MySQL数据库服务程序还会调用到一些程序文件和函数库文件。由于当前是通过源码包方式安装MySQL数据库，因此现在也必须以手动方式把这些文件链接过来。
+
+	[root@linuxprobe mysql]# mkdir /var/lib/mysql
+	[root@linuxprobe mysql]# ln -s /usr/local/mysql/lib/mysql /usr/lib/mysql
+	[root@linuxprobe mysql]# ln -s /tmp/mysql.sock /var/lib/mysql/mysql.sock
+	[root@linuxprobe mysql]# ln -s /usr/local/mysql/include/mysql /usr/include/mysql
+
+第10步：现在，MySQL数据库服务程序已经启动，调用的各个函数文件已经就位，PATH环境变量中也加入了MySQL数据库命令的所在目录。接下来准备对MySQL数据库进行初始化，这个初始化的配置过程与MariaDB数据库是一样的，只是最后变成了Thanks for using MySQL!
+
+	[root@linuxprobe mysql]# mysql_secure_installation 
+	NOTE: RUNNING ALL PARTS OF THIS SCRIPT IS RECOMMENDED FOR ALL MySQL
+	      SERVERS IN PRODUCTION USE!  PLEASE READ EACH STEP CAREFULLY!
+	In order to log into MySQL to secure it, we'll need the current
+	password for the root user.  If you've just installed MySQL, and
+	you haven't set the root password yet, the password will be blank,
+	so you should just press enter here.
+	Enter current password for root (enter for none): 此处只需按下回车键
+	OK, successfully used password, moving on...
+	Setting the root password ensures that nobody can log into the MySQL
+	root user without the proper authorisation.
+	Set root password? [Y/n] y （要为root管理员设置数据库的密码）
+	New password: 输入要为root管理员设置的数据库密码
+	Re-enter new password: 再输入一次密码
+	Password updated successfully!
+	Reloading privilege tables..
+	 ... Success!
+	By default, a MySQL installation has an anonymous user, allowing anyone
+	to log into MySQL without having to have a user account created for
+	them.  This is intended only for testing, and to make the installation
+	go a bit smoother.  You should remove them before moving into a
+	production environment.
+	Remove anonymous users? [Y/n] y （删除匿名账户）
+	 ... Success!
+	Normally, root should only be allowed to connect from 'localhost'.  This
+	ensures that someone cannot guess at the root password from the network.
+	Disallow root login remotely? [Y/n] y （禁止root管理员从远程登录）
+	 ... Success!
+	By default, MySQL comes with a database named 'test' that anyone can
+	access.  This is also intended only for testing, and should be removed
+	before moving into a production environment.
+	Remove test database and access to it? [Y/n] y （删除test数据库并取消对其的访问权限）
+	 - Dropping test database...
+	 ... Success!
+	 - Removing privileges on test database...
+	 ... Success!
+	Reloading the privilege tables will ensure that all changes made so far
+	will take effect immediately.
+	Reload privilege tables now? [Y/n] y （刷新授权表，让初始化后的设定立即生效）
+	 ... Success!
+	All done!  If you've completed all of the above steps, your MySQL
+	installation should now be secure.
+	Thanks for using MySQL!
+	Cleaning up...
+
+## 2.2 配置Ngnix服务
+
+第1步：在正式安装Nginx服务程序之前，我们还需要为其解决相关的软件依赖关系，例如用于提供Perl语言兼容的正则表达式库的软件包pcre，就是Nginx服务程序用于实现伪静态功能必不可少的依赖包。下面来解压、编译、生成、安装Nginx服务程序的源码文件：
+
+	[root@linuxprobe ~]# cd /usr/local/src
+	[root@linuxprobe src]# tar xzvf pcre-8.35.tar.gz 
+	[root@linuxprobe src]# cd pcre-8.35
+	[root@linuxprobe pcre-8.35]# ./configure --prefix=/usr/local/pcre
+	[root@linuxprobe pcre-8.35]# make
+	[root@linuxprobe pcre-8.35]# make install 
+
+第2步：openssl软件包是用于提供网站加密证书服务的程序文件，在安装该程序时需要自定义服务程序的安装目录，以便于稍后调用它们的时候更可控。
+	
+	[root@linuxprobe pcre-8.35]# cd /usr/local/src
+	[root@linuxprobe src]# tar xzvf openssl-1.0.1h.tar.gz
+	[root@linuxprobe src]# cd openssl-1.0.1h
+	[root@linuxprobe openssl-1.0.1h]# ./config --prefix=/usr/local/openssl
+	[root@linuxprobe openssl-1.0.1h]# make
+	[root@linuxprobe openssl-1.0.1h]# make install 
+
+第3步：openssl软件包安装后默认会在/usr/local/openssl/bin目录中提供很多的可用命令，我们需要像前面的操作那样，将这个目录添加到PATH环境变量中，并写入到配置文件中，最后执行source命令以便让新的PATH环境变量内容可以立即生效：
+
+	[root@linuxprobe pcre-8.35]# vim /etc/profile
+	………………省略部分输出信息………………
+	 64 
+	 65 for i in /etc/profile.d/*.sh ; do
+	 66 if [ -r "$i" ]; then
+	 67 if [ "${-#*i}" != "$-" ]; then
+	 68 . "$i"
+	 69 else
+	 70 . "$i" >/dev/null
+	 71 fi
+	 72 fi
+	 73 done
+	 74 export PATH=$PATH:/usr/local/mysql/bin:/usr/local/openssl/bin
+	 75 unset i
+	 76 unset -f pathmunge
+	[root@linuxprobe pcre-8.35]# source /etc/profile
+	zlib软件包是用于提供压缩功能的函数库文件。其实Nginx服务程序调用的这些服务程序无需深入了解，只要大致了解其作用就已经足够了：
+	
+	[root@linuxprobe pcre-8.35]# cd /usr/local/src
+	[root@linuxprobe src]# tar xzvf zlib-1.2.8.tar.gz 
+	[root@linuxprobe src]# cd zlib-1.2.8
+	[root@linuxprobe zlib-1.2.8]# ./configure --prefix=/usr/local/zlib
+	[root@linuxprobe zlib-1.2.8]# make
+	[root@linuxprobe zlib-1.2.8]# make install
+
+第4步：在安装部署好具有依赖关系的软件包之后，创建一个用于执行Nginx服务程序的账户。账户名称可以自定义，但一定别忘记，因为在后续需要调用：
+
+	[root@linuxprobe zlib-1.2.8]# cd ..
+	[root@linuxprobe src]# useradd www -s /sbin/nologin
+
+第5步：在使用命令编译Nginx服务程序时，需要设置特别多的参数，其中，--prefix参数用于定义服务程序稍后安装到的位置，--user与--group参数用于指定执行Nginx服务程序的用户名和用户组。在使用参数调用openssl、zlib、pcre软件包时，请写出软件源码包的解压路径，而不是程序的安装路径：
+
+	[root@linuxprobe src]# tar xzvf nginx-1.6.0.tar.gz 
+	[root@linuxprobe src]# cd nginx-1.6.0/
+	[root@linuxprobe nginx-1.6.0]# ./configure --prefix=/usr/local/nginx --without-http_memcached_module --user=www --group=www --with-http_stub_status_module --with-http_ssl_module --with-http_gzip_static_module --with-openssl=/usr/local/src/openssl-1.0.1h --with-zlib=/usr/local/src/zlib-1.2.8 --with-pcre=/usr/local/src/pcre-8.35
+	[root@linuxprobe nginx-1.6.0]# make
+	[root@linuxprobe nginx-1.6.0]# make install
+
+第6步：要想启动Nginx服务程序以及将其加入到开机启动项中，也需要有脚本文件。可惜的是，在安装完Nginx软件包之后默认并没有为用户提供脚本文件，因此刘遄老师给各位读者准备了一份可用的启动脚本文件，大家只需在/etc/rc.d/init.d目录中创建脚本文件并直接复制下面的脚本内容即可（相信各位读者在掌握了第4章的内容之后，应该可以顺利看懂这个脚本文件）。
+
+	[root@linuxprobe nginx-1.6.0]# vim /etc/rc.d/init.d/nginx
+	#!/bin/bash
+	# nginx - this script starts and stops the nginx daemon
+	# chkconfig: - 85 15
+	# description: Nginx is an HTTP(S) server, HTTP(S) reverse \
+	# proxy and IMAP/POP3 proxy server
+	# processname: nginx
+	# config: /etc/nginx/nginx.conf
+	# config: /usr/local/nginx/conf/nginx.conf
+	# pidfile: /usr/local/nginx/logs/nginx.pid
+	# Source function library.
+	. /etc/rc.d/init.d/functions
+	# Source networking configuration.
+	. /etc/sysconfig/network
+	# Check that networking is up.
+	[ "$NETWORKING" = "no" ] && exit 0
+	nginx="/usr/local/nginx/sbin/nginx"
+	prog=$(basename $nginx)
+	NGINX_CONF_FILE="/usr/local/nginx/conf/nginx.conf"
+	[ -f /etc/sysconfig/nginx ] && . /etc/sysconfig/nginx
+	lockfile=/var/lock/subsys/nginx
+	make_dirs() {
+	# make required directories
+	user=`$nginx -V 2>&1 | grep "configure arguments:" | sed 's/[^*]*--user=\([^ ]*\).*/\1/g' -`
+	        if [ -z "`grep $user /etc/passwd`" ]; then
+	                useradd -M -s /bin/nologin $user
+	        fi
+	options=`$nginx -V 2>&1 | grep 'configure arguments:'`
+	for opt in $options; do
+	        if [ `echo $opt | grep '.*-temp-path'` ]; then
+	                value=`echo $opt | cut -d "=" -f 2`
+	                if [ ! -d "$value" ]; then
+	                        # echo "creating" $value
+	                        mkdir -p $value && chown -R $user $value
+	                fi
+	        fi
+	done
+	}
+	start() {
+	[ -x $nginx ] || exit 5
+	[ -f $NGINX_CONF_FILE ] || exit 6
+	make_dirs
+	echo -n $"Starting $prog: "
+	daemon $nginx -c $NGINX_CONF_FILE
+	retval=$?
+	echo
+	[ $retval -eq 0 ] && touch $lockfile
+	return $retval
+	}
+	stop() {
+	echo -n $"Stopping $prog: "
+	killproc $prog -QUIT
+	retval=$?
+	echo
+	[ $retval -eq 0 ] && rm -f $lockfile
+	return $retval
+	}
+	restart() {
+	#configtest || return $?
+	stop
+	sleep 1
+	start
+	}
+	reload() {
+	#configtest || return $?
+	echo -n $"Reloading $prog: "
+	killproc $nginx -HUP
+	RETVAL=$?
+	echo
+	}
+	force_reload() {
+	restart
+	}
+	configtest() {
+	$nginx -t -c $NGINX_CONF_FILE
+	}
+	rh_status() {
+	status $prog
+	}
+	rh_status_q() {
+	rh_status >/dev/null 2>&1
+	}
+	case "$1" in
+	start)
+	        rh_status_q && exit 0
+	        $1
+	        ;;
+	stop)
+	        rh_status_q || exit 0
+	        $1
+	        ;;
+	restart|configtest)
+	$1
+	;;
+	reload)
+	        rh_status_q || exit 7
+	        $1
+	        ;;
+	force-reload)
+	        force_reload
+	        ;;
+	status)
+	        rh_status
+	        ;;
+	condrestart|try-restart)
+	        rh_status_q || exit 0
+	        ;;
+	*)
+	echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|reload|force-reload|configtest}"
+	exit 2
+	esac
+
+第7步：保存脚本文件后记得为其赋予755权限，以便能够执行这个脚本。然后以绝对路径的方式执行这个脚本，通过restart参数重启Nginx服务程序，最后再使用chkconfig命令将Nginx服务程序添加至开机启动项中。大功告成！
+
+	[root@linuxprobe nginx-1.6.0]# chmod 755 /etc/rc.d/init.d/nginx
+	[root@linuxprobe nginx-1.6.0]# /etc/rc.d/init.d/nginx restart
+	Restarting nginx (via systemctl):                          [  OK  ]
+	[root@linuxprobe nginx-1.6.0]# chkconfig nginx on
+
+Nginx服务程序在启动后就可以在浏览器中输入服务器的IP地址来查看到默认网页了。相较于Apache服务程序的红色默认页面，Nginx服务程序的默认页面显得更加简洁。
+
+## 2.3 配置php服务
+
+PHP（Hypertxt Preprocessor，超文本预处理器）是一种通用的开源脚本语言，发明于1995年，它吸取了C语言、Java语言及Perl语言的很多优点，具有开源、免费、快捷、跨平台性强、效率高等优良特性，是目前Web开发领域最常用的语言之一。本书的配套站点就是基于PHP语言编写的。
+
+使用源码包的方式编译安装PHP语言环境其实并不复杂，难点在于解决PHP的程序包和其他软件的依赖关系。为此需要先安装部署将近十个用于搭建网站页面的软件程序包，然后才能正式安装PHP程序。
+
+第1步：yasm源码包是一款常见的开源汇编器，其解压、编译、安装过程中生成的输出信息均已省略：
+
+	[root@linuxprobe nginx-1.6.0]# cd ..
+	[root@linuxprobe src]# tar zxvf yasm-1.2.0.tar.gz
+	[root@linuxprobe src]# cd yasm-1.2.0
+	[root@linuxprobe yasm-1.2.0]# ./configure
+	[root@linuxprobe yasm-1.2.0]# make
+	[root@linuxprobe yasm-1.2.0]# make install
+
+第2步：libmcrypt源码包是用于加密算法的扩展库程序，其解压、编译、安装过程中生成的输出信息均已省略：
+
+	[root@linuxprobe yasm-1.2.0]# cd ..
+	[root@linuxprobe src]# tar zxvf libmcrypt-2.5.8.tar.gz
+	[root@linuxprobe src]# cd libmcrypt-2.5.8
+	[root@linuxprobe libmcrypt-2.5.8]# ./configure
+	[root@linuxprobe libmcrypt-2.5.8]# make
+	[root@linuxprobe libmcrypt-2.5.8]# make install
+
+第3步：libvpx源码包是用于提供视频编码器的服务程序，其解压、编译、安装过程中生成的输出信息均已省略。相信会有很多粗心的读者顺手使用了tar命令的xzvf参数，但如果仔细观察就会发现libvpx源码包的后缀是.tar.bz2，即表示使用bzip2格式进行的压缩，因此正确的解压参数应该是xjvf：
+
+	[root@linuxprobe libmcrypt-2.5.8]# cd ..
+	[root@linuxprobe src]# tar xjvf libvpx-v1.3.0.tar.bz2
+	[root@linuxprobe src]# cd libvpx-v1.3.0
+	[root@linuxprobe libvpx-v1.3.0]# ./configure --prefix=/usr/local/libvpx --enable-shared --enable-vp9
+	[root@linuxprobe libvpx-v1.3.0]# make
+	[root@linuxprobe libvpx-v1.3.0]# make install
+
+第4步：tiff源码包是用于提供标签图像文件格式的服务程序，其解压、编译、安装过程中生成的输出信息均已省略：
+
+	[root@linuxprobe libvpx-v1.3.0]# cd ..
+	[root@linuxprobe src]# tar zxvf tiff-4.0.3.tar.gz
+	[root@linuxprobe src]# cd tiff-4.0.3
+	[root@linuxprobe tiff-4.0.3]# ./configure --prefix=/usr/local/tiff --enable-shared
+	[root@linuxprobe tiff-4.0.3]# make
+	[root@linuxprobe tiff-4.0.3]# make install
+
+第5步：libpng源码包是用于提供png图片格式支持函数库的服务程序，其解压、编译、安装过程中生成的输出信息均已省略：
+
+	[root@linuxprobe tiff-4.0.3]# cd ..
+	[root@linuxprobe src]# tar zxvf libpng-1.6.12.tar.gz
+	[root@linuxprobe src]# cd libpng-1.6.12
+	[root@linuxprobe libpng-1.6.12]# ./configure --prefix=/usr/local/libpng --enable-shared
+	[root@linuxprobe libpng-1.6.12]# make
+	[root@linuxprobe libpng-1.6.12]# make install
+
+第6步：freetype源码包是用于提供字体支持引擎的服务程序，其解压、编译、安装过程中生成的输出信息均已省略：
+
+	[root@linuxprobe libpng-1.6.12]# cd ..
+	[root@linuxprobe src]# tar zxvf freetype-2.5.3.tar.gz
+	[root@linuxprobe src]# cd freetype-2.5.3
+	[root@linuxprobe freetype-2.5.3]# ./configure --prefix=/usr/local/freetype --enable-shared
+	[root@linuxprobe freetype-2.5.3]# make
+	[root@linuxprobe freetype-2.5.3]# make install
+
+第7步：jpeg源码包是用于提供jpeg图片格式支持函数库的服务程序，其解压、编译、安装过程中生成的输出信息均已省略：
+
+	[root@linuxprobe freetype-2.5.3]# cd ..
+	[root@linuxprobe src]# tar zxvf jpegsrc.v9a.tar.gz
+	[root@linuxprobe src]# cd jpeg-9a
+	[root@linuxprobe jpeg-9a]# ./configure --prefix=/usr/local/jpeg --enable-shared
+	[root@linuxprobe jpeg-9a]# make
+	[root@linuxprobe jpeg-9a]# make install
+
+第8步：libgd源码包是用于提供图形处理的服务程序，其解压、编译、安装过程中生成的输出信息均已省略。在编译libgd源码包时，请记得写入的是jpeg、libpng、freetype、tiff、libvpx等服务程序在系统中的安装路径，即在上面安装过程中使用--prefix参数指定的目录路径：
+
+	[root@linuxprobe jpeg-9a]# cd ..
+	[root@linuxprobe src]# tar zxvf libgd-2.1.0.tar.gz
+	[root@linuxprobe src]# cd libgd-2.1.0
+	[root@linuxprobe libgd-2.1.0]# ./configure --prefix=/usr/local/libgd --enable-shared --with-jpeg=/usr/local/jpeg --with-png=/usr/local/libpng --with-freetype=/usr/local/freetype --with-fontconfig=/usr/local/freetype --with-xpm=/usr/ --with-tiff=/usr/local/tiff --with-vpx=/usr/local/libvpx
+	[root@linuxprobe libgd-2.1.0]# make
+	[root@linuxprobe libgd-2.1.0]# make install
+
+第9步：t1lib源码包是用于提供图片生成函数库的服务程序，其解压、编译、安装过程中生成的输出信息均已省略。安装后把/usr/lib64目录中的函数文件链接到/usr/lib目录中，以便系统能够顺利调取到函数文件：
+
+	[root@linuxprobe cd libgd-2.1.0]# cd ..
+	[root@linuxprobe src]# tar zxvf t1lib-5.1.2.tar.gz
+	[root@linuxprobe src]# cd t1lib-5.1.2
+	[root@linuxprobe t1lib-5.1.2]# ./configure --prefix=/usr/local/t1lib --enable-shared
+	[root@linuxprobe t1lib-5.1.2]# make
+	[root@linuxprobe t1lib-5.1.2]# make install
+	[root@linuxprobe t1lib-5.1.2]# ln -s /usr/lib64/libltdl.so /usr/lib/libltdl.so 
+	[root@linuxprobe t1lib-5.1.2]# cp -frp /usr/lib64/libXpm.so* /usr/lib/
+
+第10步：此时终于把编译php服务源码包的相关软件包都已经安装部署妥当了。在开始编译php源码包之前，先定义一个名为LD_LIBRARY_PATH的全局环境变量，该环境变量的作用是帮助系统找到指定的动态链接库文件，这些文件是编译php服务源码包的必须元素之一。编译php服务源码包时，除了定义要安装到的目录以外，还需要依次定义配置php服务程序配置文件的保存目录、MySQL数据库服务程序所在目录、MySQL数据库服务程序配置文件所在目录，以及libpng、jpeg、freetype、libvpx、zlib、t1lib等服务程序的安装目录路径，并通过参数启动php服务程序的诸多默认功能：
+
+	[root@linuxprobe t1lib-5.1.2]# cd ..
+	[root@linuxprobe src]# tar -zvxf php-5.5.14.tar.gz
+	[root@linuxprobe src]# cd php-5.5.14
+	[root@linuxprobe php-5.5.14]# export LD_LIBRARY_PATH=/usr/local/libgd/lib
+	[root@linuxprobe php-5.5.14]# ./configure --prefix=/usr/local/php --with-config-file-path=/usr/local/php/etc --with-mysql=/usr/local/mysql --with-mysqli=/usr/local/mysql/bin/mysql_config --with-mysql-sock=/tmp/mysql.sock --with-pdo-mysql=/usr/local/mysql --with-gd --with-png-dir=/usr/local/libpng --with-jpeg-dir=/usr/local/jpeg --with-freetype-dir=/usr/local/freetype --with-xpm-dir=/usr/ --with-vpx-dir=/usr/local/libvpx/ --with-zlib-dir=/usr/local/zlib --with-t1lib=/usr/local/t1lib --with-iconv --enable-libxml --enable-xml --enable-bcmath --enable-shmop --enable-sysvsem --enable-inline-optimization --enable-opcache --enable-mbregex --enable-fpm --enable-mbstring --enable-ftp --enable-gd-native-ttf --with-openssl --enable-pcntl --enable-sockets --with-xmlrpc --enable-zip --enable-soap --without-pear --with-gettext --enable-session --with-mcrypt --with-curl --enable-ctype 
+	[root@linuxprobe php-5.5.14]# make
+	[root@linuxprobe php-5.5.14]# make install
+
+第11步：在php源码包程序安装完成后，需要删除当前默认的配置文件，然后将php服务程序目录中相应的配置文件复制过来：
+
+	[root@linuxprobe php-5.5.14]# rm -rf /etc/php.ini
+	[root@linuxprobe php-5.5.14]# ln -s /usr/local/php/etc/php.ini /etc/php.ini
+	[root@linuxprobe php-5.5.14]# cp php.ini-production /usr/local/php/etc/php.ini
+	[root@linuxprobe php-5.5.14]# cp /usr/local/php/etc/php-fpm.conf.default /usr/local/php/etc/php-fpm.conf
+	[root@linuxprobe php-5.5.14]# ln -s /usr/local/php/etc/php-fpm.conf /etc/php-fpm.conf
+
+第12步：php-fpm.conf是php服务程序重要的配置文件之一，我们需要启用该配置文件中第25行左右的pid文件保存目录，然后分别将第148和149行的user与group参数分别修改为www账户和用户组名称：
+
+	[root@linuxprobe php-5.5.14]# vim /usr/local/php/etc/php-fpm.conf
+	1 ;;;;;;;;;;;;;;;;;;;;;
+	2 ; FPM Configuration ;
+	3 ;;;;;;;;;;;;;;;;;;;;;
+	4 
+	5 ; All relative paths in this configuration file are relative to PHP's instal l
+	6 ; prefix (/usr/local/php). This prefix can be dynamically changed by using t he
+	7 ; '-p' argument from the command line.
+	8 
+	9 ; Include one or more files. If glob(3) exists, it is used to include a bunc h of
+	10 ; files from a glob(3) pattern. This directive can be used everywhere in the
+	11 ; file.
+	12 ; Relative path can also be used. They will be prefixed by:
+	13 ; - the global prefix if it's been set (-p argument)
+	14 ; - /usr/local/php otherwise
+	15 ;include=etc/fpm.d/*.conf
+	16 
+	17 ;;;;;;;;;;;;;;;;;;
+	18 ; Global Options ;
+	19 ;;;;;;;;;;;;;;;;;;
+	20 
+	21 [global]
+	22 ; Pid file
+	23 ; Note: the default prefix is /usr/local/php/var
+	24 ; Default Value: none
+	25 pid = run/php-fpm.pid
+	26 
+	………………省略部分输出信息………………
+	145 ; Unix user/group of processes
+	146 ; Note: The user is mandatory. If the group is not set, the default user's g roup
+	147 ; will be used.
+	148 user = www
+	149 group = www
+	150 
+	………………省略部分输出信息………………
+
+第13步：配置妥当后便可把用于管理php服务的脚本文件复制到/etc/rc.d/init.d中了。为了能够执行脚本，请记得为脚本赋予755权限。最后把php-fpm服务程序加入到开机启动项中：
+
+	[root@linuxprobe php-5.5.14]# cp sapi/fpm/init.d.php-fpm /etc/rc.d/init.d/php-fpm
+	[root@linuxprobe php-5.5.14]# chmod 755 /etc/rc.d/init.d/php-fpm
+	[root@linuxprobe php-5.5.14]# chkconfig php-fpm on
+
+第14步：由于php服务程序的配置参数直接会影响到Web服务服务的运行环境，因此，如果默认开启了一些不必要且高危的功能（如允许用户在网页中执行Linux命令），则会降低网站被入侵的难度，入侵人员甚至可以拿到整台Web服务器的管理权限。因此我们需要编辑php.ini配置文件，在305行的disable_functions参数后面追加上要禁止的功能。下面的禁用功能名单是刘遄老师依据网站运行的经验而定制的，不见得适合每个生产环境，建议大家在此基础上根据自身工作需求酌情删减：
+
+	[root@linuxprobe php-5.5.14]# vim /usr/local/php/etc/php.ini
+	………………省略部分输出信息………………
+	300 
+	301 ; This directive allows you to disable certain functions for security reasons.
+	302 ; It receives a comma-delimited list of function names. This directive is
+	303 ; *NOT* affected by whether Safe Mode is turned On or Off.
+	304 ; http://php.net/disable-functions
+	305 disable_functions = passthru,exec,system,chroot,scandir,chgrp,chown,shell_exec,proc_open,proc_get_status,ini_alter,ini_alter,ini_restor e,dl,openlog,syslog,readlink,symlink,popepassthru,stream_socket_server,escapeshellcmd,dll,popen,disk_free_space,checkdnsrr,checkdnsrr,g etservbyname,getservbyport,disk_total_space,posix_ctermid,posix_get_last_error,posix_getcwd,posix_getegid,posix_geteuid,posix_getgid,po six_getgrgid,posix_getgrnam,posix_getgroups,posix_getlogin,posix_getpgid,posix_getpgrp,posix_getpid,posix_getppid,posix_getpwnam,posix_ getpwuid,posix_getrlimit,posix_getsid,posix_getuid,posix_isatty,posix_kill,posix_mkfifo,posix_setegid,posix_seteuid,posix_setgid,posix_ setpgid,posix_setsid,posix_setuid,posix_strerror,posix_times,posix_ttyname,posix_uname
+	306 
+	………………省略部分输出信息………………
+	这样就把php服务程序配置妥当了。最后，还需要编辑Nginx服务程序的主配置文件，把第2行的井号（#）删除，然后在后面写上负责运行Nginx服务程序的账户名称和用户组名称；在第45行的index参数后面写上网站的首页名称。最后是将第65～71行参数前的井号（#）删除来启用参数，主要是修改第69行的脚本名称路径参数，其中$document_root变量即为网站信息存储的根目录路径，若没有设置该变量，则Nginx服务程序无法找到网站信息，因此会提示“404页面未找到”的报错信息。在确认参数信息填写正确后便可重启Nginx服务与php-fpm服务。
+	
+	[root@linuxprobe php-5.5.14]# vim /usr/local/nginx/conf/nginx.conf
+	 1 
+	 2 user www www;
+	 3 worker_processes 1;
+	 4 
+	 5 #error_log logs/error.log;
+	 6 #error_log logs/error.log notice;
+	 7 #error_log logs/error.log info;
+	 8 
+	 9 #pid logs/nginx.pid;
+	 10 
+	 11 
+	………………省略部分输出信息………………
+	 40 
+	 41 #access_log logs/host.access.log main;
+	 42 
+	 43 location / {
+	 44 root html;
+	 45 index index.html index.htm index.php;
+	 46 }
+	 47 
+	………………省略部分输出信息………………
+	 62 
+	 63 #pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+	 64 
+	 65 location ~ \.php$ {
+	 66 root html;
+	 67 fastcgi_pass 127.0.0.1:9000;
+	 68 fastcgi_index index.php;
+	 69 fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+	 70 include fastcgi_params;
+	 71 }
+	 72 
+	………………省略部分输出信息………………
+	[root@linuxprobe php-5.5.14]# systemctl restart nginx
+	[root@linuxprobe php-5.5.14]# systemctl restart php-fpm
+
+至此，LNMP动态网站环境架构的配置实验全部结束。
+
+在启动Nginx服务时，报错：Failed to start The nginx HTTP and reverse proxy server；报错原因是由于：有可能80端口被占用，或者有死进程；
+
+{% asset_img 1.png %}
+
+{% asset_img 2.png %}
+
+解决方法：查看端口或者查看进程；停掉80端口服务，或者杀死进程；再启动nginx服务！
+
+{% asset_img 3.png %}
+
+# 3. 搭建Discuz论坛
+
+为了检验LNMP动态网站环境是否配置妥当，可以使用在上面部署Discuz!系统，然后查看结果。如果能够在LNMP动态网站环境中成功安装使用Discuz!论坛系统，也就意味着这套架构是可用的。Discuz! X3.2是国内最常见的社区论坛系统，在经过十多年的研发后已经成为了全球成熟度最高、覆盖率最广的论坛网站系统之一。
+
+Discuz! X3.2软件包的后缀是.zip格式，因此应当使用专用的unzip命令来进行解压。解压后会在当前目录中出现一个名为upload的文件目录，这里面保存的就是Discuz！论坛的系统程序。我们把Nginx服务程序网站根目录的内容清空后，就可以把这些这个目录中的文件都复制进去了。记得把Nginx服务程序的网站根目录的所有者和所属组修改为本地的www用户，并为其赋予755权限以便于能够读、写、执行该论坛系统内的文件。
+
+	[root@linuxprobe php-5.5.14 ]# cd /usr/local/src/
+	[root@linuxprobe src]# unzip Discuz_X3.2_SC_GBK.zip
+	[root@linuxprobe src]# rm -rf /usr/local/nginx/html/{index.html,50x.html}*
+	[root@linuxprobe src]# mv upload/* /usr/local/nginx/html/
+	[root@linuxprobe src]# chown -Rf www:www /usr/local/nginx/html
+	[root@linuxprobe src]# chmod -Rf 755 /usr/local/nginx/html
+
+第1步：接受Discuz!安装向导的许可协议。在把Discuz!论坛系统程序（即刚才upload目录中的内容）复制Nginx服务网站根目录后便可刷新浏览器页面，这将自动跳转到Discuz! X3.2论坛系统的安装界面，此处需单击“我同意”按钮，进入下一步的安装过程中：
+
+{% asset_img 4.jpg %}
+
+第2步：检查Discuz! X3.2论坛系统的安装环境及目录权限。我们部署的LNMP动态网站环境版本和软件都与Discuz!论坛的要求相符合，如果图20-5框中的目录状态为不可写，请自行检查目录的所有者和所属组是否为www用户，以及是否对目录设置了755权限，然后单击“下一步”按钮。
+
+{% asset_img 5.jpg %}
+
+第3步：选择“全新安装Discuz! X（含UCenter Server）”。UCenter Server是站点的管理平台，能够在多个站点之间同步会员账户及密码信息，单击“下一步”按钮：
+
+{% asset_img 6.jpg %}
+
+第4步：填写服务器的数据库信息与论坛系统管理员信息。网站系统使用由服务器本地（localhost）提供的数据库服务，数据名称与数据表前缀可由用户自行填写，其中数据库的用户名和密码则为用于登录MySQL数据库的信息（以初始化MySQL服务程序时填写的信息为准）。论坛系统的管理员账户为今后登录、管理Discuz!论坛时使用的验证信息，其中账户可以设置得简单好记一些，但是要将密码设置得尽可能复杂一下。在信息填写正确后单击“下一步”按钮：
+
+{% asset_img 7.jpg %}
+
+第5步：等待Discuz! X3.2论坛系统安装完毕，如图20-8所示。这个安装过程是非常快速的，大概只需要30秒左右，然后就可看到论坛安装完成的欢迎界面了。由于虚拟机主机可能并没有连接到互联网，因此该界面中可能无法正常显示Discuz!论坛系统的广告信息。在接入了互联网的服务器上成功安装完Discuz! X3.2论坛系统之后，随后单击“您的论坛已完成安装，点此访问”按钮，即可访问到论坛首页
+
+{% asset_img 8.jpg %}
+
+{% asset_img 9.jpg %}
+
+{% asset_img 10.jpg %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
