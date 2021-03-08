@@ -144,7 +144,6 @@ LNMP动态网站部署架构是一套由Linux + Nginx + MySQL + PHP组成的动�
 	[root@linuxprobe mysql]# chkconfig mysqld on
 
 启动mysql服务时，报错：The server quit without updating PID file！报错原因是由于：进程里可能已经存在mysql进程；
-
 解决方法：用命令“ps -ef | grep mysqld”查看是否有mysqld进程，如果有使用“kill -9  进程号”杀死，然后重新启动mysqld！
 
 第8步：MySQL数据库程序自带了许多命令，但是Bash终端的PATH变量并不会包含这些命令所存放的目录，因此我们也无法顺利地对MySQL数据库进行初始化，也就不能使用MySQL数据库自带的命令了。想要把命令所保存的目录永久性地定义到PATH变量中，需要编辑/etc/profile文件并写入追加的命令目录，这样当物理设备在下一次重启时就会永久生效了。如果不想通过重启设备的方式来生效，也可以使用source命令加载一下/ect/profile文件，此时新的PATH变量也可以立即生效了。
@@ -258,7 +257,8 @@ LNMP动态网站部署架构是一套由Linux + Nginx + MySQL + PHP组成的动�
 	 75 unset i
 	 76 unset -f pathmunge
 	[root@linuxprobe pcre-8.35]# source /etc/profile
-	zlib软件包是用于提供压缩功能的函数库文件。其实Nginx服务程序调用的这些服务程序无需深入了解，只要大致了解其作用就已经足够了：
+
+第4步：zlib软件包是用于提供压缩功能的函数库文件。其实Nginx服务程序调用的这些服务程序无需深入了解，只要大致了解其作用就已经足够了：
 	
 	[root@linuxprobe pcre-8.35]# cd /usr/local/src
 	[root@linuxprobe src]# tar xzvf zlib-1.2.8.tar.gz 
@@ -267,12 +267,12 @@ LNMP动态网站部署架构是一套由Linux + Nginx + MySQL + PHP组成的动�
 	[root@linuxprobe zlib-1.2.8]# make
 	[root@linuxprobe zlib-1.2.8]# make install
 
-第4步：在安装部署好具有依赖关系的软件包之后，创建一个用于执行Nginx服务程序的账户。账户名称可以自定义，但一定别忘记，因为在后续需要调用：
+第5步：在安装部署好具有依赖关系的软件包之后，创建一个用于执行Nginx服务程序的账户。账户名称可以自定义，但一定别忘记，因为在后续需要调用：
 
 	[root@linuxprobe zlib-1.2.8]# cd ..
 	[root@linuxprobe src]# useradd www -s /sbin/nologin
 
-第5步：在使用命令编译Nginx服务程序时，需要设置特别多的参数，其中，--prefix参数用于定义服务程序稍后安装到的位置，--user与--group参数用于指定执行Nginx服务程序的用户名和用户组。在使用参数调用openssl、zlib、pcre软件包时，请写出软件源码包的解压路径，而不是程序的安装路径：
+第6步：在使用命令编译Nginx服务程序时，需要设置特别多的参数，其中，--prefix参数用于定义服务程序稍后安装到的位置，--user与--group参数用于指定执行Nginx服务程序的用户名和用户组。在使用参数调用openssl、zlib、pcre软件包时，请写出软件源码包的解压路径，而不是程序的安装路径：
 
 	[root@linuxprobe src]# tar xzvf nginx-1.6.0.tar.gz 
 	[root@linuxprobe src]# cd nginx-1.6.0/
@@ -280,7 +280,7 @@ LNMP动态网站部署架构是一套由Linux + Nginx + MySQL + PHP组成的动�
 	[root@linuxprobe nginx-1.6.0]# make
 	[root@linuxprobe nginx-1.6.0]# make install
 
-第6步：要想启动Nginx服务程序以及将其加入到开机启动项中，也需要有脚本文件。可惜的是，在安装完Nginx软件包之后默认并没有为用户提供脚本文件，因此刘遄老师给各位读者准备了一份可用的启动脚本文件，大家只需在/etc/rc.d/init.d目录中创建脚本文件并直接复制下面的脚本内容即可（相信各位读者在掌握了第4章的内容之后，应该可以顺利看懂这个脚本文件）。
+第7步：要想启动Nginx服务程序以及将其加入到开机启动项中，也需要有脚本文件。可惜的是，在安装完Nginx软件包之后默认并没有为用户提供脚本文件，因此刘遄老师给各位读者准备了一份可用的启动脚本文件，大家只需在/etc/rc.d/init.d目录中创建脚本文件并直接复制下面的脚本内容即可（相信各位读者在掌握了第4章的内容之后，应该可以顺利看懂这个脚本文件）。
 
 	[root@linuxprobe nginx-1.6.0]# vim /etc/rc.d/init.d/nginx
 	#!/bin/bash
@@ -394,7 +394,7 @@ LNMP动态网站部署架构是一套由Linux + Nginx + MySQL + PHP组成的动�
 	exit 2
 	esac
 
-第7步：保存脚本文件后记得为其赋予755权限，以便能够执行这个脚本。然后以绝对路径的方式执行这个脚本，通过restart参数重启Nginx服务程序，最后再使用chkconfig命令将Nginx服务程序添加至开机启动项中。大功告成！
+第8步：保存脚本文件后记得为其赋予755权限，以便能够执行这个脚本。然后以绝对路径的方式执行这个脚本，通过restart参数重启Nginx服务程序，最后再使用chkconfig命令将Nginx服务程序添加至开机启动项中。大功告成！
 
 	[root@linuxprobe nginx-1.6.0]# chmod 755 /etc/rc.d/init.d/nginx
 	[root@linuxprobe nginx-1.6.0]# /etc/rc.d/init.d/nginx restart
