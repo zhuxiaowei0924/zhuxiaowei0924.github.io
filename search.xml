@@ -1,6 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>linux内核升级到rhel7.9版本</title>
+    <url>/2021/03/08/linux%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E5%88%B0rhel7.9%E7%89%88%E6%9C%AC/</url>
+    <content><![CDATA[<p>当前的系统版本为rhel7.0，内核版本为“Linux 3.10.0-123.el7.x86_64”</p>
+<pre><code>[root@rhel7_0 ~]# hostnamectl
+    ……
+    Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
+    Kernel: Linux 3.10.0-123.el7.x86_64
+    ……
+[root@rhel0 ~]# uname -rs
+    Linux 3.10.0-123.el7.x86_64</code></pre>
+<p>1、从网上下载RHEL7.9版本的系统镜像文件，然后在 RHEL7.0 服务器上进行挂载，并配置在本地YUM源：</p>
+<pre><code>[root@rhel7_0 ~]# mount /dev/cdrom /mnt/
+[root@rhel7_0 ~]# cat /etc/yum.repos.d/rhel_local.repo 
+    [mnt]
+    name=mnt
+    baseurl=file:///mnt
+    enable=1
+    gpgcheck=0</code></pre>
+<p>2、在RHEL7.0服务器上先执行yum clean all，再使用yum list kernel命令查看当前服务器上已安装的内核以及可更新的高版本内核。</p>
+<pre><code>[root@rhel7_0 ~]# yum list kernel
+Loaded plugins: product-id, search-disabled-repos, subscription-manager
+This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
+Installed Packages
+kernel.x86_64                                                    3.10.0-123.el7                                                    @anaconda/7.2
+Available Packages
+kernel.x86_64                                                    3.10.0-1160.el7                                                    mnt          </code></pre>
+<p>3、安装新内核.</p>
+<pre><code>[root@rhel7_0 ~]# yum install -y kernel   
+[root@rhel7_0 ~]# uname -rs</code></pre>
+<p>　　    Linux 3.10.0-123.el7.x86_64</p>
+<p>安装完成之后，再查看内核，发现没有变化，还是跟之前的一样。</p>
+<p>查看/boot/grub2/grub.cfg 配置文件，可以看到新内核3.10.0-1160.el7.x86_64已经是排在最前边了，RHEL7 可以不用调整内核启动顺序，默认会从新内核启动。</p>
+<p>这是进行系统重启reboot，系统会从新内核3.10.0-1160.el7.x86_64启动，但在登录界面显示一片黑屏或其他报错，因此在系统升级完后，不要着急重启，需要在终端输入：<strong>yum update</strong>进行更新，之后再重启，一切正常！</p>
+<p>正常情况下，是不需要修改内核启动顺序的，如果发现内核启动顺序不对，可以按下面的方式来修改：</p>
+<pre><code>[root@rhel7_0 ~]# grub2-editenv list  --查看系统默认内核版本
+saved_entry=Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)
+[root@rhel7_0 ~]# grep &quot;menuentry &quot; /boot/grub2/grub.cfg  --查看配置文件里的内核顺序；这个菜单条目对应上图中的三条选项。
+menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-123.el7.x86_64) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+menuentry &#39;Red Hat Enterprise Linux Server (0-rescue-1fbd678500124daea255a3b7a98e320c) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-0-rescue-1fbd678500124daea255a3b7a98e320c-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+[root@rhel7_0 ~]# grub2-set-default &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39;   --配置默认内核
+[root@rhel7_0 ~]# grub2-mkconfig -o /boot/grub2/grub.cfg    --将修改的内容写入到grub.cfg配置文件。
+Generating grub configuration file ...
+Found linux image: /boot/vmlinuz-3.10.0-1160.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-1160.el7.x86_64.img
+Found linux image: /boot/vmlinuz-3.10.0-123.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-123.el7.x86_64.img
+Found linux image: /boot/vmlinuz-0-rescue-1fbd678500124daea255a3b7a98e320c
+Found initrd image: /boot/initramfs-0-rescue-1fbd678500124daea255a3b7a98e320c.img
+done</code></pre>
+<p>系统内核更新成功！</p>
+]]></content>
+      <categories>
+        <category>linux系统</category>
+      </categories>
+      <tags>
+        <tag>linux内核升级</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux就该这么学-12:使用Samba或NFS实现文件共享</title>
     <url>/2021/02/11/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-12-%E4%BD%BF%E7%94%A8Samba%E6%88%96NFS%E5%AE%9E%E7%8E%B0%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB/</url>
     <content><![CDATA[<h1 id="1-SAMBA文件共享服务"><a href="#1-SAMBA文件共享服务" class="headerlink" title="1.SAMBA文件共享服务"></a>1.SAMBA文件共享服务</h1><p>Samba服务程序现在已经成为在Linux系统与Windows系统之间共享文件的最佳选择。</p>
@@ -783,7 +843,7 @@ ln -s &#39;/usr/lib/systemd/system/dovecot.service&#39; &#39;/etc/systemd/system
 </tbody></table>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png" class>
 
-<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#108;&#x69;&#110;&#117;&#x78;&#x70;&#x72;&#111;&#98;&#x65;&#64;&#108;&#105;&#110;&#x75;&#x78;&#x70;&#x72;&#x6f;&#98;&#x65;&#46;&#x63;&#111;&#x6d;">&#108;&#x69;&#110;&#117;&#x78;&#x70;&#x72;&#111;&#98;&#x65;&#64;&#108;&#105;&#110;&#x75;&#x78;&#x70;&#x72;&#x6f;&#98;&#x65;&#46;&#x63;&#111;&#x6d;</a>,linuxprobe是linux用户名）和用户密码：</p>
+<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#108;&#105;&#110;&#x75;&#120;&#x70;&#114;&#111;&#x62;&#x65;&#64;&#x6c;&#x69;&#110;&#x75;&#120;&#112;&#x72;&#x6f;&#x62;&#101;&#46;&#x63;&#x6f;&#x6d;">&#108;&#105;&#110;&#x75;&#120;&#x70;&#114;&#111;&#x62;&#x65;&#64;&#x6c;&#x69;&#110;&#x75;&#120;&#112;&#x72;&#x6f;&#x62;&#101;&#46;&#x63;&#x6f;&#x6d;</a>,linuxprobe是linux用户名）和用户密码：</p>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png" class>
 
 <p>第2步：设置接收服务器类型为POP3，输入邮件帐号和密码，设置POP服务器和SMTP服务器地址，两个为同一地址，如192.168.10.10，SSL端口处不勾选，之后创建成功！</p>
@@ -5358,8 +5418,7 @@ libgd-2.1.0.tar.gz      openssl-1.0.1h.tar.gz</code></pre>
 <pre><code>[root@Linuxprobe mysql]# service mysqld start
 Starting MySQL. SUCCESS! 
 [root@linuxprobe mysql]# chkconfig mysqld on</code></pre>
-<p>启动mysql服务时，报错：The server quit without updating PID file！报错原因是由于：进程里可能已经存在mysql进程；</p>
-<p>解决方法：用命令“ps -ef | grep mysqld”查看是否有mysqld进程，如果有使用“kill -9  进程号”杀死，然后重新启动mysqld！</p>
+<p>启动mysql服务时，报错：The server quit without updating PID file！报错原因是由于：进程里可能已经存在mysql进程；<br>解决方法：用命令“ps -ef | grep mysqld”查看是否有mysqld进程，如果有使用“kill -9  进程号”杀死，然后重新启动mysqld！</p>
 <p>第8步：MySQL数据库程序自带了许多命令，但是Bash终端的PATH变量并不会包含这些命令所存放的目录，因此我们也无法顺利地对MySQL数据库进行初始化，也就不能使用MySQL数据库自带的命令了。想要把命令所保存的目录永久性地定义到PATH变量中，需要编辑/etc/profile文件并写入追加的命令目录，这样当物理设备在下一次重启时就会永久生效了。如果不想通过重启设备的方式来生效，也可以使用source命令加载一下/ect/profile文件，此时新的PATH变量也可以立即生效了。</p>
 <pre><code>[root@linuxprobe mysql]# vim /etc/profile
 ………………省略部分输出信息………………
@@ -5457,25 +5516,24 @@ Cleaning up...</code></pre>
  74 export PATH=$PATH:/usr/local/mysql/bin:/usr/local/openssl/bin
  75 unset i
  76 unset -f pathmunge
-[root@linuxprobe pcre-8.35]# source /etc/profile
-zlib软件包是用于提供压缩功能的函数库文件。其实Nginx服务程序调用的这些服务程序无需深入了解，只要大致了解其作用就已经足够了：
-
-[root@linuxprobe pcre-8.35]# cd /usr/local/src
+[root@linuxprobe pcre-8.35]# source /etc/profile</code></pre>
+<p>第4步：zlib软件包是用于提供压缩功能的函数库文件。其实Nginx服务程序调用的这些服务程序无需深入了解，只要大致了解其作用就已经足够了：</p>
+<pre><code>[root@linuxprobe pcre-8.35]# cd /usr/local/src
 [root@linuxprobe src]# tar xzvf zlib-1.2.8.tar.gz 
 [root@linuxprobe src]# cd zlib-1.2.8
 [root@linuxprobe zlib-1.2.8]# ./configure --prefix=/usr/local/zlib
 [root@linuxprobe zlib-1.2.8]# make
 [root@linuxprobe zlib-1.2.8]# make install</code></pre>
-<p>第4步：在安装部署好具有依赖关系的软件包之后，创建一个用于执行Nginx服务程序的账户。账户名称可以自定义，但一定别忘记，因为在后续需要调用：</p>
+<p>第5步：在安装部署好具有依赖关系的软件包之后，创建一个用于执行Nginx服务程序的账户。账户名称可以自定义，但一定别忘记，因为在后续需要调用：</p>
 <pre><code>[root@linuxprobe zlib-1.2.8]# cd ..
 [root@linuxprobe src]# useradd www -s /sbin/nologin</code></pre>
-<p>第5步：在使用命令编译Nginx服务程序时，需要设置特别多的参数，其中，–prefix参数用于定义服务程序稍后安装到的位置，–user与–group参数用于指定执行Nginx服务程序的用户名和用户组。在使用参数调用openssl、zlib、pcre软件包时，请写出软件源码包的解压路径，而不是程序的安装路径：</p>
+<p>第6步：在使用命令编译Nginx服务程序时，需要设置特别多的参数，其中，–prefix参数用于定义服务程序稍后安装到的位置，–user与–group参数用于指定执行Nginx服务程序的用户名和用户组。在使用参数调用openssl、zlib、pcre软件包时，请写出软件源码包的解压路径，而不是程序的安装路径：</p>
 <pre><code>[root@linuxprobe src]# tar xzvf nginx-1.6.0.tar.gz 
 [root@linuxprobe src]# cd nginx-1.6.0/
 [root@linuxprobe nginx-1.6.0]# ./configure --prefix=/usr/local/nginx --without-http_memcached_module --user=www --group=www --with-http_stub_status_module --with-http_ssl_module --with-http_gzip_static_module --with-openssl=/usr/local/src/openssl-1.0.1h --with-zlib=/usr/local/src/zlib-1.2.8 --with-pcre=/usr/local/src/pcre-8.35
 [root@linuxprobe nginx-1.6.0]# make
 [root@linuxprobe nginx-1.6.0]# make install</code></pre>
-<p>第6步：要想启动Nginx服务程序以及将其加入到开机启动项中，也需要有脚本文件。可惜的是，在安装完Nginx软件包之后默认并没有为用户提供脚本文件，因此刘遄老师给各位读者准备了一份可用的启动脚本文件，大家只需在/etc/rc.d/init.d目录中创建脚本文件并直接复制下面的脚本内容即可（相信各位读者在掌握了第4章的内容之后，应该可以顺利看懂这个脚本文件）。</p>
+<p>第7步：要想启动Nginx服务程序以及将其加入到开机启动项中，也需要有脚本文件。可惜的是，在安装完Nginx软件包之后默认并没有为用户提供脚本文件，因此刘遄老师给各位读者准备了一份可用的启动脚本文件，大家只需在/etc/rc.d/init.d目录中创建脚本文件并直接复制下面的脚本内容即可（相信各位读者在掌握了第4章的内容之后，应该可以顺利看懂这个脚本文件）。</p>
 <pre><code>[root@linuxprobe nginx-1.6.0]# vim /etc/rc.d/init.d/nginx
 #!/bin/bash
 # nginx - this script starts and stops the nginx daemon
@@ -5587,7 +5645,7 @@ condrestart|try-restart)
 echo $&quot;Usage: $0 &#123;start|stop|status|restart|condrestart|try-restart|reload|force-reload|configtest&#125;&quot;
 exit 2
 esac</code></pre>
-<p>第7步：保存脚本文件后记得为其赋予755权限，以便能够执行这个脚本。然后以绝对路径的方式执行这个脚本，通过restart参数重启Nginx服务程序，最后再使用chkconfig命令将Nginx服务程序添加至开机启动项中。大功告成！</p>
+<p>第8步：保存脚本文件后记得为其赋予755权限，以便能够执行这个脚本。然后以绝对路径的方式执行这个脚本，通过restart参数重启Nginx服务程序，最后再使用chkconfig命令将Nginx服务程序添加至开机启动项中。大功告成！</p>
 <pre><code>[root@linuxprobe nginx-1.6.0]# chmod 755 /etc/rc.d/init.d/nginx
 [root@linuxprobe nginx-1.6.0]# /etc/rc.d/init.d/nginx restart
 Restarting nginx (via systemctl):                          [  OK  ]
