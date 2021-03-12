@@ -843,7 +843,7 @@ ln -s &#39;/usr/lib/systemd/system/dovecot.service&#39; &#39;/etc/systemd/system
 </tbody></table>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png" class>
 
-<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#x6c;&#105;&#x6e;&#117;&#x78;&#x70;&#114;&#x6f;&#x62;&#101;&#x40;&#108;&#105;&#x6e;&#x75;&#120;&#112;&#114;&#x6f;&#98;&#101;&#x2e;&#99;&#111;&#109;">&#x6c;&#105;&#x6e;&#117;&#x78;&#x70;&#114;&#x6f;&#x62;&#101;&#x40;&#108;&#105;&#x6e;&#x75;&#120;&#112;&#114;&#x6f;&#98;&#101;&#x2e;&#99;&#111;&#109;</a>,linuxprobe是linux用户名）和用户密码：</p>
+<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#108;&#105;&#x6e;&#x75;&#120;&#112;&#114;&#111;&#98;&#101;&#64;&#108;&#x69;&#110;&#117;&#120;&#x70;&#114;&#111;&#x62;&#x65;&#x2e;&#99;&#x6f;&#109;">&#108;&#105;&#x6e;&#x75;&#120;&#112;&#114;&#111;&#98;&#101;&#64;&#108;&#x69;&#110;&#117;&#120;&#x70;&#114;&#111;&#x62;&#x65;&#x2e;&#99;&#x6f;&#109;</a>,linuxprobe是linux用户名）和用户密码：</p>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png" class>
 
 <p>第2步：设置接收服务器类型为POP3，输入邮件帐号和密码，设置POP服务器和SMTP服务器地址，两个为同一地址，如192.168.10.10，SSL端口处不勾选，之后创建成功！</p>
@@ -1294,13 +1294,7 @@ iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
 <td>退出帮助文档</td>
 </tr>
 </tbody></table>
-<h1 id="2-常用的工作命令"><a href="#2-常用的工作命令" class="headerlink" title="2.常用的工作命令"></a>2.常用的工作命令</h1><ol>
-<li>echo：用于在终端输出字符串或变量提取后的值，如： echo 字符串/$变量</li>
-<li>date：用于显示及设置系统的时间或日期；<br> 直接输入date命令用于查看当前系统时间；<br> date “+%Y-%m-%d %H:%M:%S”:按照“年-月-日 小时:分钟:秒”的格式查看当前系统时间；<br> date -s “20200105 8:30:00”：将系统时间设置为2020年1月5日8点30分；<br> date “+%j”:用于查看今天是当年中的第几天；</li>
-<li>reboot：用于重启系统；</li>
-<li>poweroff：用于系统关机；</li>
-<li>wget命令：用于在终端中下载网络文件（需连接网络才可以下载），如：wget http：//<a href="http://www.linuxprobe.com/docs/linuxprobe.pdf%EF%BC%9B">www.linuxprobe.com/docs/linuxprobe.pdf；</a></li>
-</ol>
+<h1 id="2-常用的工作命令"><a href="#2-常用的工作命令" class="headerlink" title="2.常用的工作命令"></a>2.常用的工作命令</h1><p>1.echo：用于在终端输出字符串或变量提取后的值，如： echo 字符串/$变量<br>2.date：用于显示及设置系统的时间或日期；<br>    直接输入date命令用于查看当前系统时间；<br>    date “+%Y-%m-%d %H:%M:%S”:按照“年-月-日 小时:分钟:秒”的格式查看当前系统时间；<br>    date -s “20200105 8:30:00”：将系统时间设置为2020年1月5日8点30分；<br>    date “+%j”:用于查看今天是当年中的第几天；<br>3.reboot：用于重启系统；<br>4.poweroff：用于系统关机；<br>5.wget命令：用于在终端中下载网络文件（需连接网络才可以下载），如：wget http：//<a href="http://www.linuxprobe.com/docs/linuxprobe.pdf%EF%BC%9B">www.linuxprobe.com/docs/linuxprobe.pdf；</a></p>
 <table>
 <thead>
 <tr>
@@ -1329,9 +1323,7 @@ iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
 <td>递归下载</td>
 </tr>
 </tbody></table>
-<ol start="6">
-<li>ps:用于查看系统中的进程状态；</li>
-</ol>
+<p>6.ps:用于查看系统中的进程状态；</p>
 <table>
 <thead>
 <tr>
@@ -1352,30 +1344,10 @@ iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
 <td>显示没有控制终端的进程</td>
 </tr>
 </tbody></table>
-<p>进程状态：R（运行）、S（休眠）、D（不可中断）、Z（僵死）、T（停止）；<br>7. top：用于动态地监视进程活动与系统负载等信息；<br>8. pidof：用于查询某个指定服务进程的PID值，如pidof sshd；<br>9. kill：用于终止某个指定PID的服务进程，如kill 2156；<br>10. killall：用于终止某个指定名称的服务所对应的全部进程；</p>
-<h1 id="3-系统状态检测命令"><a href="#3-系统状态检测命令" class="headerlink" title="3.系统状态检测命令"></a>3.系统状态检测命令</h1><ol>
-<li>ifconfig：用于获取网卡配置与网络状态等信息，可以查看到网卡名称、IP地址和物理地址；</li>
-<li>uname：用于查看系统内核与系统版本等信息，加上-a参数能完整地查看当前系统的内核名称等信息；</li>
-<li>uptime：用于查看系统的负载信息；负载值越低越好，尽量不要长期超过1，生产环境中不要超过5；</li>
-<li>free：用于显示当前系统中内存的使用量信息，结合-h参数能以更人性化的方式树池当前内存的实时信息；</li>
-<li>who：用于查看当前登入主机的用户终端信息；</li>
-<li>last：用于查看所有系统的登陆记录，但仅供参考，其中内容可能会被篡改；</li>
-<li>history：用于显示历史执行过的命令（默认为最近1000条的命令），使用-c参数则会清空所有的历史记录，使用“！编码数字”的方式可以重复执行某一次的命令；<br> 注：只有在终端关闭的时候，才会同步信息；</li>
-<li>sosreport：用于收集系统配置及架构信息并输出诊断文档；</li>
-</ol>
-<h1 id="4-工作目录切换命令"><a href="#4-工作目录切换命令" class="headerlink" title="4.工作目录切换命令"></a>4.工作目录切换命令</h1><ol>
-<li>pwd：用于显示用户当前所处的工作目录；</li>
-<li>cd：用于切换工作路径，其中cd -：表示返回到上一次所处的目录； cd..:表示进入上级目录； cd~：表示切换到当前用户的家目录；</li>
-<li>ls：用于显示目录中的文件信息，其中ls -a：表示查看全部文件（包括隐藏文件)；  ls -l：查看文件的属性、大小等详细信息； ls -d：查看目录及其详细信息；</li>
-</ol>
-<h1 id="5-文本文件编辑命令"><a href="#5-文本文件编辑命令" class="headerlink" title="5.文本文件编辑命令"></a>5.文本文件编辑命令</h1><ol>
-<li>cat：用于查看纯文本文件（内容较少的），cat -n：显示行号；</li>
-<li>more：用于查看纯文本文件（内容较多的）；按回车键向下走一行，空格键向下走一页；</li>
-<li>head：用于查看文本文档的前N行内容，如 head -n 20 initial.cfg:查看initial.cfg文件的前20行内容；</li>
-<li>tail：用于查看文本文档的后N行内容，如 tail -n 20 initial.cfg:查看initial.cfg文件的后20行内容；tail -f 文件名：用于实时查看最新日志文件；</li>
-<li>tr：用于替换文本文件中的字符，格式为：tr [原始字符] [目标字符]，如 tr[a-z] [A-Z];</li>
-<li>wc:用于统计指定文本的行数、字数和字节数；</li>
-</ol>
+<p>进程状态：R（运行）、S（休眠）、D（不可中断）、Z（僵死）、T（停止）；<br>7.top：用于动态地监视进程活动与系统负载等信息；<br>8.pidof：用于查询某个指定服务进程的PID值，如pidof sshd；<br>9.kill：用于终止某个指定PID的服务进程，如kill 2156；<br>10.killall：用于终止某个指定名称的服务所对应的全部进程；</p>
+<h1 id="3-系统状态检测命令"><a href="#3-系统状态检测命令" class="headerlink" title="3.系统状态检测命令"></a>3.系统状态检测命令</h1><p>1.ifconfig：用于获取网卡配置与网络状态等信息，可以查看到网卡名称、IP地址和物理地址；<br>2.uname：用于查看系统内核与系统版本等信息，加上-a参数能完整地查看当前系统的内核名称等信息；<br>3.uptime：用于查看系统的负载信息；负载值越低越好，尽量不要长期超过1，生产环境中不要超过5；<br>4.free：用于显示当前系统中内存的使用量信息，结合-h参数能以更人性化的方式树池当前内存的实时信息；<br>5.who：用于查看当前登入主机的用户终端信息；<br>6.last：用于查看所有系统的登陆记录，但仅供参考，其中内容可能会被篡改；<br>7.history：用于显示历史执行过的命令（默认为最近1000条的命令），使用-c参数则会清空所有的历史记录，使用“！编码数字”的方式可以重复执行某一次的命令；<br>    注：只有在终端关闭的时候，才会同步信息；<br>8.sosreport：用于收集系统配置及架构信息并输出诊断文档；</p>
+<h1 id="4-工作目录切换命令"><a href="#4-工作目录切换命令" class="headerlink" title="4.工作目录切换命令"></a>4.工作目录切换命令</h1><p>1.pwd：用于显示用户当前所处的工作目录；<br>2.cd：用于切换工作路径，其中cd -：表示返回到上一次所处的目录； cd..:表示进入上级目录； cd~：表示切换到当前用户的家目录；<br>3.ls：用于显示目录中的文件信息，其中ls -a：表示查看全部文件（包括隐藏文件)；  ls -l：查看文件的属性、大小等详细信息； ls -d：查看目录及其详细信息；</p>
+<h1 id="5-文本文件编辑命令"><a href="#5-文本文件编辑命令" class="headerlink" title="5.文本文件编辑命令"></a>5.文本文件编辑命令</h1><p>1.cat：用于查看纯文本文件（内容较少的），cat -n：显示行号；<br>2.more：用于查看纯文本文件（内容较多的）；按回车键向下走一行，空格键向下走一页；<br>3.head：用于查看文本文档的前N行内容，如 head -n 20 initial.cfg:查看initial.cfg文件的前20行内容；<br>4.tail：用于查看文本文档的后N行内容，如 tail -n 20 initial.cfg:查看initial.cfg文件的后20行内容；tail -f 文件名：用于实时查看最新日志文件；<br>5.tr：用于替换文本文件中的字符，格式为：tr [原始字符] [目标字符]，如 tr[a-z] [A-Z];<br>6.wc:用于统计指定文本的行数、字数和字节数；</p>
 <table>
 <thead>
 <tr>
@@ -1400,11 +1372,7 @@ iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
 <td>同时修改atime和mtime</td>
 </tr>
 </tbody></table>
-<ol start="7">
-<li>stat：用于查看文件的具体存储信息和时间等信息；其中Access表示最后一次访问文件的时间；Modify表示真实修改文件内容的时间；Change表示修改文件属性信息的时间。</li>
-<li>cut：用于按“列”提取文本字符；-d参数：用于设置间隔符号； -f参数：用于设置想看的列数；</li>
-<li>diff：用于比较多个文本文件的差异； –brief参数:用于确认两个文件是否不同；  -c参数：用于比较多个文件的差异之处。查询结果中有“！”开头的行，表示内容有不同。</li>
-</ol>
+<p>7.stat：用于查看文件的具体存储信息和时间等信息；其中Access表示最后一次访问文件的时间；Modify表示真实修改文件内容的时间；Change表示修改文件属性信息的时间。<br>8.cut：用于按“列”提取文本字符；-d参数：用于设置间隔符号； -f参数：用于设置想看的列数；<br>9.diff：用于比较多个文本文件的差异； –brief参数:用于确认两个文件是否不同；  -c参数：用于比较多个文件的差异之处。查询结果中有“！”开头的行，表示内容有不同。</p>
 <h1 id="6-文件目录管理命令"><a href="#6-文件目录管理命令" class="headerlink" title="6.文件目录管理命令"></a>6.文件目录管理命令</h1><p>1.touch：用于创建空白文件或设置文件的时间；</p>
 <table>
 <thead>
