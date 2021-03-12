@@ -2,7 +2,7 @@
 title: linux就该这么学-18：使用MariaDB数据库管理系统
 date: 2021-02-24 21:36:15
 tags:
-- 第17章节：使用ISCSI服务部署网络存储
+- 第18章节：使用MariaDB数据库管理系统
 categories:
 - linux就该这么学
 
