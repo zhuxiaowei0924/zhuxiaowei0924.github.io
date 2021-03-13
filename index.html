@@ -215,10 +215,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2021-03-08 22:06:37 / 修改时间：22:24:25" itemprop="dateCreated datePublished" datetime="2021-03-08T22:06:37+08:00">2021-03-08</time>
+              <time title="创建时间：2021-03-08 22:06:37" itemprop="dateCreated datePublished" datetime="2021-03-08T22:06:37+08:00">2021-03-08</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-13 18:45:22" itemprop="dateModified" datetime="2021-03-13T18:45:22+08:00">2021-03-13</time>
+              </span>
             <span class="post-meta-item">
               <span class="post-meta-item-icon">
                 <i class="far fa-folder"></i>
@@ -255,55 +261,14 @@
 
       
           <p>当前的系统版本为rhel7.0，内核版本为“Linux 3.10.0-123.el7.x86_64”</p>
-<pre><code>[root@rhel7_0 ~]# hostnamectl
-    ……
-    Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
-    Kernel: Linux 3.10.0-123.el7.x86_64
-    ……
-[root@rhel0 ~]# uname -rs
-    Linux 3.10.0-123.el7.x86_64</code></pre>
-<p>1、从网上下载RHEL7.9版本的系统镜像文件，然后在 RHEL7.0 服务器上进行挂载，并配置在本地YUM源：</p>
-<pre><code>[root@rhel7_0 ~]# mount /dev/cdrom /mnt/
-[root@rhel7_0 ~]# cat /etc/yum.repos.d/rhel_local.repo 
-    [mnt]
-    name=mnt
-    baseurl=file:///mnt
-    enable=1
-    gpgcheck=0</code></pre>
-<p>2、在RHEL7.0服务器上先执行yum clean all，再使用yum list kernel命令查看当前服务器上已安装的内核以及可更新的高版本内核。</p>
-<pre><code>[root@rhel7_0 ~]# yum list kernel
-Loaded plugins: product-id, search-disabled-repos, subscription-manager
-This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
-Installed Packages
-kernel.x86_64                                                    3.10.0-123.el7                                                    @anaconda/7.2
-Available Packages
-kernel.x86_64                                                    3.10.0-1160.el7                                                    mnt          </code></pre>
-<p>3、安装新内核.</p>
-<pre><code>[root@rhel7_0 ~]# yum install -y kernel   
-[root@rhel7_0 ~]# uname -rs</code></pre>
-<p>　　    Linux 3.10.0-123.el7.x86_64</p>
-<p>安装完成之后，再查看内核，发现没有变化，还是跟之前的一样。</p>
-<p>查看/boot/grub2/grub.cfg 配置文件，可以看到新内核3.10.0-1160.el7.x86_64已经是排在最前边了，RHEL7 可以不用调整内核启动顺序，默认会从新内核启动。</p>
-<p>这是进行系统重启reboot，系统会从新内核3.10.0-1160.el7.x86_64启动，但在登录界面显示一片黑屏或其他报错，因此在系统升级完后，不要着急重启，需要在终端输入：<strong>yum update</strong>进行更新，之后再重启，一切正常！</p>
-<p>正常情况下，是不需要修改内核启动顺序的，如果发现内核启动顺序不对，可以按下面的方式来修改：</p>
-<pre><code>[root@rhel7_0 ~]# grub2-editenv list  --查看系统默认内核版本
-saved_entry=Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)
-[root@rhel7_0 ~]# grep &quot;menuentry &quot; /boot/grub2/grub.cfg  --查看配置文件里的内核顺序；这个菜单条目对应上图中的三条选项。
-menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-123.el7.x86_64) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-menuentry &#39;Red Hat Enterprise Linux Server (0-rescue-1fbd678500124daea255a3b7a98e320c) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-0-rescue-1fbd678500124daea255a3b7a98e320c-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-[root@rhel7_0 ~]# grub2-set-default &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39;   --配置默认内核
-[root@rhel7_0 ~]# grub2-mkconfig -o /boot/grub2/grub.cfg    --将修改的内容写入到grub.cfg配置文件。
-Generating grub configuration file ...
-Found linux image: /boot/vmlinuz-3.10.0-1160.el7.x86_64
-Found initrd image: /boot/initramfs-3.10.0-1160.el7.x86_64.img
-Found linux image: /boot/vmlinuz-3.10.0-123.el7.x86_64
-Found initrd image: /boot/initramfs-3.10.0-123.el7.x86_64.img
-Found linux image: /boot/vmlinuz-0-rescue-1fbd678500124daea255a3b7a98e320c
-Found initrd image: /boot/initramfs-0-rescue-1fbd678500124daea255a3b7a98e320c.img
-done</code></pre>
-<p>系统内核更新成功！</p>
-
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2021/03/08/linux%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E5%88%B0rhel7.9%E7%89%88%E6%9C%AC/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
       
     </div>
 
