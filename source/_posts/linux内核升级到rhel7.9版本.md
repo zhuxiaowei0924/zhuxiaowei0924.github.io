@@ -8,6 +8,8 @@ categories:
 ---
 当前的系统版本为rhel7.0，内核版本为“Linux 3.10.0-123.el7.x86_64”
 
+<!--more-->
+
 	[root@rhel7_0 ~]# hostnamectl
 		……
 		Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
