@@ -5853,4 +5853,11 @@ Restarting nginx (via systemctl):                          [  OK  ]
         <tag>第20章节：使用LNMP架构部署动态网站环境</tag>
       </tags>
   </entry>
+  <entry>
+    <title>这是一个测试</title>
+    <url>/2021/07/24/%E8%BF%99%E6%98%AF%E4%B8%80%E4%B8%AA%E6%B5%8B%E8%AF%95/</url>
+    <content><![CDATA[<h2 id="1-安装Nodejs"><a href="#1-安装Nodejs" class="headerlink" title="1.安装Nodejs"></a>1.安装Nodejs</h2><p>官方网站: <a href="https://nodejs.org/">https://nodejs.org</a>, 安装步骤非常简单，一直next，下一步就可以了，默认安装就行。</p>
+<h2 id="2-安装Git"><a href="#2-安装Git" class="headerlink" title="2.安装Git"></a>2.安装Git</h2><p>官方网站：<a href="https://git-scm.com/downloads%EF%BC%8C">https://git-scm.com/downloads，</a> 然后我们选择windows版本的下载，安装也是一直点下一步，安装官方默认的来就行，<br>tips：这个Git Bash下载下来就相当于Linux中的终端窗口了，以后我们就用这个东东来打开终端</p>
+]]></content>
+  </entry>
 </search>
