@@ -845,7 +845,7 @@ ln -s &#39;/usr/lib/systemd/system/dovecot.service&#39; &#39;/etc/systemd/system
 </tbody></table>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png" class>
 
-<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#x6c;&#105;&#x6e;&#117;&#120;&#x70;&#114;&#x6f;&#98;&#x65;&#x40;&#108;&#x69;&#x6e;&#117;&#x78;&#112;&#x72;&#x6f;&#x62;&#x65;&#46;&#x63;&#x6f;&#x6d;">&#x6c;&#105;&#x6e;&#117;&#120;&#x70;&#114;&#x6f;&#98;&#x65;&#x40;&#108;&#x69;&#x6e;&#117;&#x78;&#112;&#x72;&#x6f;&#x62;&#x65;&#46;&#x63;&#x6f;&#x6d;</a>,linuxprobe是linux用户名）和用户密码：</p>
+<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#108;&#105;&#110;&#117;&#x78;&#x70;&#114;&#111;&#x62;&#x65;&#64;&#x6c;&#x69;&#x6e;&#117;&#120;&#x70;&#114;&#x6f;&#x62;&#x65;&#x2e;&#99;&#111;&#109;">&#108;&#105;&#110;&#117;&#x78;&#x70;&#114;&#111;&#x62;&#x65;&#64;&#x6c;&#x69;&#x6e;&#117;&#120;&#x70;&#114;&#x6f;&#x62;&#x65;&#x2e;&#99;&#111;&#109;</a>,linuxprobe是linux用户名）和用户密码：</p>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png" class>
 
 <p>第2步：设置接收服务器类型为POP3，输入邮件帐号和密码，设置POP服务器和SMTP服务器地址，两个为同一地址，如192.168.10.10，SSL端口处不勾选，之后创建成功！</p>
@@ -1240,6 +1240,104 @@ iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
       </tags>
   </entry>
   <entry>
+    <title>linux就该这么学：使用RAID与LVM磁盘阵列技术</title>
+    <url>/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/</url>
+    <content><![CDATA[<p>RAID：Redundant Array of Independent Disks，独立冗余磁盘阵列；<br>LVM：Logical Volume Manager，逻辑卷管理器；</p>
+<a id="more"></a>
+
+<h1 id="1-RAID-0"><a href="#1-RAID-0" class="headerlink" title="1.RAID 0"></a>1.RAID 0</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/1.png" class>
+
+<h1 id="2-RAID-1"><a href="#2-RAID-1" class="headerlink" title="2.RAID 1"></a>2.RAID 1</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/2.jpg" class>
+
+<h1 id="3-RAID-5"><a href="#3-RAID-5" class="headerlink" title="3.RAID 5"></a>3.RAID 5</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/3.png" class>
+
+<h1 id="4-RAID-10"><a href="#4-RAID-10" class="headerlink" title="4.RAID 10"></a>4.RAID 10</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/4.png" class>
+
+<p>mdadm命令用于管理Linux系统中的软件RAID硬盘阵列，格式为“mdadm [模式] &lt;RAID设备名称&gt; [选项] [成员设备名称]”.</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>检测设备名称</td>
+</tr>
+<tr>
+<td>-n</td>
+<td>指定设备数量</td>
+</tr>
+<tr>
+<td>-l</td>
+<td>指定RAID级别</td>
+</tr>
+<tr>
+<td>-C</td>
+<td>创建</td>
+</tr>
+<tr>
+<td>-v</td>
+<td>显示过程</td>
+</tr>
+<tr>
+<td>-D</td>
+<td>查看详细信息</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>移除设备</td>
+</tr>
+<tr>
+<td>-S</td>
+<td>停止RAID磁盘阵列</td>
+</tr>
+</tbody></table>
+<p>-C参数代表创建一个RAID阵列卡；-v参数显示创建的过程，同时在后面追加一个设备名称/dev/md0，这样/dev/md0就是创建后的RAID磁盘阵列的名称；-a yes参数代表自动创建设备文件；-n 4参数代表使用4块硬盘来部署这个RAID磁盘阵列；而-l 10参数则代表RAID 10方案；最后再加上4块硬盘设备的名称就搞定了。</p>
+<pre><code>[root@linuxprobe ~]# mdadm -Cv /dev/md0 -a yes -n 4 -l 10 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
+<p>之后格式化mkfs.ext4，创建挂载点mkdir /RAID，查看详细信息mdadm -D /dev/md0，并把挂载信息写入配置文件。</p>
+<h1 id="5-磁盘阵列-备份盘"><a href="#5-磁盘阵列-备份盘" class="headerlink" title="5.磁盘阵列+备份盘"></a>5.磁盘阵列+备份盘</h1><p>在下面的命令中，参数-n 3代表创建这个RAID 5磁盘阵列所需的硬盘数，参数-l 5代表RAID的级别，而参数-x 1则代表有一块备份盘。当查看/dev/md0（即RAID 5磁盘阵列的名称）磁盘阵列的时候就能看到有一块备份盘在等待中了：</p>
+<pre><code>mdadm -Cv /dev/md0 -n 3 -l 5 -x 1 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
+<h1 id="6-部署逻辑卷"><a href="#6-部署逻辑卷" class="headerlink" title="6.部署逻辑卷"></a>6.部署逻辑卷</h1>
+
+<pre><code>[root@linuxprobe ~]# pvcreate /dev/sdb /dev/sdc
+[root@linuxprobe ~]# vgcreate storage /dev/sdb /dev/sdc
+[root@linuxprobe ~]# lvcreate -n vo -l 37 storage（在对逻辑卷进行切割时有两种计量单位。第一种是以容量为单位，所使用的参数为-L。例如，使用-L 150M生成一个大小为150MB的逻辑卷。另外一种是以基本单元的个数为单位，所使用的参数为-l。每个基本单元的大小默认为4MB。例如，使用-l 37可以生成一个大小为37×4MB=148MB的逻辑卷。）</code></pre>
+<p>之后再格式化，挂载，写入配置文件中即可！</p>
+<h1 id="7-扩容逻辑卷"><a href="#7-扩容逻辑卷" class="headerlink" title="7.扩容逻辑卷"></a>7.扩容逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
+<pre><code>[root@linuxprobe ~]# lvextend -L 290M /dev/storage/vo （逻辑卷vo扩展至290MB）
+[root@linuxprobe ~]# e2fsck -f /dev/storage/vo （检查硬盘完整性）
+[root@linuxprobe ~]# resize2fs /dev/storage/vo （重置硬盘容量）</code></pre>
+<p>之后mount -a挂载硬盘设备即可！</p>
+<h1 id="8-缩小逻辑卷"><a href="#8-缩小逻辑卷" class="headerlink" title="8.缩小逻辑卷"></a>8.缩小逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
+<pre><code>[root@linuxprobe ~]# e2fsck -f /dev/storage/vo
+[root@linuxprobe ~]# resize2fs /dev/storage/vo 120M
+[root@linuxprobe ~]# lvreduce -L 120M /dev/storage/vo</code></pre>
+<p>之后mount -a挂载硬盘设备即可！</p>
+<h1 id="9-逻辑卷快照"><a href="#9-逻辑卷快照" class="headerlink" title="9.逻辑卷快照"></a>9.逻辑卷快照</h1><p>LVM的快照卷功能有两个特点：</p>
+<pre><code>快照卷的容量必须等同于逻辑卷的容量；
+
+快照卷仅一次有效，一旦执行还原操作后则会被立即自动删除。
+
+[root@linuxprobe ~]#  lvcreate -L 120M -s -n SNAP /dev/storage/vo （使用-s参数生成一个快照卷，使用-L参数指定切割的大小。另外，还需要在命令后面写上是针对哪个逻辑卷执行的快照操作。）
+[root@linuxprobe ~]# umount /linuxprobe （记得先卸载掉逻辑卷设备与目录的挂载。）
+[root@linuxprobe ~]# lvconvert --merge /dev/storage/SNAP
+[root@linuxprobe ~]# mount -a</code></pre>
+<h1 id="10-删除逻辑卷"><a href="#10-删除逻辑卷" class="headerlink" title="10.删除逻辑卷"></a>10.删除逻辑卷</h1><pre><code>[root@linuxprobe ~]# umount /linuxprobe （取消逻辑卷与目录的挂载关联）
+[root@linuxprobe ~]# vim /etc/fstab （删除配置文件中永久生效的设备参数）
+[root@linuxprobe ~]# lvremove /dev/storage/vo （删除逻辑卷设备，需要输入y来确认操作）
+[root@linuxprobe ~]# vgremove storage （删除卷组，此处只写卷组名称即可，不需要设备的绝对路径）
+[root@linuxprobe ~]# pvremove /dev/sdb /dev/sdc （删除物理卷设备）</code></pre>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第7章节：使用RAID与LVM磁盘阵列技术</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux就该这么学：linux命令</title>
     <url>/2020/12/28/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Alinux%E5%91%BD%E4%BB%A4/</url>
     <content><![CDATA[<h1 id="1-命令格式"><a href="#1-命令格式" class="headerlink" title="1.命令格式"></a>1.命令格式</h1><p>格式要求： 命令名称 [命令参数]  [命令对象]</p>
@@ -1472,104 +1570,6 @@ iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
       </categories>
       <tags>
         <tag>第2章节：linux命令</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学：使用RAID与LVM磁盘阵列技术</title>
-    <url>/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/</url>
-    <content><![CDATA[<p>RAID：Redundant Array of Independent Disks，独立冗余磁盘阵列；<br>LVM：Logical Volume Manager，逻辑卷管理器；</p>
-<a id="more"></a>
-
-<h1 id="1-RAID-0"><a href="#1-RAID-0" class="headerlink" title="1.RAID 0"></a>1.RAID 0</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/1.png" class>
-
-<h1 id="2-RAID-1"><a href="#2-RAID-1" class="headerlink" title="2.RAID 1"></a>2.RAID 1</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/2.jpg" class>
-
-<h1 id="3-RAID-5"><a href="#3-RAID-5" class="headerlink" title="3.RAID 5"></a>3.RAID 5</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/3.png" class>
-
-<h1 id="4-RAID-10"><a href="#4-RAID-10" class="headerlink" title="4.RAID 10"></a>4.RAID 10</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/4.png" class>
-
-<p>mdadm命令用于管理Linux系统中的软件RAID硬盘阵列，格式为“mdadm [模式] &lt;RAID设备名称&gt; [选项] [成员设备名称]”.</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-a</td>
-<td>检测设备名称</td>
-</tr>
-<tr>
-<td>-n</td>
-<td>指定设备数量</td>
-</tr>
-<tr>
-<td>-l</td>
-<td>指定RAID级别</td>
-</tr>
-<tr>
-<td>-C</td>
-<td>创建</td>
-</tr>
-<tr>
-<td>-v</td>
-<td>显示过程</td>
-</tr>
-<tr>
-<td>-D</td>
-<td>查看详细信息</td>
-</tr>
-<tr>
-<td>-r</td>
-<td>移除设备</td>
-</tr>
-<tr>
-<td>-S</td>
-<td>停止RAID磁盘阵列</td>
-</tr>
-</tbody></table>
-<p>-C参数代表创建一个RAID阵列卡；-v参数显示创建的过程，同时在后面追加一个设备名称/dev/md0，这样/dev/md0就是创建后的RAID磁盘阵列的名称；-a yes参数代表自动创建设备文件；-n 4参数代表使用4块硬盘来部署这个RAID磁盘阵列；而-l 10参数则代表RAID 10方案；最后再加上4块硬盘设备的名称就搞定了。</p>
-<pre><code>[root@linuxprobe ~]# mdadm -Cv /dev/md0 -a yes -n 4 -l 10 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
-<p>之后格式化mkfs.ext4，创建挂载点mkdir /RAID，查看详细信息mdadm -D /dev/md0，并把挂载信息写入配置文件。</p>
-<h1 id="5-磁盘阵列-备份盘"><a href="#5-磁盘阵列-备份盘" class="headerlink" title="5.磁盘阵列+备份盘"></a>5.磁盘阵列+备份盘</h1><p>在下面的命令中，参数-n 3代表创建这个RAID 5磁盘阵列所需的硬盘数，参数-l 5代表RAID的级别，而参数-x 1则代表有一块备份盘。当查看/dev/md0（即RAID 5磁盘阵列的名称）磁盘阵列的时候就能看到有一块备份盘在等待中了：</p>
-<pre><code>mdadm -Cv /dev/md0 -n 3 -l 5 -x 1 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
-<h1 id="6-部署逻辑卷"><a href="#6-部署逻辑卷" class="headerlink" title="6.部署逻辑卷"></a>6.部署逻辑卷</h1>
-
-<pre><code>[root@linuxprobe ~]# pvcreate /dev/sdb /dev/sdc
-[root@linuxprobe ~]# vgcreate storage /dev/sdb /dev/sdc
-[root@linuxprobe ~]# lvcreate -n vo -l 37 storage（在对逻辑卷进行切割时有两种计量单位。第一种是以容量为单位，所使用的参数为-L。例如，使用-L 150M生成一个大小为150MB的逻辑卷。另外一种是以基本单元的个数为单位，所使用的参数为-l。每个基本单元的大小默认为4MB。例如，使用-l 37可以生成一个大小为37×4MB=148MB的逻辑卷。）</code></pre>
-<p>之后再格式化，挂载，写入配置文件中即可！</p>
-<h1 id="7-扩容逻辑卷"><a href="#7-扩容逻辑卷" class="headerlink" title="7.扩容逻辑卷"></a>7.扩容逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
-<pre><code>[root@linuxprobe ~]# lvextend -L 290M /dev/storage/vo （逻辑卷vo扩展至290MB）
-[root@linuxprobe ~]# e2fsck -f /dev/storage/vo （检查硬盘完整性）
-[root@linuxprobe ~]# resize2fs /dev/storage/vo （重置硬盘容量）</code></pre>
-<p>之后mount -a挂载硬盘设备即可！</p>
-<h1 id="8-缩小逻辑卷"><a href="#8-缩小逻辑卷" class="headerlink" title="8.缩小逻辑卷"></a>8.缩小逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
-<pre><code>[root@linuxprobe ~]# e2fsck -f /dev/storage/vo
-[root@linuxprobe ~]# resize2fs /dev/storage/vo 120M
-[root@linuxprobe ~]# lvreduce -L 120M /dev/storage/vo</code></pre>
-<p>之后mount -a挂载硬盘设备即可！</p>
-<h1 id="9-逻辑卷快照"><a href="#9-逻辑卷快照" class="headerlink" title="9.逻辑卷快照"></a>9.逻辑卷快照</h1><p>LVM的快照卷功能有两个特点：</p>
-<pre><code>快照卷的容量必须等同于逻辑卷的容量；
-
-快照卷仅一次有效，一旦执行还原操作后则会被立即自动删除。
-
-[root@linuxprobe ~]#  lvcreate -L 120M -s -n SNAP /dev/storage/vo （使用-s参数生成一个快照卷，使用-L参数指定切割的大小。另外，还需要在命令后面写上是针对哪个逻辑卷执行的快照操作。）
-[root@linuxprobe ~]# umount /linuxprobe （记得先卸载掉逻辑卷设备与目录的挂载。）
-[root@linuxprobe ~]# lvconvert --merge /dev/storage/SNAP
-[root@linuxprobe ~]# mount -a</code></pre>
-<h1 id="10-删除逻辑卷"><a href="#10-删除逻辑卷" class="headerlink" title="10.删除逻辑卷"></a>10.删除逻辑卷</h1><pre><code>[root@linuxprobe ~]# umount /linuxprobe （取消逻辑卷与目录的挂载关联）
-[root@linuxprobe ~]# vim /etc/fstab （删除配置文件中永久生效的设备参数）
-[root@linuxprobe ~]# lvremove /dev/storage/vo （删除逻辑卷设备，需要输入y来确认操作）
-[root@linuxprobe ~]# vgremove storage （删除卷组，此处只写卷组名称即可，不需要设备的绝对路径）
-[root@linuxprobe ~]# pvremove /dev/sdb /dev/sdc （删除物理卷设备）</code></pre>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第7章节：使用RAID与LVM磁盘阵列技术</tag>
       </tags>
   </entry>
   <entry>
@@ -1874,58 +1874,6 @@ Red Hat Enterprise Linux Server release 7.0 (Maipo)</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>linux就该这么学：使用win10主机ping通虚拟机</title>
-    <url>/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
-    <content><![CDATA[<p>在win10系统中安装了vm12版本，Linux我选用的是redhat 7版本；成功安装redhat 7后，将linux虚拟机的IP地址固定：</p>
-<a id="more"></a>
-
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/1.png" class>
-
-<p>linux虚拟机的外部连接方式为NAT模式，在linux虚拟机中能够ping通自己的IP，但无法ping通win10系统的IP，win10系统也无法ping通linux虚拟机IP。</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/2.png" class>
-
-<p>解决方法如下：</p>
-<p>1.首先确认了本机的网络有无VMware Network Adapter VMnet8这两个网络：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/3.png" class>
-
-<p>有以上两个网络的话，跳过此步骤；没有的话，则将VM虚拟机卸载，之后清理完之后再重新安装VM虚拟机软件。</p>
-<p>2.安装好虚拟机后，打开终端，输入：vim /etc/sysconfig/network-scripts/ifcfg-eno16777728（网卡名称），编辑下网卡文件，将BOOTPROTO的值修改为static，并添加参数：IPADDR，GATEWAR，NETMASK，NM_CONTROLLED。IPADDR，GATEWAR这两个设置注意网段要与VMware Network Adapter VMnet8 的一致：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/4.png" class>
-
-<p>3.设置好之后，保存退出；之后重启系统，用linux虚拟机ping下win10系统IP地址，测试是否能够ping通，如果可以，那就ok了。</p>
-<p>linux虚拟机ping win10系统：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/5.png" class>
-
-<p>win10系统ping linux虚拟机：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/6.png" class>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>使用win10主机ping通虚拟机</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux就该这么学：存储结构与磁盘划分</title>
     <url>/2021/02/01/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E4%B8%8E%E7%A3%81%E7%9B%98%E5%88%92%E5%88%86/</url>
     <content><![CDATA[<h1 id="1-一切从“-”开始"><a href="#1-一切从“-”开始" class="headerlink" title="1.一切从“/”开始"></a>1.一切从“/”开始</h1><p>Linux系统中的一切文件都是从“根（/）”目录开始的，并按照文件系统层次化标准（FHS）采用树形结构来存放文件，以及定义了常见目录的用途。另外，Linux系统中的文件和目录名称是严格区分大小写的。  </p>
@@ -2156,6 +2104,172 @@ Permissive</code></pre>
       </categories>
       <tags>
         <tag>安装samba服务时packagekit报错解决方法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：使用win10主机ping通虚拟机</title>
+    <url>/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
+    <content><![CDATA[<p>在win10系统中安装了vm12版本，Linux我选用的是redhat 7版本；成功安装redhat 7后，将linux虚拟机的IP地址固定：</p>
+<a id="more"></a>
+
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/1.png" class>
+
+<p>linux虚拟机的外部连接方式为NAT模式，在linux虚拟机中能够ping通自己的IP，但无法ping通win10系统的IP，win10系统也无法ping通linux虚拟机IP。</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/2.png" class>
+
+<p>解决方法如下：</p>
+<p>1.首先确认了本机的网络有无VMware Network Adapter VMnet8这两个网络：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/3.png" class>
+
+<p>有以上两个网络的话，跳过此步骤；没有的话，则将VM虚拟机卸载，之后清理完之后再重新安装VM虚拟机软件。</p>
+<p>2.安装好虚拟机后，打开终端，输入：vim /etc/sysconfig/network-scripts/ifcfg-eno16777728（网卡名称），编辑下网卡文件，将BOOTPROTO的值修改为static，并添加参数：IPADDR，GATEWAR，NETMASK，NM_CONTROLLED。IPADDR，GATEWAR这两个设置注意网段要与VMware Network Adapter VMnet8 的一致：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/4.png" class>
+
+<p>3.设置好之后，保存退出；之后重启系统，用linux虚拟机ping下win10系统IP地址，测试是否能够ping通，如果可以，那就ok了。</p>
+<p>linux虚拟机ping win10系统：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/5.png" class>
+
+<p>win10系统ping linux虚拟机：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/6.png" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>使用win10主机ping通虚拟机</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：管道符、重定向与环境变量</title>
+    <url>/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
+    <content><![CDATA[<h1 id="1-输入输出重定向"><a href="#1-输入输出重定向" class="headerlink" title="1.输入输出重定向"></a>1.输入输出重定向</h1><p>输入重定向：是指把文件导入到命令中； 输出重定向：是指把原本要输出到屏幕的数据写入到指定文件中。输出重定向又分为标准输出重定向和错误输出重定向。<br>输入重定向中用到的符号及其作用：</p>
+<a id="more"></a>
+
+
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>命令 &lt; 文件</td>
+<td>将文件作为命令的标准输入</td>
+</tr>
+<tr>
+<td>命令 &lt;&lt; 分界符（tag）</td>
+<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
+</tr>
+</tbody></table>
+<p>输入重定向中用到的符号及其作用：</p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>命令 &gt; 文件</td>
+<td>将输出重定向到文件（会清空原有数据）</td>
+</tr>
+<tr>
+<td>命令 &gt;&gt; 文件</td>
+<td>将输出以追加的方式重定向到文件</td>
+</tr>
+<tr>
+<td>n &gt; 文件</td>
+<td>将文件描述符为 n 的文件重定向到文件</td>
+</tr>
+<tr>
+<td>n &gt;&gt; 文件</td>
+<td>将文件描述符为 n 的文件以追加的方式重定向到文件</td>
+</tr>
+<tr>
+<td>n &gt;&amp; m</td>
+<td>将输出文件 m 和 n 合并</td>
+</tr>
+<tr>
+<td>n &lt;&amp; m</td>
+<td>将输入文件 m 和 n 合并</td>
+</tr>
+<tr>
+<td>&lt;&lt; tag</td>
+<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
+</tr>
+</tbody></table>
+<p>注意：文件描述符 0 通常是标准输入（STDIN），1 是标准输出（STDOUT），2 是标准错误输出（STDERR）。</p>
+<h1 id="2-管道命令符"><a href="#2-管道命令符" class="headerlink" title="2. 管道命令符"></a>2. 管道命令符</h1><p>命令符：可以把前一个命令原本要输出到屏幕的数据当作是后一个命令的标准输入；</p>
+<h1 id="3-命令行的通配符"><a href="#3-命令行的通配符" class="headerlink" title="3.命令行的通配符"></a>3.命令行的通配符</h1><p>星号（*）：代表匹配零个或多个字符； 问号（？）：代表匹配单个字符； [0-9]:代表匹配0-9之间的单个数字； [abc]:代表匹配a、b、c三个字符中的任意一个；<br>[^…]和[!…]表示匹配不在方括号里面的字符（不包括空字符）；这两种写法是等价的。</p>
+<h1 id="4-转义字符"><a href="#4-转义字符" class="headerlink" title="4.转义字符"></a>4.转义字符</h1><p>反斜杠（\）：使反斜杠后面变量称为单纯的字符串；<br>单引号（’’）：转义其中所有的变量为单纯的字符串；<br>双引号（””）:保留其中的变量属性，不尽兴转义处理；<br>反引号（``）:把其中的命令执行后返回结果。</p>
+<h1 id="5-环境变量"><a href="#5-环境变量" class="headerlink" title="5.环境变量"></a>5.环境变量</h1><p>变量是计算机系统用于保存可变值得数据类型，变量名称一般都是大写的；环境变量是用来定义系统运行环境的一些参数，比如每个用户不同的家目录、邮件存放位置等。</p>
+<p>前面讲过，在 Linux 系统中“一切皆文件”，Linux 命令也不例外。那么，当编辑完成 Linux 命令并回车后，系统底层到底发生了什么事情呢？</p>
+<p>简单来说，Linux 命令的执行过程分为如下 4 个步骤。</p>
+<pre><code>1) 判断路径
+    判断用户是否以绝对路径或相对路径的方式输入命令（如 /bin/ls），如果是的话直接执行。
+
+2) 检查别名
+    Linux 系统会检查用户输入的命令是否为“别名命令”。要知道，通过 alias 命令是可以给现有命令自定义别名的，即用一个自定义的命令名称来替换原本的命令名称。
+
+    例如，我们经常使用的 rm 命令，其实就是 rm -i 这个整体的别名：
+    [root@localhost ~]# alias rm
+    alias rm=&#39;rm -i&#39;
+
+    这使得当使用 rm 命令删除指定文件时，Linux 系统会要求我们再次确认是否执行删除操作。例如：
+    [root@localhost ~]# rm a.txt &lt;-- 假定当前目录中已经存在 a.txt 文件
+    rm: remove regular file &#39;a.txt&#39;? y  &lt;-- 手动输入 y，即确定删除
+    [root@localhost ~]#
+
+    这里可以使用 unalias 命令，将 Linux 系统设置的 rm 别名删除掉，执行命令如下：
+    [root@localhost ~]# alias rm
+    alias rm=&#39;rm -i&#39;
+    [root@localhost ~]# unalias rm
+    [root@localhost ~]# rm a.txt
+    [root@localhost ~]#  &lt;--直接删除，不再询问
+
+
+    注意，这里仅是为了演示 unalisa 的用法，建议读者删除 rm 别名之后，再手动添加到系统中，执行如下命令即可再次成功添加：
+    [root@localhost ~]# alias rm=&#39;rm -i&#39;
+
+3) 判断是内部命令还是外部命令
+    Linux命令行解释器（又称为 Shell）会判断用户输入的命令是内部命令还是外部命令。其中，内部命令指的是解释器内部的命令，会被直接执行；而用户通常输入的命令都是外部命令，这些命令交给步骤四继续处理。
+    内部命令由 Shell 自带，会随着系统启动，可以直接从内存中读取；而外部命令仅是在系统中有对应的可执行文件，执行时需要读取该文件。
+
+    判断一个命令属于内部命令还是外部命令，可以使用 type 命令实现。例如：
+    [root@localhost ~]# type pwd
+    pwd is a shell builtin  &lt;-- pwd是内部命令
+    [root@localhost ~]# type top
+    top is /usr/bin/top  &lt;-- top是外部命令
+
+4) 查找外部命令对应的可执行文件
+    当用户执行的是外部命令时，系统会在指定的多个路径中查找该命令的可执行文件，而定义这些路径的变量，就称为 PATH 环境变量，其作用就是告诉 Shell 待执行命令的可执行文件可能存放的位置，也就是说，Shell 会在 PATH 变量包含的多个路径中逐个查找，直到找到为止（如果找不到，Shell 会提供用户“找不到此命令”）</code></pre>
+<p>自己创建的变量不具有全局性，作用范围有限，默认情况下不能被其他用户使用，因此，可通过export命令（如：export WORKDIR）将其提升为全局变量，这样其他用户也可以使用了！</p>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第3章节：管道符、重定向与环境变量</tag>
       </tags>
   </entry>
   <entry>
@@ -2447,120 +2561,6 @@ anaconda-ks.cfg Downloads Pictures Public
       </tags>
   </entry>
   <entry>
-    <title>linux就该这么学：管道符、重定向与环境变量</title>
-    <url>/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
-    <content><![CDATA[<h1 id="1-输入输出重定向"><a href="#1-输入输出重定向" class="headerlink" title="1.输入输出重定向"></a>1.输入输出重定向</h1><p>输入重定向：是指把文件导入到命令中； 输出重定向：是指把原本要输出到屏幕的数据写入到指定文件中。输出重定向又分为标准输出重定向和错误输出重定向。<br>输入重定向中用到的符号及其作用：</p>
-<a id="more"></a>
-
-
-<table>
-<thead>
-<tr>
-<th>符号</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>命令 &lt; 文件</td>
-<td>将文件作为命令的标准输入</td>
-</tr>
-<tr>
-<td>命令 &lt;&lt; 分界符（tag）</td>
-<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
-</tr>
-</tbody></table>
-<p>输入重定向中用到的符号及其作用：</p>
-<table>
-<thead>
-<tr>
-<th>符号</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>命令 &gt; 文件</td>
-<td>将输出重定向到文件（会清空原有数据）</td>
-</tr>
-<tr>
-<td>命令 &gt;&gt; 文件</td>
-<td>将输出以追加的方式重定向到文件</td>
-</tr>
-<tr>
-<td>n &gt; 文件</td>
-<td>将文件描述符为 n 的文件重定向到文件</td>
-</tr>
-<tr>
-<td>n &gt;&gt; 文件</td>
-<td>将文件描述符为 n 的文件以追加的方式重定向到文件</td>
-</tr>
-<tr>
-<td>n &gt;&amp; m</td>
-<td>将输出文件 m 和 n 合并</td>
-</tr>
-<tr>
-<td>n &lt;&amp; m</td>
-<td>将输入文件 m 和 n 合并</td>
-</tr>
-<tr>
-<td>&lt;&lt; tag</td>
-<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
-</tr>
-</tbody></table>
-<p>注意：文件描述符 0 通常是标准输入（STDIN），1 是标准输出（STDOUT），2 是标准错误输出（STDERR）。</p>
-<h1 id="2-管道命令符"><a href="#2-管道命令符" class="headerlink" title="2. 管道命令符"></a>2. 管道命令符</h1><p>命令符：可以把前一个命令原本要输出到屏幕的数据当作是后一个命令的标准输入；</p>
-<h1 id="3-命令行的通配符"><a href="#3-命令行的通配符" class="headerlink" title="3.命令行的通配符"></a>3.命令行的通配符</h1><p>星号（*）：代表匹配零个或多个字符； 问号（？）：代表匹配单个字符； [0-9]:代表匹配0-9之间的单个数字； [abc]:代表匹配a、b、c三个字符中的任意一个；<br>[^…]和[!…]表示匹配不在方括号里面的字符（不包括空字符）；这两种写法是等价的。</p>
-<h1 id="4-转义字符"><a href="#4-转义字符" class="headerlink" title="4.转义字符"></a>4.转义字符</h1><p>反斜杠（\）：使反斜杠后面变量称为单纯的字符串；<br>单引号（’’）：转义其中所有的变量为单纯的字符串；<br>双引号（””）:保留其中的变量属性，不尽兴转义处理；<br>反引号（``）:把其中的命令执行后返回结果。</p>
-<h1 id="5-环境变量"><a href="#5-环境变量" class="headerlink" title="5.环境变量"></a>5.环境变量</h1><p>变量是计算机系统用于保存可变值得数据类型，变量名称一般都是大写的；环境变量是用来定义系统运行环境的一些参数，比如每个用户不同的家目录、邮件存放位置等。</p>
-<p>前面讲过，在 Linux 系统中“一切皆文件”，Linux 命令也不例外。那么，当编辑完成 Linux 命令并回车后，系统底层到底发生了什么事情呢？</p>
-<p>简单来说，Linux 命令的执行过程分为如下 4 个步骤。</p>
-<pre><code>1) 判断路径
-    判断用户是否以绝对路径或相对路径的方式输入命令（如 /bin/ls），如果是的话直接执行。
-
-2) 检查别名
-    Linux 系统会检查用户输入的命令是否为“别名命令”。要知道，通过 alias 命令是可以给现有命令自定义别名的，即用一个自定义的命令名称来替换原本的命令名称。
-
-    例如，我们经常使用的 rm 命令，其实就是 rm -i 这个整体的别名：
-    [root@localhost ~]# alias rm
-    alias rm=&#39;rm -i&#39;
-
-    这使得当使用 rm 命令删除指定文件时，Linux 系统会要求我们再次确认是否执行删除操作。例如：
-    [root@localhost ~]# rm a.txt &lt;-- 假定当前目录中已经存在 a.txt 文件
-    rm: remove regular file &#39;a.txt&#39;? y  &lt;-- 手动输入 y，即确定删除
-    [root@localhost ~]#
-
-    这里可以使用 unalias 命令，将 Linux 系统设置的 rm 别名删除掉，执行命令如下：
-    [root@localhost ~]# alias rm
-    alias rm=&#39;rm -i&#39;
-    [root@localhost ~]# unalias rm
-    [root@localhost ~]# rm a.txt
-    [root@localhost ~]#  &lt;--直接删除，不再询问
-
-
-    注意，这里仅是为了演示 unalisa 的用法，建议读者删除 rm 别名之后，再手动添加到系统中，执行如下命令即可再次成功添加：
-    [root@localhost ~]# alias rm=&#39;rm -i&#39;
-
-3) 判断是内部命令还是外部命令
-    Linux命令行解释器（又称为 Shell）会判断用户输入的命令是内部命令还是外部命令。其中，内部命令指的是解释器内部的命令，会被直接执行；而用户通常输入的命令都是外部命令，这些命令交给步骤四继续处理。
-    内部命令由 Shell 自带，会随着系统启动，可以直接从内存中读取；而外部命令仅是在系统中有对应的可执行文件，执行时需要读取该文件。
-
-    判断一个命令属于内部命令还是外部命令，可以使用 type 命令实现。例如：
-    [root@localhost ~]# type pwd
-    pwd is a shell builtin  &lt;-- pwd是内部命令
-    [root@localhost ~]# type top
-    top is /usr/bin/top  &lt;-- top是外部命令
-
-4) 查找外部命令对应的可执行文件
-    当用户执行的是外部命令时，系统会在指定的多个路径中查找该命令的可执行文件，而定义这些路径的变量，就称为 PATH 环境变量，其作用就是告诉 Shell 待执行命令的可执行文件可能存放的位置，也就是说，Shell 会在 PATH 变量包含的多个路径中逐个查找，直到找到为止（如果找不到，Shell 会提供用户“找不到此命令”）</code></pre>
-<p>自己创建的变量不具有全局性，作用范围有限，默认情况下不能被其他用户使用，因此，可通过export命令（如：export WORKDIR）将其提升为全局变量，这样其他用户也可以使用了！</p>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第3章节：管道符、重定向与环境变量</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux虚拟机外网网络访问设置指南</title>
     <url>/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/</url>
     <content><![CDATA[<p>要达到的效果就是在Linux虚拟机中可以上网：ping <a href="http://www.baidu.com/">http://www.baidu.com</a></p>
@@ -2629,6 +2629,12 @@ NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进
       <tags>
         <tag>linux虚拟机外网网络访问设置指南</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>zhangxiaolei</title>
+    <url>/2021/07/24/zhangxiaolei/</url>
+    <content><![CDATA[<p>撒酒疯立即受到法律为了和发射东风双方的和我姐夫航空技术的广发卡是山东悍匪未婚夫s</p>
+<img src="/2021/07/24/zhangxiaolei/114.jpg" class>]]></content>
   </entry>
   <entry>
     <title>liunx就该这么学：vim编辑器与Shell命令脚本</title>
@@ -2911,18 +2917,6 @@ esac</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>zhangxiaolei</title>
-    <url>/2021/07/24/zhangxiaolei/</url>
-    <content><![CDATA[<p>撒酒疯立即受到法律为了和发射东风双方的和我姐夫航空技术的广发卡是山东悍匪未婚夫s</p>
-<img src="/2021/07/24/zhangxiaolei/114.jpg" class>]]></content>
-  </entry>
-  <entry>
-    <title>图片加载命令</title>
-    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
-]]></content>
-  </entry>
-  <entry>
     <title>用hexo和github免费创建自己的博客</title>
     <url>/2020/12/06/%E7%94%A8hexo%E5%92%8Cgithub%E5%85%8D%E8%B4%B9%E5%88%9B%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2/</url>
     <content><![CDATA[<h2 id="1-安装Nodejs"><a href="#1-安装Nodejs" class="headerlink" title="1.安装Nodejs"></a>1.安装Nodejs</h2><p>官方网站: <a href="https://nodejs.org/">https://nodejs.org</a>, 安装步骤非常简单，一直next，下一步就可以了，默认安装就行。</p>
@@ -2946,6 +2940,12 @@ deploy:
       <tags>
         <tag>博客</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>图片加载命令</title>
+    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
+]]></content>
   </entry>
   <entry>
     <title>linux就该这么学-13：使用Bind提供域名解析服务</title>
@@ -4046,432 +4046,6 @@ MariaDB [linuxprobe]&gt; DESCRIBE mybook;
       </tags>
   </entry>
   <entry>
-    <title>linux就该这么学：使用Apache服务部署静态网站</title>
-    <url>/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/</url>
-    <content><![CDATA[<h1 id="1-网站服务程序"><a href="#1-网站服务程序" class="headerlink" title="1.网站服务程序"></a>1.网站服务程序</h1><a id="more"></a>
-
-<p>第1步：把光盘设备中的系统镜像挂载到/media/cdrom目录。</p>
-<pre><code>[root@linuxprobe ~]# mkdir -p /media/cdrom
-[root@linuxprobe ~]# mount /dev/cdrom /media/cdrom
-mount: /dev/sr0 is write-protected, mounting read-only</code></pre>
-<p>第2步：使用Vim文本编辑器创建Yum仓库的配置文件。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/yum.repos.d/rhel7.repo
-[rhel7]
-name=rhel7
-baseurl=file:///media/cdrom
-enabled=1
-gpgcheck=0</code></pre>
-<p>第3步：动手安装Apache服务程序。注意，使用yum命令进行安装时，跟在命令后面的Apache服务的软件包名称为httpd。如果直接执行yum install apache命令，则系统会报错。</p>
-<pre><code>[root@linuxprobe ~]# yum install httpd
-Loaded plugins: langpacks, product-id, subscription-manager
-………………省略部分输出信息………………
-Complete!</code></pre>
-<p>第4步：启用httpd服务程序并将其加入到开机启动项中，使其能够随系统开机而运行，从而持续为用户提供Web服务：</p>
-<pre><code>[root@linuxprobe ~]# systemctl start httpd
-[root@linuxprobe ~]# systemctl enable httpd
-ln -s &#39;/usr/lib/systemd/system/httpd.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/httpd.service&#39;
-
-[root@linuxprobe ~]# firefox</code></pre>
-<h1 id="2-配置服务文件参数"><a href="#2-配置服务文件参数" class="headerlink" title="2.配置服务文件参数"></a>2.配置服务文件参数</h1><table>
-<thead>
-<tr>
-<th>作用</th>
-<th>文件名称</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>服务目录</td>
-<td>/etc/httpd</td>
-</tr>
-<tr>
-<td>主配置文件</td>
-<td>/etc/httpd/conf/httpd.conf</td>
-</tr>
-<tr>
-<td>网站数据目录</td>
-<td>/var/www/html</td>
-</tr>
-<tr>
-<td>访问日志</td>
-<td>/var/log/httpd/access_log</td>
-</tr>
-<tr>
-<td>错误日志</td>
-<td>/var/log/httpd/error_log</td>
-</tr>
-</tbody></table>
-<p>在httpd服务程序的主配置文件中，存在三种类型的信息：注释行信息、全局配置、区域配置；</p>
-<p> 配置httpd服务程序时最常用的参数以及用途描述：</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>ServerRoot</td>
-<td>服务目录</td>
-</tr>
-<tr>
-<td>ServerAdmin</td>
-<td>管理员邮箱</td>
-</tr>
-<tr>
-<td>User</td>
-<td>运行服务的用户</td>
-</tr>
-<tr>
-<td>Group</td>
-<td>运行服务的用户组</td>
-</tr>
-<tr>
-<td>ServerName</td>
-<td>网站服务器的域名</td>
-</tr>
-<tr>
-<td>DocumentRoot</td>
-<td>网站数据目录</td>
-</tr>
-<tr>
-<td>Listen</td>
-<td>监听的IP地址与端口号</td>
-</tr>
-<tr>
-<td>DirectoryIndex</td>
-<td>默认的索引页页面</td>
-</tr>
-<tr>
-<td>ErrorLog</td>
-<td>错误日志文件</td>
-</tr>
-<tr>
-<td>CustomLog</td>
-<td>访问日志文件</td>
-</tr>
-<tr>
-<td>Timeout</td>
-<td>网页超时时间，默认为300秒</td>
-</tr>
-</tbody></table>
-<p>在默认情况下，网站数据是保存在/var/www/html目录中，打开httpd服务程序的主配置文件，将约第119行用于定义网站数据保存路径的参数DocumentRoot修改为/home/wwwroot，同时还需要将约第124行用于定义目录权限的参数Directory后面的路径也修改为/home/wwwroot。配置文件修改完毕后即可保存并退出。</p>
-<h1 id="3-SELinux安全子系统"><a href="#3-SELinux安全子系统" class="headerlink" title="3.SELinux安全子系统"></a>3.SELinux安全子系统</h1><p>“SELinux域”和“SELinux安全上下文”称为是Linux系统中的双保险</p>
-<p>SELinux服务有三种配置模式，具体如下：</p>
-<pre><code>enforcing：强制启用安全策略模式，将拦截服务的不合法请求。
-
-permissive：遇到服务越权访问时，只发出警告而不强制拦截。
-
-disabled：对于越权的行为不警告也不拦截。</code></pre>
-<p>SELinux服务主配置文件目录：/etc/selinux/config；</p>
-<p>getenforce：获取当前SELinux服务的运行模式； setenforce[0|1]：修改SELinux当前的运行模式（0为禁用，1为启用）；修改是暂时的，系统重启后失效。</p>
-<p>查看网站数据保存目录的SELinux安全上下文值：</p>
-<pre><code>[root@linuxprobe ~]# setenforce 1
-[root@linuxprobe ~]# ls -Zd /var/www/html
-drwxr-xr-x. root root system_u:object_r:httpd_sys_content_t:s0 /var/www/html
-[root@linuxprobe ~]# ls -Zd /home/wwwroot
-drwxrwxrwx. root root unconfined_u:object_r:home_root_t:s0 /home/wwwroot</code></pre>
-<p>在文件上设置的SELinux安全上下文是由用户段、角色段以及类型段等多个信息项共同组成的。其中，用户段system_u代表系统进程的身份，角色段object_r代表文件目录的角色，类型段httpd_sys_content_t代表网站服务的系统文件。</p>
-<h2 id="3-1-semanage命令"><a href="#3-1-semanage命令" class="headerlink" title="3.1 semanage命令"></a>3.1 semanage命令</h2><p>emanage命令用于管理SELinux的策略，格式为“semanage [选项] [文件]”，经常用到的几个参数及其功能如下所示：</p>
-<pre><code>    -l参数用于查询；    -a参数用于添加；    -m参数用于修改；    -d参数用于删除。</code></pre>
-<p>可以向新的网站数据目录中新添加一条SELinux安全上下文，让这个目录以及里面的所有文件能够被httpd服务程序所访问到：</p>
-<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/*</code></pre>
-<p>注意，执行上述设置之后，还无法立即访问网站，还需要使用restorecon命令将设置好的SELinux安全上下文立即生效。在使用restorecon命令时，可以加上-Rv参数对指定的目录进行递归操作，以及显示SELinux安全上下文的修改过程。最后，再次刷新页面，就可以正常看到网页内容了：</p>
-<pre><code>[root@linuxprobe ~]# restorecon -Rv /home/wwwroot/
-restorecon reset /home/wwwroot context unconfined_u:object_r:home_root_t:s0-&gt;unconfined_u:object_r:httpd_sys_content_t:s0</code></pre>
-<p>再添加systemctl enable httpd命令，将所需服务添加到开机启动项中。</p>
-<h1 id="4-个人用户主页功能"><a href="#4-个人用户主页功能" class="headerlink" title="4.个人用户主页功能"></a>4.个人用户主页功能</h1><p>第1步：在httpd服务程序中，默认没有开启个人用户主页功能。为此，我们需要编辑下面的配置文件，然后在第17行的UserDir disabled参数前面加上井号（#），表示让httpd服务程序开启个人用户主页功能；同时再把第24行的UserDir public_html参数前面的井号（#）去掉（UserDir参数表示网站数据在用户家目录中的保存目录名称，即public_html目录）。最后，在修改完毕后记得保存。</p>
-<pre><code> 15 # permissions).
- 16 #
- 17 # UserDir disabled
- 18 
- 19 #
- 20 # To enable requests to /~user/ to serve the user&#39;s public_html
- 21 # directory, remove the &quot;UserDir disabled&quot; line above, and uncomment
- 22 # the following line instead:
- 23 # 
- 24   UserDir public_html
- 25 &lt;/IfModule&gt;
- …… …… …… ……</code></pre>
-<p>第2步：在用户家目录中建立用于保存网站数据的目录及首页面文件。另外，还需要把家目录的权限修改为755，保证其他人也有权限读取里面的内容。</p>
-<pre><code>[root@linuxprobe home]# su - linuxprobe
-Last login: Fri May 22 13:17:37 CST 2017 on :0
-[linuxprobe@linuxprobe ~]$ mkdir public_html
-[linuxprobe@linuxprobe ~]$ echo &quot;This is linuxprobe&#39;s website&quot; &gt; public_html/index.html
-[linuxprobe@linuxprobe ~]$ chmod -Rf 755 /home/linuxprobe</code></pre>
-<p>第3步：使用getsebool命令查询并过滤出所有与HTTP协议相关的安全策略。其中，off为禁止状态，on为允许状态。</p>
-<pre><code>[root@linuxprobe ~]# getsebool -a | grep http
-httpd_anon_write --&gt; off
-httpd_builtin_scripting --&gt; on
-……
-**httpd_enable_homedirs --&gt; off**
-……</code></pre>
-<p>第4步：用setsebool命令来修改SELinux策略中规则的布尔值，在setsebool命令后面加上-P参数，让修改后的SELinux策略规则永久生效且立即生效，并重新启动httpd服务程序：</p>
-<pre><code>[root@linuxprobe ~]# setsebool -P httpd_enable_homedirs=on
-[root@linuxprobe ~]# systemctl restart httpd</code></pre>
-<p>第5步：在浏览器的地址栏中输入网址，其格式为“网址/<del>用户名”（其中的波浪号是必需的，而且网址、波浪号、用户名之间没有空格）如：127.0.0.1/</del>linuxprobe，就可以看到用户的个人网站了。</p>
-<h2 id="4-1在网页中添加口令功能"><a href="#4-1在网页中添加口令功能" class="headerlink" title="4.1在网页中添加口令功能"></a>4.1在网页中添加口令功能</h2><p>第1步：先使用htpasswd命令生成密码数据库。-c参数表示第一次生成；后面再分别添加密码数据库的存放文件，以及验证要用到的用户名称（该用户不必是系统中已有的本地账户）。</p>
-<pre><code>[root@linuxprobe ~]# htpasswd -c /etc/httpd/passwd linuxprobe
-New password:此处输入用于网页验证的密码
-Re-type new password:再输入一遍进行确认
-Adding password for user linuxprobe</code></pre>
-<p>第2步：编辑个人用户主页功能的配置文件。把第31～35行的参数信息修改成下列内容，其中井号（#）开头的内容为刘遄老师添加的注释信息，可将其忽略。随后保存并退出配置文件，重启httpd服务程序即可生效。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf.d/userdir.conf
-31 &lt;Directory &quot;/home/*/public_html&quot;&gt;
-32 AllowOverride all
-#刚刚生成出来的密码验证文件保存路径
-33 authuserfile &quot;/etc/httpd/passwd&quot;
-#当用户尝试访问个人用户网站时的提示信息
-34 authname &quot;My privately website&quot;
-35 authtype basic
-#用户进行账户密码登录时需要验证的用户名称
-36 require user linuxprobe
-37 &lt;/Directory&gt;
-[root@linuxprobe ~]# systemctl restart httpd</code></pre>
-<p>此后，当用户再想访问某个用户的个人网站时，就必须要输入账户和密码才能正常访问了。另外，验证时使用的账户和密码是用htpasswd命令生成的专门用于网站登录的口令密码，而不是系统中的用户密码，请不要搞错了。</p>
-<h2 id="4-3虚拟网站主机功能"><a href="#4-3虚拟网站主机功能" class="headerlink" title="4.3虚拟网站主机功能"></a>4.3虚拟网站主机功能</h2><p>利用虚拟主机功能，可以把一台处于运行状态的物理服务器分割成多个“虚拟的服务器”。但是，该技术无法实现目前云主机技术的硬件资源隔离，让这些虚拟的服务器共同使用物理服务器的硬件资源，供应商只能限制硬盘的使用空间大小。</p>
-<p>Apache的虚拟主机功能是服务器基于用户请求的不同IP地址、主机域名或端口号，实现提供多个网站同时为外部提供访问服务的技术，用户请求的资源不同，最终获取到的网页内容也各不相同。</p>
-<h3 id="4-3-1基于IP地址"><a href="#4-3-1基于IP地址" class="headerlink" title="4.3.1基于IP地址"></a>4.3.1基于IP地址</h3><p>第1步：使用nmtui命令，创建三个IP地址，如：192.168.10.10、192.168.10.20、192.168.10.30；</p>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/1.png" class>
-
-<p>第2步：分别在/home/wwwroot中创建用于保存不同网站数据的3个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/2.png" class>
-
-<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/10
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/20
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/30
-[root@linuxprobe ~]# echo &quot;IP:192.168.10.10&quot; &gt; /home/wwwroot/10/index.html
-[root@linuxprobe ~]# echo &quot;IP:192.168.10.20&quot; &gt; /home/wwwroot/20/index.html
-[root@linuxprobe ~]# echo &quot;IP:192.168.10.30&quot; &gt; /home/wwwroot/30/index.html</code></pre>
-<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入三个基于IP地址的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
-………………省略部分输出信息………………
-113 &lt;VirtualHost 192.168.10.10&gt;
-114 DocumentRoot /home/wwwroot/10
-115 ServerName www.linuxprobe.com
-116 &lt;Directory /home/wwwroot/10 &gt;
-117 AllowOverride None
-118 Require all granted
-119 &lt;/Directory&gt;
-120 &lt;/VirtualHost&gt;
-121 &lt;VirtualHost 192.168.10.20&gt;
-122 DocumentRoot /home/wwwroot/20
-123 ServerName bbs.linuxprobe.com
-124 &lt;Directory /home/wwwroot/20 &gt;
-125 AllowOverride None
-126 Require all granted
-127 &lt;/Directory&gt;
-128 &lt;/VirtualHost&gt;
-129 &lt;VirtualHost 192.168.10.30&gt;
-130 DocumentRoot /home/wwwroot/30
-131 ServerName tech.linuxprobe.com
-132 &lt;Directory /home/wwwroot/30 &gt;
-133 AllowOverride None
-134 Require all granted
-135 &lt;/Directory&gt;
-136 &lt;/VirtualHost&gt;
-………………省略部分输出信息………………
-[root@linuxprobe ~]# systemctl restart httpd</code></pre>
-<p>第3步：手动把新的网站数据目录的SELinux安全上下文设置正确，并使用restorecon命令让新设置的SELinux安全上下文立即生效;</p>
-<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/10
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/10/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/20
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/20/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/30
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/30/*
-[root@linuxprobe ~]# restorecon -Rv /home/wwwroot</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/3.png" class>
-
-<h3 id="4-3-2基于主机域名"><a href="#4-3-2基于主机域名" class="headerlink" title="4.3.2基于主机域名"></a>4.3.2基于主机域名</h3><p>当服务器无法为每个网站都分配一个独立IP地址的时候，可以尝试让Apache自动识别用户请求的域名，从而根据不同的域名请求来传输不同的内容。在这种情况下的配置更加简单，只需要保证位于生产环境中的服务器上有一个可用的IP地址（这里以192.168.10.10为例）就可以了。</p>
-<p>/etc/hosts是Linux系统中用于强制把某个主机域名解析到指定IP地址的配置文件。</p>
-<p>第1步：手工定义IP地址与域名之间对应关系的配置文件，保存并退出后会立即生效。可以通过分别ping这些域名来验证域名是否已经成功解析为IP地址。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/hosts
-127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4
-::1 localhost localhost.localdomain localhost6 localhost6.localdomain6
-192.168.10.10 www.linuxprobe.com bbs.linuxprobe.com tech.linuxprobe.com
-[root@linuxprobe ~]# ping -c 4 www.linuxprobe.com
-PING www.linuxprobe.com (192.168.10.10) 56(84) bytes of data.
-64 bytes from www.linuxprobe.com (192.168.10.10): icmp_seq=1 ttl=64 time=0.070 ms</code></pre>
-<p>第2步：分别在/home/wwwroot中创建用于保存不同网站数据的三个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
-<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/www
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/bbs
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/tech
-[root@linuxprobe ~]# echo &quot;WWW.linuxprobe.com&quot; &gt; /home/wwwroot/www/index.html
-[root@linuxprobe ~]# echo &quot;BBS.linuxprobe.com&quot; &gt; /home/wwwroot/bbs/index.html
-[root@linuxprobe ~]# echo &quot;TECH.linuxprobe.com&quot; &gt; /home/wwwroot/tech/index.html</code></pre>
-<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入三个基于主机名的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
-………………省略部分输出信息………………
-113 &lt;VirtualHost 192.168.10.10&gt;
-114 DocumentRoot &quot;/home/wwwroot/www&quot;
-115 ServerName &quot;www.linuxprobe.com&quot;
-116 &lt;Directory &quot;/home/wwwroot/www&quot;&gt;
-117 AllowOverride None
-118 Require all granted
-119 &lt;/directory&gt; 
-120 &lt;/VirtualHost&gt;
-121 &lt;VirtualHost 192.168.10.10&gt;
-122 DocumentRoot &quot;/home/wwwroot/bbs&quot;
-123 ServerName &quot;bbs.linuxprobe.com&quot;
-124 &lt;Directory &quot;/home/wwwroot/bbs&quot;&gt;
-125 AllowOverride None
-126 Require all granted
-127 &lt;/Directory&gt;
-128 &lt;/VirtualHost&gt;
-129 &lt;VirtualHost 192.168.10.10&gt;
-130 DocumentRoot &quot;/home/wwwroot/tech&quot;
-131 ServerName &quot;tech.linuxprobe.com&quot;
-132 &lt;Directory &quot;/home/wwwroot/tech&quot;&gt;
-133 AllowOverride None
-134 Require all granted
-135 &lt;/directory&gt;
-136 &lt;/VirtualHost&gt;</code></pre>
-<p>第4步：因为当前的网站数据目录还是在/home/wwwroot目录中，因此还是必须要正确设置网站数据目录文件的SELinux安全上下文，使其与网站服务功能相吻合。最后记得用restorecon命令让新配置的SELinux安全上下文立即生效，这样就可以立即访问到虚拟主机网站了。</p>
-<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/www
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/www/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/bbs
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/bbs/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/tech
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/tech/*
-[root@linuxprobe ~]# restorecon -Rv /home/wwwroot</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/4.png" class>
-
-<h3 id="4-3-3基于端口号"><a href="#4-3-3基于端口号" class="headerlink" title="4.3.3基于端口号"></a>4.3.3基于端口号</h3><p>基于端口号的虚拟主机功能可以让用户通过指定的端口号来访问服务器上的网站资源。一般来说，使用80、443、8080等端口号来提供网站访问服务是比较合理的，如果使用其他端口号则会受到SELinux服务的限制。</p>
-<p>在接下来的实验中，我们不但要考虑到目录上应用的SELinux安全上下文的限制，还需要考虑SELinux域对httpd服务程序的管控。</p>
-<p>第1步：分别在/home/wwwroot中创建用于保存不同网站数据的两个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
-<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/6111
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/6222
-[root@linuxprobe ~]# echo &quot;port:6111&quot; &gt; /home/wwwroot/6111/index.html
-[root@linuxprobe ~]# echo &quot;port:6222&quot; &gt; /home/wwwroot/6222/index.html</code></pre>
-<p>第2步：在httpd服务配置文件的第43行和第44行分别添加用于监听6111和6222端口的参数。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf 
-………………省略部分输出信息……………… 
- 33 #
- 34 # Listen: Allows you to bind Apache to specific IP addresses and/or
- 35 # ports, instead of the default. See also the &lt;VirtualHost&gt;
- 36 # directive.
- 37 #
- 38 # Change this to Listen on specific IP addresses as shown below to 
- 39 # prevent Apache from glomming onto all bound IP addresses.
- 40 #
- 41 #Listen 12.34.56.78:80
- 42 Listen 80
- 43 Listen 6111
- 44 Listen 6222
-………………省略部分输出信息……………… </code></pre>
-<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入两个基于端口号的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
-………………省略部分输出信息……………… 
-113 &lt;VirtualHost 192.168.10.10:6111&gt;
-114 DocumentRoot &quot;/home/wwwroot/6111&quot;
-115 ServerName www.linuxprobe.com
-116 &lt;Directory &quot;/home/wwwroot/6111&quot;&gt;
-117 AllowOverride None
-118 Require all granted
-119 &lt;/Directory&gt; 
-120 &lt;/VirtualHost&gt;
-121 &lt;VirtualHost 192.168.10.10:6222&gt;
-122 DocumentRoot &quot;/home/wwwroot/6222&quot;
-123 ServerName bbs.linuxprobe.com
-124 &lt;Directory &quot;/home/wwwroot/6222&quot;&gt;
-125 AllowOverride None
-126 Require all granted
-127 &lt;/Directory&gt;
-128 &lt;/VirtualHost&gt;
-………………省略部分输出信息………………</code></pre>
-<p>第4步：因为我们把网站数据目录存放在/home/wwwroot目录中，因此还是必须要正确设置网站数据目录文件的SELinux安全上下文，使其与网站服务功能相吻合。最后记得用restorecon命令让新配置的SELinux安全上下文立即生效。</p>
-<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6111
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6111/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6222
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6222/*
-[root@linuxprobe ~]# restorecon -Rv /home/wwwroot/</code></pre>
-<p>第5步：用semanage命令查询并过滤出所有与HTTP协议相关且SELinux服务允许的端口列表。</p>
-<pre><code>[root@linuxprobe ~]# semanage port -l | grep http
-http_cache_port_t tcp 8080, 8118, 8123, 10001-10010
-http_cache_port_t udp 3130
-http_port_t tcp 80, 81, 443, 488, 8008, 8009, 8443, 9000
-pegasus_http_port_t tcp 5988
-pegasus_https_port_t tcp 5989</code></pre>
-<p>第6步：SELinux允许的与HTTP协议相关的端口号中默认没有包含6111和6222，因此需要将这两个端口号手动添加进去。该操作会立即生效，而且在系统重启过后依然有效。设置好后再重启httpd服务程序</p>
-<pre><code>[root@linuxprobe ~]# semanage port -a -t http_port_t -p tcp 6111
-[root@linuxprobe ~]# semanage port -a -t http_port_t -p tcp 6222
-[root@linuxprobe ~]# semanage port -l| grep http
-http_cache_port_t tcp 8080, 8118, 8123, 10001-10010
-http_cache_port_t udp 3130
-http_port_t tcp  6222, 6111, 80, 81, 443, 488, 8008, 8009, 8443, 9000
-pegasus_http_port_t tcp 5988
-pegasus_https_port_t tcp 5989
-[root@linuxprobe ~]# systemctl restart httpd</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/5.png" class>
-
-<h1 id="5-Apache的访问控制"><a href="#5-Apache的访问控制" class="headerlink" title="5.Apache的访问控制"></a>5.Apache的访问控制</h1><p>Apache通过Allow指令允许某个主机访问服务器上的网站资源，通过Deny指令实现禁止访问。在允许或禁止访问网站资源时，还会用到Order指令，这个指令用来定义Allow或Deny指令起作用的顺序，其匹配原则是按照顺序进行匹配，若匹配成功则执行后面的默认指令。比如“Order Allow, Deny”表示先将源主机与允许规则进行匹配，若匹配成功则允许访问请求，反之则拒绝访问请求。</p>
-<p>第1步：先在服务器上的网站数据目录中新建一个子目录，并在这个子目录中创建一个包含Successful单词的首页文件；</p>
-<pre><code>[root@linuxprobe ~]# mkdir /var/www/html/server
-[root@linuxprobe ~]# echo &quot;Successful&quot; &gt; /var/www/html/server/index.html</code></pre>
-<p>第2步：打开httpd服务的配置文件，在第129行后面添加下述规则来限制源主机的访问。这段规则的含义是允许使用Firefox浏览器的主机访问服务器上的首页文件，除此之外的所有请求都将被拒绝。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
-………………省略部分输出信息………………
-129 &lt;Directory &quot;/var/www/html/server&quot;&gt;
-130 SetEnvIf User-Agent &quot;Firefox&quot; ff=1
-131 Order allow,deny
-132 Allow from env=ff
-133 &lt;/Directory&gt;
-………………省略部分输出信息………………
-[root@linuxprobe ~]# systemctl restart httpd
-[root@linuxprobe ~]# firefox</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/6.png" class>
-
-<p>除了匹配源主机的浏览器特征之外，还可以通过匹配源主机的IP地址进行访问控制。例如，我们只允许IP地址为192.168.10.20的主机访问网站资源，那么就可以在httpd服务配置文件的第129行后面添加下述规则。这样在重启httpd服务程序后再用本机（即服务器，其IP地址为192.168.10.10）来访问网站的首页面时就会提示访问被拒绝了。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
-………………省略部分输出信息………………
-129 &lt;Directory &quot;/var/www/html/server&quot;&gt;
-130 Order allow,deny 
-131 Allow from 192.168.10.20
-132 &lt;/Directory&gt;
-………………省略部分输出信息………………
-[root@linuxprobe ~]# systemctl restart httpd
-[root@linuxprobe ~]# firefox</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/7.jpg" class>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第10章节：使用Apache服务部署静态网站</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux就该这么学：使用Vsftpd服务传输文件</title>
     <url>/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Vsftpd%E6%9C%8D%E5%8A%A1%E4%BC%A0%E8%BE%93%E6%96%87%E4%BB%B6/</url>
     <content><![CDATA[<h1 id="1-文件传输协议"><a href="#1-文件传输协议" class="headerlink" title="1.文件传输协议"></a>1.文件传输协议</h1><p>FTP是一种在互联网中进行文件传输的协议，基于客户端/服务器模式，默认使用20、21号端口，其中端口20（数据端口）用于进行数据传输，端口21（命令端口）用于接受客户端发出的相关FTP命令与参数。</p>
@@ -5027,6 +4601,432 @@ i love linux</code></pre>
       </categories>
       <tags>
         <tag>第11章节：使用Vsftpd服务传输文件</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：使用Apache服务部署静态网站</title>
+    <url>/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/</url>
+    <content><![CDATA[<h1 id="1-网站服务程序"><a href="#1-网站服务程序" class="headerlink" title="1.网站服务程序"></a>1.网站服务程序</h1><a id="more"></a>
+
+<p>第1步：把光盘设备中的系统镜像挂载到/media/cdrom目录。</p>
+<pre><code>[root@linuxprobe ~]# mkdir -p /media/cdrom
+[root@linuxprobe ~]# mount /dev/cdrom /media/cdrom
+mount: /dev/sr0 is write-protected, mounting read-only</code></pre>
+<p>第2步：使用Vim文本编辑器创建Yum仓库的配置文件。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/yum.repos.d/rhel7.repo
+[rhel7]
+name=rhel7
+baseurl=file:///media/cdrom
+enabled=1
+gpgcheck=0</code></pre>
+<p>第3步：动手安装Apache服务程序。注意，使用yum命令进行安装时，跟在命令后面的Apache服务的软件包名称为httpd。如果直接执行yum install apache命令，则系统会报错。</p>
+<pre><code>[root@linuxprobe ~]# yum install httpd
+Loaded plugins: langpacks, product-id, subscription-manager
+………………省略部分输出信息………………
+Complete!</code></pre>
+<p>第4步：启用httpd服务程序并将其加入到开机启动项中，使其能够随系统开机而运行，从而持续为用户提供Web服务：</p>
+<pre><code>[root@linuxprobe ~]# systemctl start httpd
+[root@linuxprobe ~]# systemctl enable httpd
+ln -s &#39;/usr/lib/systemd/system/httpd.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/httpd.service&#39;
+
+[root@linuxprobe ~]# firefox</code></pre>
+<h1 id="2-配置服务文件参数"><a href="#2-配置服务文件参数" class="headerlink" title="2.配置服务文件参数"></a>2.配置服务文件参数</h1><table>
+<thead>
+<tr>
+<th>作用</th>
+<th>文件名称</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>服务目录</td>
+<td>/etc/httpd</td>
+</tr>
+<tr>
+<td>主配置文件</td>
+<td>/etc/httpd/conf/httpd.conf</td>
+</tr>
+<tr>
+<td>网站数据目录</td>
+<td>/var/www/html</td>
+</tr>
+<tr>
+<td>访问日志</td>
+<td>/var/log/httpd/access_log</td>
+</tr>
+<tr>
+<td>错误日志</td>
+<td>/var/log/httpd/error_log</td>
+</tr>
+</tbody></table>
+<p>在httpd服务程序的主配置文件中，存在三种类型的信息：注释行信息、全局配置、区域配置；</p>
+<p> 配置httpd服务程序时最常用的参数以及用途描述：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ServerRoot</td>
+<td>服务目录</td>
+</tr>
+<tr>
+<td>ServerAdmin</td>
+<td>管理员邮箱</td>
+</tr>
+<tr>
+<td>User</td>
+<td>运行服务的用户</td>
+</tr>
+<tr>
+<td>Group</td>
+<td>运行服务的用户组</td>
+</tr>
+<tr>
+<td>ServerName</td>
+<td>网站服务器的域名</td>
+</tr>
+<tr>
+<td>DocumentRoot</td>
+<td>网站数据目录</td>
+</tr>
+<tr>
+<td>Listen</td>
+<td>监听的IP地址与端口号</td>
+</tr>
+<tr>
+<td>DirectoryIndex</td>
+<td>默认的索引页页面</td>
+</tr>
+<tr>
+<td>ErrorLog</td>
+<td>错误日志文件</td>
+</tr>
+<tr>
+<td>CustomLog</td>
+<td>访问日志文件</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>网页超时时间，默认为300秒</td>
+</tr>
+</tbody></table>
+<p>在默认情况下，网站数据是保存在/var/www/html目录中，打开httpd服务程序的主配置文件，将约第119行用于定义网站数据保存路径的参数DocumentRoot修改为/home/wwwroot，同时还需要将约第124行用于定义目录权限的参数Directory后面的路径也修改为/home/wwwroot。配置文件修改完毕后即可保存并退出。</p>
+<h1 id="3-SELinux安全子系统"><a href="#3-SELinux安全子系统" class="headerlink" title="3.SELinux安全子系统"></a>3.SELinux安全子系统</h1><p>“SELinux域”和“SELinux安全上下文”称为是Linux系统中的双保险</p>
+<p>SELinux服务有三种配置模式，具体如下：</p>
+<pre><code>enforcing：强制启用安全策略模式，将拦截服务的不合法请求。
+
+permissive：遇到服务越权访问时，只发出警告而不强制拦截。
+
+disabled：对于越权的行为不警告也不拦截。</code></pre>
+<p>SELinux服务主配置文件目录：/etc/selinux/config；</p>
+<p>getenforce：获取当前SELinux服务的运行模式； setenforce[0|1]：修改SELinux当前的运行模式（0为禁用，1为启用）；修改是暂时的，系统重启后失效。</p>
+<p>查看网站数据保存目录的SELinux安全上下文值：</p>
+<pre><code>[root@linuxprobe ~]# setenforce 1
+[root@linuxprobe ~]# ls -Zd /var/www/html
+drwxr-xr-x. root root system_u:object_r:httpd_sys_content_t:s0 /var/www/html
+[root@linuxprobe ~]# ls -Zd /home/wwwroot
+drwxrwxrwx. root root unconfined_u:object_r:home_root_t:s0 /home/wwwroot</code></pre>
+<p>在文件上设置的SELinux安全上下文是由用户段、角色段以及类型段等多个信息项共同组成的。其中，用户段system_u代表系统进程的身份，角色段object_r代表文件目录的角色，类型段httpd_sys_content_t代表网站服务的系统文件。</p>
+<h2 id="3-1-semanage命令"><a href="#3-1-semanage命令" class="headerlink" title="3.1 semanage命令"></a>3.1 semanage命令</h2><p>emanage命令用于管理SELinux的策略，格式为“semanage [选项] [文件]”，经常用到的几个参数及其功能如下所示：</p>
+<pre><code>    -l参数用于查询；    -a参数用于添加；    -m参数用于修改；    -d参数用于删除。</code></pre>
+<p>可以向新的网站数据目录中新添加一条SELinux安全上下文，让这个目录以及里面的所有文件能够被httpd服务程序所访问到：</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/*</code></pre>
+<p>注意，执行上述设置之后，还无法立即访问网站，还需要使用restorecon命令将设置好的SELinux安全上下文立即生效。在使用restorecon命令时，可以加上-Rv参数对指定的目录进行递归操作，以及显示SELinux安全上下文的修改过程。最后，再次刷新页面，就可以正常看到网页内容了：</p>
+<pre><code>[root@linuxprobe ~]# restorecon -Rv /home/wwwroot/
+restorecon reset /home/wwwroot context unconfined_u:object_r:home_root_t:s0-&gt;unconfined_u:object_r:httpd_sys_content_t:s0</code></pre>
+<p>再添加systemctl enable httpd命令，将所需服务添加到开机启动项中。</p>
+<h1 id="4-个人用户主页功能"><a href="#4-个人用户主页功能" class="headerlink" title="4.个人用户主页功能"></a>4.个人用户主页功能</h1><p>第1步：在httpd服务程序中，默认没有开启个人用户主页功能。为此，我们需要编辑下面的配置文件，然后在第17行的UserDir disabled参数前面加上井号（#），表示让httpd服务程序开启个人用户主页功能；同时再把第24行的UserDir public_html参数前面的井号（#）去掉（UserDir参数表示网站数据在用户家目录中的保存目录名称，即public_html目录）。最后，在修改完毕后记得保存。</p>
+<pre><code> 15 # permissions).
+ 16 #
+ 17 # UserDir disabled
+ 18 
+ 19 #
+ 20 # To enable requests to /~user/ to serve the user&#39;s public_html
+ 21 # directory, remove the &quot;UserDir disabled&quot; line above, and uncomment
+ 22 # the following line instead:
+ 23 # 
+ 24   UserDir public_html
+ 25 &lt;/IfModule&gt;
+ …… …… …… ……</code></pre>
+<p>第2步：在用户家目录中建立用于保存网站数据的目录及首页面文件。另外，还需要把家目录的权限修改为755，保证其他人也有权限读取里面的内容。</p>
+<pre><code>[root@linuxprobe home]# su - linuxprobe
+Last login: Fri May 22 13:17:37 CST 2017 on :0
+[linuxprobe@linuxprobe ~]$ mkdir public_html
+[linuxprobe@linuxprobe ~]$ echo &quot;This is linuxprobe&#39;s website&quot; &gt; public_html/index.html
+[linuxprobe@linuxprobe ~]$ chmod -Rf 755 /home/linuxprobe</code></pre>
+<p>第3步：使用getsebool命令查询并过滤出所有与HTTP协议相关的安全策略。其中，off为禁止状态，on为允许状态。</p>
+<pre><code>[root@linuxprobe ~]# getsebool -a | grep http
+httpd_anon_write --&gt; off
+httpd_builtin_scripting --&gt; on
+……
+**httpd_enable_homedirs --&gt; off**
+……</code></pre>
+<p>第4步：用setsebool命令来修改SELinux策略中规则的布尔值，在setsebool命令后面加上-P参数，让修改后的SELinux策略规则永久生效且立即生效，并重新启动httpd服务程序：</p>
+<pre><code>[root@linuxprobe ~]# setsebool -P httpd_enable_homedirs=on
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<p>第5步：在浏览器的地址栏中输入网址，其格式为“网址/<del>用户名”（其中的波浪号是必需的，而且网址、波浪号、用户名之间没有空格）如：127.0.0.1/</del>linuxprobe，就可以看到用户的个人网站了。</p>
+<h2 id="4-1在网页中添加口令功能"><a href="#4-1在网页中添加口令功能" class="headerlink" title="4.1在网页中添加口令功能"></a>4.1在网页中添加口令功能</h2><p>第1步：先使用htpasswd命令生成密码数据库。-c参数表示第一次生成；后面再分别添加密码数据库的存放文件，以及验证要用到的用户名称（该用户不必是系统中已有的本地账户）。</p>
+<pre><code>[root@linuxprobe ~]# htpasswd -c /etc/httpd/passwd linuxprobe
+New password:此处输入用于网页验证的密码
+Re-type new password:再输入一遍进行确认
+Adding password for user linuxprobe</code></pre>
+<p>第2步：编辑个人用户主页功能的配置文件。把第31～35行的参数信息修改成下列内容，其中井号（#）开头的内容为刘遄老师添加的注释信息，可将其忽略。随后保存并退出配置文件，重启httpd服务程序即可生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf.d/userdir.conf
+31 &lt;Directory &quot;/home/*/public_html&quot;&gt;
+32 AllowOverride all
+#刚刚生成出来的密码验证文件保存路径
+33 authuserfile &quot;/etc/httpd/passwd&quot;
+#当用户尝试访问个人用户网站时的提示信息
+34 authname &quot;My privately website&quot;
+35 authtype basic
+#用户进行账户密码登录时需要验证的用户名称
+36 require user linuxprobe
+37 &lt;/Directory&gt;
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<p>此后，当用户再想访问某个用户的个人网站时，就必须要输入账户和密码才能正常访问了。另外，验证时使用的账户和密码是用htpasswd命令生成的专门用于网站登录的口令密码，而不是系统中的用户密码，请不要搞错了。</p>
+<h2 id="4-3虚拟网站主机功能"><a href="#4-3虚拟网站主机功能" class="headerlink" title="4.3虚拟网站主机功能"></a>4.3虚拟网站主机功能</h2><p>利用虚拟主机功能，可以把一台处于运行状态的物理服务器分割成多个“虚拟的服务器”。但是，该技术无法实现目前云主机技术的硬件资源隔离，让这些虚拟的服务器共同使用物理服务器的硬件资源，供应商只能限制硬盘的使用空间大小。</p>
+<p>Apache的虚拟主机功能是服务器基于用户请求的不同IP地址、主机域名或端口号，实现提供多个网站同时为外部提供访问服务的技术，用户请求的资源不同，最终获取到的网页内容也各不相同。</p>
+<h3 id="4-3-1基于IP地址"><a href="#4-3-1基于IP地址" class="headerlink" title="4.3.1基于IP地址"></a>4.3.1基于IP地址</h3><p>第1步：使用nmtui命令，创建三个IP地址，如：192.168.10.10、192.168.10.20、192.168.10.30；</p>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/1.png" class>
+
+<p>第2步：分别在/home/wwwroot中创建用于保存不同网站数据的3个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/2.png" class>
+
+<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/10
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/20
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/30
+[root@linuxprobe ~]# echo &quot;IP:192.168.10.10&quot; &gt; /home/wwwroot/10/index.html
+[root@linuxprobe ~]# echo &quot;IP:192.168.10.20&quot; &gt; /home/wwwroot/20/index.html
+[root@linuxprobe ~]# echo &quot;IP:192.168.10.30&quot; &gt; /home/wwwroot/30/index.html</code></pre>
+<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入三个基于IP地址的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+113 &lt;VirtualHost 192.168.10.10&gt;
+114 DocumentRoot /home/wwwroot/10
+115 ServerName www.linuxprobe.com
+116 &lt;Directory /home/wwwroot/10 &gt;
+117 AllowOverride None
+118 Require all granted
+119 &lt;/Directory&gt;
+120 &lt;/VirtualHost&gt;
+121 &lt;VirtualHost 192.168.10.20&gt;
+122 DocumentRoot /home/wwwroot/20
+123 ServerName bbs.linuxprobe.com
+124 &lt;Directory /home/wwwroot/20 &gt;
+125 AllowOverride None
+126 Require all granted
+127 &lt;/Directory&gt;
+128 &lt;/VirtualHost&gt;
+129 &lt;VirtualHost 192.168.10.30&gt;
+130 DocumentRoot /home/wwwroot/30
+131 ServerName tech.linuxprobe.com
+132 &lt;Directory /home/wwwroot/30 &gt;
+133 AllowOverride None
+134 Require all granted
+135 &lt;/Directory&gt;
+136 &lt;/VirtualHost&gt;
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<p>第3步：手动把新的网站数据目录的SELinux安全上下文设置正确，并使用restorecon命令让新设置的SELinux安全上下文立即生效;</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/10
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/10/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/20
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/20/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/30
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/30/*
+[root@linuxprobe ~]# restorecon -Rv /home/wwwroot</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/3.png" class>
+
+<h3 id="4-3-2基于主机域名"><a href="#4-3-2基于主机域名" class="headerlink" title="4.3.2基于主机域名"></a>4.3.2基于主机域名</h3><p>当服务器无法为每个网站都分配一个独立IP地址的时候，可以尝试让Apache自动识别用户请求的域名，从而根据不同的域名请求来传输不同的内容。在这种情况下的配置更加简单，只需要保证位于生产环境中的服务器上有一个可用的IP地址（这里以192.168.10.10为例）就可以了。</p>
+<p>/etc/hosts是Linux系统中用于强制把某个主机域名解析到指定IP地址的配置文件。</p>
+<p>第1步：手工定义IP地址与域名之间对应关系的配置文件，保存并退出后会立即生效。可以通过分别ping这些域名来验证域名是否已经成功解析为IP地址。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/hosts
+127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1 localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.10.10 www.linuxprobe.com bbs.linuxprobe.com tech.linuxprobe.com
+[root@linuxprobe ~]# ping -c 4 www.linuxprobe.com
+PING www.linuxprobe.com (192.168.10.10) 56(84) bytes of data.
+64 bytes from www.linuxprobe.com (192.168.10.10): icmp_seq=1 ttl=64 time=0.070 ms</code></pre>
+<p>第2步：分别在/home/wwwroot中创建用于保存不同网站数据的三个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
+<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/www
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/bbs
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/tech
+[root@linuxprobe ~]# echo &quot;WWW.linuxprobe.com&quot; &gt; /home/wwwroot/www/index.html
+[root@linuxprobe ~]# echo &quot;BBS.linuxprobe.com&quot; &gt; /home/wwwroot/bbs/index.html
+[root@linuxprobe ~]# echo &quot;TECH.linuxprobe.com&quot; &gt; /home/wwwroot/tech/index.html</code></pre>
+<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入三个基于主机名的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+113 &lt;VirtualHost 192.168.10.10&gt;
+114 DocumentRoot &quot;/home/wwwroot/www&quot;
+115 ServerName &quot;www.linuxprobe.com&quot;
+116 &lt;Directory &quot;/home/wwwroot/www&quot;&gt;
+117 AllowOverride None
+118 Require all granted
+119 &lt;/directory&gt; 
+120 &lt;/VirtualHost&gt;
+121 &lt;VirtualHost 192.168.10.10&gt;
+122 DocumentRoot &quot;/home/wwwroot/bbs&quot;
+123 ServerName &quot;bbs.linuxprobe.com&quot;
+124 &lt;Directory &quot;/home/wwwroot/bbs&quot;&gt;
+125 AllowOverride None
+126 Require all granted
+127 &lt;/Directory&gt;
+128 &lt;/VirtualHost&gt;
+129 &lt;VirtualHost 192.168.10.10&gt;
+130 DocumentRoot &quot;/home/wwwroot/tech&quot;
+131 ServerName &quot;tech.linuxprobe.com&quot;
+132 &lt;Directory &quot;/home/wwwroot/tech&quot;&gt;
+133 AllowOverride None
+134 Require all granted
+135 &lt;/directory&gt;
+136 &lt;/VirtualHost&gt;</code></pre>
+<p>第4步：因为当前的网站数据目录还是在/home/wwwroot目录中，因此还是必须要正确设置网站数据目录文件的SELinux安全上下文，使其与网站服务功能相吻合。最后记得用restorecon命令让新配置的SELinux安全上下文立即生效，这样就可以立即访问到虚拟主机网站了。</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/www
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/www/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/bbs
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/bbs/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/tech
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/tech/*
+[root@linuxprobe ~]# restorecon -Rv /home/wwwroot</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/4.png" class>
+
+<h3 id="4-3-3基于端口号"><a href="#4-3-3基于端口号" class="headerlink" title="4.3.3基于端口号"></a>4.3.3基于端口号</h3><p>基于端口号的虚拟主机功能可以让用户通过指定的端口号来访问服务器上的网站资源。一般来说，使用80、443、8080等端口号来提供网站访问服务是比较合理的，如果使用其他端口号则会受到SELinux服务的限制。</p>
+<p>在接下来的实验中，我们不但要考虑到目录上应用的SELinux安全上下文的限制，还需要考虑SELinux域对httpd服务程序的管控。</p>
+<p>第1步：分别在/home/wwwroot中创建用于保存不同网站数据的两个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
+<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/6111
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/6222
+[root@linuxprobe ~]# echo &quot;port:6111&quot; &gt; /home/wwwroot/6111/index.html
+[root@linuxprobe ~]# echo &quot;port:6222&quot; &gt; /home/wwwroot/6222/index.html</code></pre>
+<p>第2步：在httpd服务配置文件的第43行和第44行分别添加用于监听6111和6222端口的参数。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf 
+………………省略部分输出信息……………… 
+ 33 #
+ 34 # Listen: Allows you to bind Apache to specific IP addresses and/or
+ 35 # ports, instead of the default. See also the &lt;VirtualHost&gt;
+ 36 # directive.
+ 37 #
+ 38 # Change this to Listen on specific IP addresses as shown below to 
+ 39 # prevent Apache from glomming onto all bound IP addresses.
+ 40 #
+ 41 #Listen 12.34.56.78:80
+ 42 Listen 80
+ 43 Listen 6111
+ 44 Listen 6222
+………………省略部分输出信息……………… </code></pre>
+<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入两个基于端口号的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息……………… 
+113 &lt;VirtualHost 192.168.10.10:6111&gt;
+114 DocumentRoot &quot;/home/wwwroot/6111&quot;
+115 ServerName www.linuxprobe.com
+116 &lt;Directory &quot;/home/wwwroot/6111&quot;&gt;
+117 AllowOverride None
+118 Require all granted
+119 &lt;/Directory&gt; 
+120 &lt;/VirtualHost&gt;
+121 &lt;VirtualHost 192.168.10.10:6222&gt;
+122 DocumentRoot &quot;/home/wwwroot/6222&quot;
+123 ServerName bbs.linuxprobe.com
+124 &lt;Directory &quot;/home/wwwroot/6222&quot;&gt;
+125 AllowOverride None
+126 Require all granted
+127 &lt;/Directory&gt;
+128 &lt;/VirtualHost&gt;
+………………省略部分输出信息………………</code></pre>
+<p>第4步：因为我们把网站数据目录存放在/home/wwwroot目录中，因此还是必须要正确设置网站数据目录文件的SELinux安全上下文，使其与网站服务功能相吻合。最后记得用restorecon命令让新配置的SELinux安全上下文立即生效。</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6111
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6111/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6222
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6222/*
+[root@linuxprobe ~]# restorecon -Rv /home/wwwroot/</code></pre>
+<p>第5步：用semanage命令查询并过滤出所有与HTTP协议相关且SELinux服务允许的端口列表。</p>
+<pre><code>[root@linuxprobe ~]# semanage port -l | grep http
+http_cache_port_t tcp 8080, 8118, 8123, 10001-10010
+http_cache_port_t udp 3130
+http_port_t tcp 80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t tcp 5988
+pegasus_https_port_t tcp 5989</code></pre>
+<p>第6步：SELinux允许的与HTTP协议相关的端口号中默认没有包含6111和6222，因此需要将这两个端口号手动添加进去。该操作会立即生效，而且在系统重启过后依然有效。设置好后再重启httpd服务程序</p>
+<pre><code>[root@linuxprobe ~]# semanage port -a -t http_port_t -p tcp 6111
+[root@linuxprobe ~]# semanage port -a -t http_port_t -p tcp 6222
+[root@linuxprobe ~]# semanage port -l| grep http
+http_cache_port_t tcp 8080, 8118, 8123, 10001-10010
+http_cache_port_t udp 3130
+http_port_t tcp  6222, 6111, 80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t tcp 5988
+pegasus_https_port_t tcp 5989
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/5.png" class>
+
+<h1 id="5-Apache的访问控制"><a href="#5-Apache的访问控制" class="headerlink" title="5.Apache的访问控制"></a>5.Apache的访问控制</h1><p>Apache通过Allow指令允许某个主机访问服务器上的网站资源，通过Deny指令实现禁止访问。在允许或禁止访问网站资源时，还会用到Order指令，这个指令用来定义Allow或Deny指令起作用的顺序，其匹配原则是按照顺序进行匹配，若匹配成功则执行后面的默认指令。比如“Order Allow, Deny”表示先将源主机与允许规则进行匹配，若匹配成功则允许访问请求，反之则拒绝访问请求。</p>
+<p>第1步：先在服务器上的网站数据目录中新建一个子目录，并在这个子目录中创建一个包含Successful单词的首页文件；</p>
+<pre><code>[root@linuxprobe ~]# mkdir /var/www/html/server
+[root@linuxprobe ~]# echo &quot;Successful&quot; &gt; /var/www/html/server/index.html</code></pre>
+<p>第2步：打开httpd服务的配置文件，在第129行后面添加下述规则来限制源主机的访问。这段规则的含义是允许使用Firefox浏览器的主机访问服务器上的首页文件，除此之外的所有请求都将被拒绝。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+129 &lt;Directory &quot;/var/www/html/server&quot;&gt;
+130 SetEnvIf User-Agent &quot;Firefox&quot; ff=1
+131 Order allow,deny
+132 Allow from env=ff
+133 &lt;/Directory&gt;
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart httpd
+[root@linuxprobe ~]# firefox</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/6.png" class>
+
+<p>除了匹配源主机的浏览器特征之外，还可以通过匹配源主机的IP地址进行访问控制。例如，我们只允许IP地址为192.168.10.20的主机访问网站资源，那么就可以在httpd服务配置文件的第129行后面添加下述规则。这样在重启httpd服务程序后再用本机（即服务器，其IP地址为192.168.10.10）来访问网站的首页面时就会提示访问被拒绝了。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+129 &lt;Directory &quot;/var/www/html/server&quot;&gt;
+130 Order allow,deny 
+131 Allow from 192.168.10.20
+132 &lt;/Directory&gt;
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart httpd
+[root@linuxprobe ~]# firefox</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/7.jpg" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第10章节：使用Apache服务部署静态网站</tag>
       </tags>
   </entry>
   <entry>
