@@ -1,6 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>linux内核升级到rhel7.9版本</title>
+    <url>/2021/03/08/linux%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E5%88%B0rhel7.9%E7%89%88%E6%9C%AC/</url>
+    <content><![CDATA[<p>当前的系统版本为rhel7.0，内核版本为“Linux 3.10.0-123.el7.x86_64”</p>
+<a id="more"></a>
+
+<pre><code>[root@rhel7_0 ~]# hostnamectl
+    ……
+    Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
+    Kernel: Linux 3.10.0-123.el7.x86_64
+    ……
+[root@rhel0 ~]# uname -rs
+    Linux 3.10.0-123.el7.x86_64</code></pre>
+<p>1、从网上下载RHEL7.9版本的系统镜像文件，然后在 RHEL7.0 服务器上进行挂载，并配置在本地YUM源：</p>
+<pre><code>[root@rhel7_0 ~]# mount /dev/cdrom /mnt/
+[root@rhel7_0 ~]# cat /etc/yum.repos.d/rhel_local.repo 
+    [mnt]
+    name=mnt
+    baseurl=file:///mnt
+    enable=1
+    gpgcheck=0</code></pre>
+<p>2、在RHEL7.0服务器上先执行yum clean all，再使用yum list kernel命令查看当前服务器上已安装的内核以及可更新的高版本内核。</p>
+<pre><code>[root@rhel7_0 ~]# yum list kernel
+Loaded plugins: product-id, search-disabled-repos, subscription-manager
+This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
+Installed Packages
+kernel.x86_64                                                    3.10.0-123.el7                                                    @anaconda/7.2
+Available Packages
+kernel.x86_64                                                    3.10.0-1160.el7                                                    mnt          </code></pre>
+<p>3、安装新内核.</p>
+<pre><code>[root@rhel7_0 ~]# yum install -y kernel   
+[root@rhel7_0 ~]# uname -rs</code></pre>
+<p>　　    Linux 3.10.0-123.el7.x86_64</p>
+<p>安装完成之后，再查看内核，发现没有变化，还是跟之前的一样。</p>
+<p>查看/boot/grub2/grub.cfg 配置文件，可以看到新内核3.10.0-1160.el7.x86_64已经是排在最前边了，RHEL7 可以不用调整内核启动顺序，默认会从新内核启动。</p>
+<p>这是进行系统重启reboot，系统会从新内核3.10.0-1160.el7.x86_64启动，但在登录界面显示一片黑屏或其他报错，因此在系统升级完后，不要着急重启，需要在终端输入：<strong>yum update</strong>进行更新，之后再重启，一切正常！</p>
+<p>正常情况下，是不需要修改内核启动顺序的，如果发现内核启动顺序不对，可以按下面的方式来修改：</p>
+<pre><code>[root@rhel7_0 ~]# grub2-editenv list  --查看系统默认内核版本
+saved_entry=Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)
+[root@rhel7_0 ~]# grep &quot;menuentry &quot; /boot/grub2/grub.cfg  --查看配置文件里的内核顺序；这个菜单条目对应上图中的三条选项。
+menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-123.el7.x86_64) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+menuentry &#39;Red Hat Enterprise Linux Server (0-rescue-1fbd678500124daea255a3b7a98e320c) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-0-rescue-1fbd678500124daea255a3b7a98e320c-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+[root@rhel7_0 ~]# grub2-set-default &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39;   --配置默认内核
+[root@rhel7_0 ~]# grub2-mkconfig -o /boot/grub2/grub.cfg    --将修改的内容写入到grub.cfg配置文件。
+Generating grub configuration file ...
+Found linux image: /boot/vmlinuz-3.10.0-1160.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-1160.el7.x86_64.img
+Found linux image: /boot/vmlinuz-3.10.0-123.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-123.el7.x86_64.img
+Found linux image: /boot/vmlinuz-0-rescue-1fbd678500124daea255a3b7a98e320c
+Found initrd image: /boot/initramfs-0-rescue-1fbd678500124daea255a3b7a98e320c.img
+done</code></pre>
+<p>系统内核更新成功！</p>
+]]></content>
+      <categories>
+        <category>linux系统</category>
+      </categories>
+      <tags>
+        <tag>linux内核升级</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux就该这么学-12:使用Samba或NFS实现文件共享</title>
     <url>/2021/02/11/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-12-%E4%BD%BF%E7%94%A8Samba%E6%88%96NFS%E5%AE%9E%E7%8E%B0%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB/</url>
     <content><![CDATA[<h1 id="1-SAMBA文件共享服务"><a href="#1-SAMBA文件共享服务" class="headerlink" title="1.SAMBA文件共享服务"></a>1.SAMBA文件共享服务</h1><p>Samba服务程序现在已经成为在Linux系统与Windows系统之间共享文件的最佳选择。</p>
@@ -338,68 +400,6 @@ Filesystem Size Used Avail Use% Mounted on
       </categories>
       <tags>
         <tag>第12章节：使用Samba或NFS实现文件共享</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux内核升级到rhel7.9版本</title>
-    <url>/2021/03/08/linux%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E5%88%B0rhel7.9%E7%89%88%E6%9C%AC/</url>
-    <content><![CDATA[<p>当前的系统版本为rhel7.0，内核版本为“Linux 3.10.0-123.el7.x86_64”</p>
-<a id="more"></a>
-
-<pre><code>[root@rhel7_0 ~]# hostnamectl
-    ……
-    Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
-    Kernel: Linux 3.10.0-123.el7.x86_64
-    ……
-[root@rhel0 ~]# uname -rs
-    Linux 3.10.0-123.el7.x86_64</code></pre>
-<p>1、从网上下载RHEL7.9版本的系统镜像文件，然后在 RHEL7.0 服务器上进行挂载，并配置在本地YUM源：</p>
-<pre><code>[root@rhel7_0 ~]# mount /dev/cdrom /mnt/
-[root@rhel7_0 ~]# cat /etc/yum.repos.d/rhel_local.repo 
-    [mnt]
-    name=mnt
-    baseurl=file:///mnt
-    enable=1
-    gpgcheck=0</code></pre>
-<p>2、在RHEL7.0服务器上先执行yum clean all，再使用yum list kernel命令查看当前服务器上已安装的内核以及可更新的高版本内核。</p>
-<pre><code>[root@rhel7_0 ~]# yum list kernel
-Loaded plugins: product-id, search-disabled-repos, subscription-manager
-This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
-Installed Packages
-kernel.x86_64                                                    3.10.0-123.el7                                                    @anaconda/7.2
-Available Packages
-kernel.x86_64                                                    3.10.0-1160.el7                                                    mnt          </code></pre>
-<p>3、安装新内核.</p>
-<pre><code>[root@rhel7_0 ~]# yum install -y kernel   
-[root@rhel7_0 ~]# uname -rs</code></pre>
-<p>　　    Linux 3.10.0-123.el7.x86_64</p>
-<p>安装完成之后，再查看内核，发现没有变化，还是跟之前的一样。</p>
-<p>查看/boot/grub2/grub.cfg 配置文件，可以看到新内核3.10.0-1160.el7.x86_64已经是排在最前边了，RHEL7 可以不用调整内核启动顺序，默认会从新内核启动。</p>
-<p>这是进行系统重启reboot，系统会从新内核3.10.0-1160.el7.x86_64启动，但在登录界面显示一片黑屏或其他报错，因此在系统升级完后，不要着急重启，需要在终端输入：<strong>yum update</strong>进行更新，之后再重启，一切正常！</p>
-<p>正常情况下，是不需要修改内核启动顺序的，如果发现内核启动顺序不对，可以按下面的方式来修改：</p>
-<pre><code>[root@rhel7_0 ~]# grub2-editenv list  --查看系统默认内核版本
-saved_entry=Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)
-[root@rhel7_0 ~]# grep &quot;menuentry &quot; /boot/grub2/grub.cfg  --查看配置文件里的内核顺序；这个菜单条目对应上图中的三条选项。
-menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-123.el7.x86_64) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-menuentry &#39;Red Hat Enterprise Linux Server (0-rescue-1fbd678500124daea255a3b7a98e320c) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-0-rescue-1fbd678500124daea255a3b7a98e320c-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-[root@rhel7_0 ~]# grub2-set-default &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39;   --配置默认内核
-[root@rhel7_0 ~]# grub2-mkconfig -o /boot/grub2/grub.cfg    --将修改的内容写入到grub.cfg配置文件。
-Generating grub configuration file ...
-Found linux image: /boot/vmlinuz-3.10.0-1160.el7.x86_64
-Found initrd image: /boot/initramfs-3.10.0-1160.el7.x86_64.img
-Found linux image: /boot/vmlinuz-3.10.0-123.el7.x86_64
-Found initrd image: /boot/initramfs-3.10.0-123.el7.x86_64.img
-Found linux image: /boot/vmlinuz-0-rescue-1fbd678500124daea255a3b7a98e320c
-Found initrd image: /boot/initramfs-0-rescue-1fbd678500124daea255a3b7a98e320c.img
-done</code></pre>
-<p>系统内核更新成功！</p>
-]]></content>
-      <categories>
-        <category>linux系统</category>
-      </categories>
-      <tags>
-        <tag>linux内核升级</tag>
       </tags>
   </entry>
   <entry>
@@ -845,7 +845,7 @@ ln -s &#39;/usr/lib/systemd/system/dovecot.service&#39; &#39;/etc/systemd/system
 </tbody></table>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png" class>
 
-<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#x6c;&#x69;&#x6e;&#117;&#120;&#x70;&#x72;&#x6f;&#x62;&#101;&#64;&#108;&#105;&#x6e;&#117;&#120;&#x70;&#x72;&#x6f;&#98;&#x65;&#x2e;&#x63;&#x6f;&#109;">&#x6c;&#x69;&#x6e;&#117;&#120;&#x70;&#x72;&#x6f;&#x62;&#101;&#64;&#108;&#105;&#x6e;&#117;&#120;&#x70;&#x72;&#x6f;&#98;&#x65;&#x2e;&#x63;&#x6f;&#109;</a>,linuxprobe是linux用户名）和用户密码：</p>
+<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#108;&#105;&#x6e;&#117;&#x78;&#x70;&#x72;&#x6f;&#98;&#x65;&#x40;&#x6c;&#x69;&#x6e;&#x75;&#x78;&#x70;&#x72;&#111;&#x62;&#x65;&#x2e;&#99;&#x6f;&#x6d;">&#108;&#105;&#x6e;&#117;&#x78;&#x70;&#x72;&#x6f;&#98;&#x65;&#x40;&#x6c;&#x69;&#x6e;&#x75;&#x78;&#x70;&#x72;&#111;&#x62;&#x65;&#x2e;&#99;&#x6f;&#x6d;</a>,linuxprobe是linux用户名）和用户密码：</p>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png" class>
 
 <p>第2步：设置接收服务器类型为POP3，输入邮件帐号和密码，设置POP服务器和SMTP服务器地址，两个为同一地址，如192.168.10.10，SSL端口处不勾选，之后创建成功！</p>
@@ -1573,649 +1573,6 @@ iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>linux就该这么学：使用win10主机ping通虚拟机</title>
-    <url>/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
-    <content><![CDATA[<p>在win10系统中安装了vm12版本，Linux我选用的是redhat 7版本；成功安装redhat 7后，将linux虚拟机的IP地址固定：</p>
-<a id="more"></a>
-
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/1.png" class>
-
-<p>linux虚拟机的外部连接方式为NAT模式，在linux虚拟机中能够ping通自己的IP，但无法ping通win10系统的IP，win10系统也无法ping通linux虚拟机IP。</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/2.png" class>
-
-<p>解决方法如下：</p>
-<p>1.首先确认了本机的网络有无VMware Network Adapter VMnet8这两个网络：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/3.png" class>
-
-<p>有以上两个网络的话，跳过此步骤；没有的话，则将VM虚拟机卸载，之后清理完之后再重新安装VM虚拟机软件。</p>
-<p>2.安装好虚拟机后，打开终端，输入：vim /etc/sysconfig/network-scripts/ifcfg-eno16777728（网卡名称），编辑下网卡文件，将BOOTPROTO的值修改为static，并添加参数：IPADDR，GATEWAR，NETMASK，NM_CONTROLLED。IPADDR，GATEWAR这两个设置注意网段要与VMware Network Adapter VMnet8 的一致：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/4.png" class>
-
-<p>3.设置好之后，保存退出；之后重启系统，用linux虚拟机ping下win10系统IP地址，测试是否能够ping通，如果可以，那就ok了。</p>
-<p>linux虚拟机ping win10系统：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/5.png" class>
-
-<p>win10系统ping linux虚拟机：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/6.png" class>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>使用win10主机ping通虚拟机</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学：存储结构与磁盘划分</title>
-    <url>/2021/02/01/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E4%B8%8E%E7%A3%81%E7%9B%98%E5%88%92%E5%88%86/</url>
-    <content><![CDATA[<h1 id="1-一切从“-”开始"><a href="#1-一切从“-”开始" class="headerlink" title="1.一切从“/”开始"></a>1.一切从“/”开始</h1><p>Linux系统中的一切文件都是从“根（/）”目录开始的，并按照文件系统层次化标准（FHS）采用树形结构来存放文件，以及定义了常见目录的用途。另外，Linux系统中的文件和目录名称是严格区分大小写的。  </p>
-<a id="more"></a>
-
-<table>
-<thead>
-<tr>
-<th>目录名称</th>
-<th>内容</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>/boot</td>
-<td>开机所需文件—内核、开机菜单以及所需配置文件等</td>
-</tr>
-<tr>
-<td>/dev</td>
-<td>以文件形式存放任何设备与接口</td>
-</tr>
-<tr>
-<td>/etc</td>
-<td>配置文件</td>
-</tr>
-<tr>
-<td>/home</td>
-<td>用户主目录</td>
-</tr>
-<tr>
-<td>/media</td>
-<td>用于挂载设备文件的目录</td>
-</tr>
-</tbody></table>
-<p>主分区或扩展分区的编号从1开始，到4结束；逻辑分区从编号5开始。</p>
-<p>mount命令用于挂载文件系统，格式为“mount 文件系统 挂载目录”；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-a</td>
-<td>挂载所有在/etc/fstab中定义的文件系统</td>
-</tr>
-<tr>
-<td>-t</td>
-<td>指定文件系统的类型</td>
-</tr>
-</tbody></table>
-<p>如果想让硬件设备和目录永久地进行自动关联，就必须把挂载信息按照指定的填写格式“设备文件 挂载目录 格式类型 权限选项 是否备份 是否自检”（各字段的意义见表6-4）写入到/etc/fstab文件中。</p>
-<p>umount命令用于撤销已经挂载的设备文件，格式为“umount [挂载点/设备文件]”。</p>
-<h2 id="1-1添加硬盘设备"><a href="#1-1添加硬盘设备" class="headerlink" title="1.1添加硬盘设备"></a>1.1添加硬盘设备</h2><p>1.fdisk命令：用于管理磁盘分区，格式为“fdisk  [磁盘名称]”，它提供了集添加、删除、转换分区等功能于一身的“一站式分区服务”；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>m</td>
-<td>查看全部可用的参数</td>
-</tr>
-<tr>
-<td>n</td>
-<td>添加新的分区</td>
-</tr>
-<tr>
-<td>d</td>
-<td>删除某个分区</td>
-</tr>
-<tr>
-<td>p</td>
-<td>查看分区表信息</td>
-</tr>
-<tr>
-<td>w</td>
-<td>保存并退出</td>
-</tr>
-<tr>
-<td>q</td>
-<td>不保存直接退出</td>
-</tr>
-</tbody></table>
-<p>2.mkfs：存储设备进行分区后进行格式化操作；</p>
-<p>3.mount：挂载存储设备；</p>
-<p>4.du：查看文件数据占用量；du -sh /*命令来查看在Linux系统根目录下所有一级目录分别占用的空间大小。</p>
-<p>如果想让这个设备文件的挂载永久有效，则需要把挂载的信息写入到配置文件中：</p>
-<h2 id="1-2添加交换分区"><a href="#1-2添加交换分区" class="headerlink" title="1.2添加交换分区"></a>1.2添加交换分区</h2><p>SWAP（交换）分区是一种通过在硬盘中预先划分一定的空间，然后将把内存中暂时不常用的数据临时存放到硬盘中，以便腾出物理内存空间让更活跃的程序服务来使用的技术，其设计目的是为了解决真实物理内存不足的问题。但由于交换分区毕竟是通过硬盘设备读写数据的，速度肯定要比物理内存慢，所以只有当真实的物理内存耗尽后才会调用交换分区的资源。</p>
-<p>生产环境中，交换分区的大小一般为真实物理内存的1.5～2倍；</p>
-<pre><code>（1）fdisk
-（2）mkswap:SWAP分区专用的格式化命令；
-（3）free -m：用于查看交换分区的大小；
-（4）将相关信息写入配置文件（/etc/fstab），并保存！如：/dev/sdb2 swap swap defaults 0 0 </code></pre>
-<h2 id="1-3磁盘容量配额"><a href="#1-3磁盘容量配额" class="headerlink" title="1.3磁盘容量配额"></a>1.3磁盘容量配额</h2><p>使用quota命令进行磁盘容量配额管理，从而限制用户的硬盘可用容量或所能创建的最大文件个数。quota命令还有软限制和硬限制的功能。</p>
-<p>软限制：当达到软限制时会提示用户，但仍允许用户在限定的额度内继续使用。</p>
-<p>硬限制：当达到硬限制时会提示用户，且强制终止用户的操作。</p>
-<p>1.xfs_quota：-c参数用于以参数的形式设置要执行的命令；-x参数是专家模式，让运维人员能够对quota服务进行更多复杂的配置。</p>
-<pre><code>[root@linuxprobe ~]# xfs_quota -x -c &#39;limit bsoft=3m bhard=6m isoft=3 ihard=6 tom&#39; /boot
-[root@linuxprobe ~]# xfs_quota -x -c report /boot</code></pre>
-<p>2.edquota：用于编辑用户的quota配额限制，格式为“edquota [参数] [用户] ”。-u参数表示要针对哪个用户进行设置；-g参数表示要针对哪个用户组进行设置。</p>
-<h2 id="1-4软硬方式链接"><a href="#1-4软硬方式链接" class="headerlink" title="1.4软硬方式链接"></a>1.4软硬方式链接</h2><p>硬链接： 是指针，所有的硬链接都是指向同一个磁盘块； 删除一个指针不会真正删除文件，只有把所有的指针都删除才会真正删除文件。<br>软链接： 保存了其代表的文件的绝对路径，是另外一种文件，在硬盘上有独立的区块，访问时替换自身路径。</p>
-<p>1.ln：用于创建链接文件，格式为“ln [选项] 目标”；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-s</td>
-<td>创建“符号链接”（如果不带-s参数，则默认创建硬链接）</td>
-</tr>
-<tr>
-<td>-f</td>
-<td>强制创建文件或目录的链接</td>
-</tr>
-<tr>
-<td>-i</td>
-<td>覆盖前先询问</td>
-</tr>
-<tr>
-<td>-v</td>
-<td>显示创建链接的过程</td>
-</tr>
-</tbody></table>
-<pre><code>[root@linuxprobe ~]# echo &quot;Welcome to linuxprobe.com&quot; &gt; readme.txt
-[root@linuxprobe ~]# ln -s readme.txt readit.txt
-[root@linuxprobe ~]# cat readme.txt 
- Welcome to linuxprobe.com
-[root@linuxprobe ~]# cat readit.txt 
- Welcome to linuxprobe.com
-[root@linuxprobe ~]# ls -l readme.txt 
- -rw-r--r-- 1 root root 26 Jan 11 00:08 readme.txt
-[root@linuxprobe ~]# rm -f readme.txt 
-[root@linuxprobe ~]# cat readit.txt 
- cat: readit.txt: No such file or directory</code></pre>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第6章节：存储结构与磁盘划分</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学：用户身份与文件权限</title>
-    <url>/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/</url>
-    <content><![CDATA[<h1 id="1-用户身份与能力"><a href="#1-用户身份与能力" class="headerlink" title="1.用户身份与能力"></a>1.用户身份与能力</h1><p>管理员UID为0：系统的管理员用户。</p>
-<p>系统用户UID为1～999： Linux系统为了避免因某个服务程序出现漏洞而被黑客提权至整台服务器，默认服务程序会有独立的系统用户负责运行，进而有效控制被破坏范围。</p>
-<p>普通用户UID从1000开始：是由管理员创建的用于日常工作的用户。</p>
-<a id="more"></a>
-<p>一个用户只有一个基本用户组，但是可以有多个扩展用户组，从而满足日常的工作需要。</p>
-<p>（1）useradd：用于创建新的用户；默认的用户家目录会被存放在/home目录中，默认的Shell解释器为/bin/bash，而且默认会创建一个与该用户同名的基本用户组。</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-d</td>
-<td>指定用户的家目录</td>
-</tr>
-<tr>
-<td>-u</td>
-<td>指定该用户的默认UID</td>
-</tr>
-<tr>
-<td>-g</td>
-<td>指定一个初始的用户基本组（必须已存在）</td>
-</tr>
-<tr>
-<td>-G</td>
-<td>指定一个或多个扩展用户组</td>
-</tr>
-<tr>
-<td>-s</td>
-<td>指定该用户的默认Shell解释器</td>
-</tr>
-</tbody></table>
-<p>/sbin/nologin，它是终端解释器中的一员，与Bash解释器有着天壤之别。一旦用户的解释器被设置为nologin，则代表该用户不能登录到系统中：</p>
-<p>（2）groupadd:用于创建用户组；</p>
-<p>（3）usermod：用于修改用户属性；用户的信息保存在/etc/passwd文件中，可以直接用文本编辑器来修改其中的用户参数项目，也可以用usermod命令修改已经创建的用户信息，诸如用户的UID、基本/扩展用户组、默认终端等。  </p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-d -m</td>
-<td>参数-m与参数-d连用，可重新指定用户的家目录并自动把旧的数据转移过去</td>
-</tr>
-<tr>
-<td>-g</td>
-<td>变更所属用户组</td>
-</tr>
-<tr>
-<td>-G</td>
-<td>变更扩展用户组</td>
-</tr>
-<tr>
-<td>-L</td>
-<td>锁定用户禁止其登录系统</td>
-</tr>
-<tr>
-<td>-U</td>
-<td>解锁用户，允许其登陆系统</td>
-</tr>
-<tr>
-<td>-s</td>
-<td>变更默认终端</td>
-</tr>
-</tbody></table>
-<p>（4）passwd：用于修改用户密码、过期时间、认证信息等；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-l</td>
-<td>锁定用户禁止其登录系统</td>
-</tr>
-<tr>
-<td>-u</td>
-<td>解锁用户，允许其登陆系统</td>
-</tr>
-<tr>
-<td>–stdin</td>
-<td>允许通过标准输入修改用户密码，如echo “NewPassWord”</td>
-</tr>
-<tr>
-<td>-d</td>
-<td>使该用户可用空密码登录系统</td>
-</tr>
-<tr>
-<td>-e</td>
-<td>强制用户在下次登录时修改密码</td>
-</tr>
-<tr>
-<td>-S</td>
-<td>显示用户的密码是否被锁定，以及密码所采用的加密算法名称</td>
-</tr>
-</tbody></table>
-<p>（5）userdel：用于删除用户；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-f</td>
-<td>强制删除用户</td>
-</tr>
-<tr>
-<td>-r</td>
-<td>同时删除用户及用户家目录</td>
-</tr>
-</tbody></table>
-<h1 id="2-文件权限与归属"><a href="#2-文件权限与归属" class="headerlink" title="2.文件权限与归属"></a>2.文件权限与归属</h1><p> -：普通文件；d：目录文件；l：链接文件；b：块设备文件；c：字符设备文件；p：管道文件</p>
-<p>对于一般文件来说，权限比较容易理解：“可读”表示能够读取文件的实际内容；“可写”表示能够编辑、新增、修改、删除文件的实际内容；“可执行”则表示能够运行一个脚本程序。</p>
-<p>对目录文件来说，“可读”表示能够读取目录内的文件列表；“可写”表示能够在目录内新增、删除、重命名文件；而“可执行”则表示能够进入该目录。</p>
-<h2 id="2-1-文件的特殊权限"><a href="#2-1-文件的特殊权限" class="headerlink" title="2.1 文件的特殊权限"></a>2.1 文件的特殊权限</h2><p>详细内容可参考：<a href="https://www.cnblogs.com/sparkdev/p/9651622.html%EF%BC%9B">https://www.cnblogs.com/sparkdev/p/9651622.html；</a></p>
-<p>（1）SUID：让执行者临时获得命令的所有者的权限；</p>
-<p>（2）SGID：目录内新文件所有组，继承原有目录所有组的名称！</p>
-<p>1.SUID<br>在 Linux 中，所有账号的密码记录在 /etc/shadow 这个文件中，并且只有 root 可以读写入这个文件：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/1.png" class>
-
-<p>如果另一个普通账号 tester 需要修改自己的密码，就要访问 /etc/shadow 这个文件。但是明明只有 root 才能访问 /etc/shadow 这个文件，这究竟是如何做到的呢？事实上，tester 用户是可以修改 /etc/shadow 这个文件内的密码的，就是通过 SUID 的功能。让我们看看 passwd 程序文件的权限信息：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/2.png" class>
-
-<p>上图红框中的权限信息有些奇怪，owner 的信息为 rws 而不是 rwx。当 s 出现在文件拥有者的 x 权限上时，就被称为 SETUID BITS 或 SETUID ，其特点如下：</p>
-<p>-SUID 权限仅对二进制可执行文件有效<br>-如果执行者对于该二进制可执行文件具有 x 的权限，执行者将具有该文件的所有者的权限<br>-本权限仅在执行该二进制可执行文件的过程中有效</p>
-<p>下面我们来看 tester 用户是如何利用 SUID 权限完成密码修改的：</p>
-<pre><code>(1)tester 用户对于 /usr/bin/passwd 这个程序具有执行权限，因此可以执行 passwd 程序
-(2)passwd 程序的所有者为 root
-(3)tester 用户执行 passwd 程序的过程中会暂时获得 root 权限
-(4)因此 tester 用户在执行 passwd 程序的过程中可以修改 /etc/shadow 文件</code></pre>
-<p>但是如果由 tester 用户执行 cat 命令去读取 /etc/shadow 文件确是不行的：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/3.png" class>
-
-<p>原因很清楚，tester 用户没有读 /etc/shadow 文件的权限，同时 cat 程序也没有被设置 SUID。我们可以通过下图来理解这两种情况：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/4.png" class>
-
-<p>如果想让任意用户通过 cat 命令读取 /etc/shadow 文件的内容也是非常容易的，给它设置 SUID 权限就可以了：</p>
-<p>$ sudo chmod 4755 /bin/cat</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/5.png" class>
-
-<p>现在 cat 已经具有了 SUID 权限，试试看，是不是已经可以 cat 到 /etc/shadow 的内容了。因为这样做非常不安全，所以赶快通过下面的命令把 cat 的 SUID 权限移除掉：</p>
-<p>$ sudo chmod 755 /bin/cat</p>
-<p>2.SGID</p>
-<p>当 s 标志出现在用户组的 x 权限时称为 SGID。SGID 的特点与 SUID 相同，我们通过 /usr/bin/mlocate 程序来演示其用法。mlocate 程序通过查询数据库文件 /var/lib/mlocate/mlocate.db 实现快速的文件查找。 mlocate 程序的权限如下图所示：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/6.png" class>
-
-<p>很明显，它被设置了 SGID 权限。下面是数据库文件 /var/lib/mlocate/mlocate.db 的权限信息：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/7.png" class>
-
-<p>普通用户 tester 执行 mlocate 命令时，tester 就会获得用户组 mlocate 的执行权限，又由于用户组 mlocate 对 mlocate.db 具有读权限，所以 tester 就可以读取 mlocate.db 了。程序的执行过程如下图所示：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/8.png" class>
-
-<p>除二进制程序外，SGID 也可以用在目录上。当一个目录设置了 SGID 权限后，它具有如下功能：</p>
-<pre><code>(1)用户若对此目录具有 r 和 x 权限，该用户能够进入该目录
-(2)用户在此目录下的有效用户组将变成该目录的用户组
-(3)若用户在此目录下拥有 w 权限，则用户所创建的新文件的用户组与该目录的用户组相同</code></pre>
-<p>下面看个例子，创建 testdir 目录，目录的权限设置如下：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/9.png" class>
-
-<p>此时目录 testdir 的 owner 是 nick，所属的 group 为 tester。<br>先创建一个名为 nickfile 的文件：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/10.png" class>
-
-<p>这个文件的权限看起来没有什么特别的。然后给 testdir 目录设置 SGID 权限：</p>
-<p>$ sudo chmod 2775 testdir</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/11.png" class>
-
-<p>然后再创建一个文件 nickfile2：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/12.png" class>
-
-<p>新建的文件所属的组为 tester！</p>
-<p>总结一下，当 SGID 作用于普通文件时，和 SUID 类似，在执行该文件时，用户将获得该文件所属组的权限。当 SGID 作用于目录时，意义就非常重大了。当用户对某一目录有写和执行权限时，该用户就可以在该目录下建立文件，如果该目录用 SGID 修饰，则该用户在这个目录下建立的文件都是属于这个目录所属的组。</p>
-<p>SBIT<br>其实 SBIT 与 SUID 和 SGID 的关系并不大。<br>SBIT 是 the  restricted  deletion  flag  or  sticky  bit 的简称。<br>SBIT 目前只对目录有效，用来阻止非文件的所有者删除文件。比较常见的例子就是 /tmp 目录：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/13.png" class>
-
-<p>权限信息中最后一位 t 表明该目录被设置了 SBIT 权限。SBIT 对目录的作用是：当用户在该目录下创建新文件或目录时，仅有自己和 root 才有权力删除。</p>
-<p>设置 SUID、SGID、SBIT 权限<br>以数字的方式设置权限<br>SUID、SGID、SBIT 权限对应的数字如下：</p>
-<p>SUID-&gt;4<br>SGID-&gt;2<br>SBIT-&gt;1<br>所以如果要为一个文件权限为 “-rwxr-xr-x” 的文件设置 SUID 权限，需要在原先的 755 前面加上 4，也就是 4755：</p>
-<p>$ chmod 4755 filename</p>
-<p>同样，可以用 2 和 1 来设置 SGID 和 SBIT 权限。设置完成后分别会用 s, s, t 代替文件权限中的 x。</p>
-<p>其实，还可能出现 S 和 T 的情况。S 和 t 是替代 x 这个权限的，但是，如果它本身没有 x 这个权限，添加 SUID、SGID、SBIT 权限后就会显示为大写 S 或大写 T。比如我们为一个权限为 666 的文件添加 SUID、SGID、SBIT 权限：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/14.png" class>
-
-<p>执行 chmod 7666 nickfile，因为 666 表示 “-rw-rw-rw”，均没有 x 权限，所以最后变成了 “-rwSrwSrwT”。</p>
-<p>通过符号类型改变权限</p>
-<p>除了使用数字来修改权限，还可以使用符号：</p>
-<p>$ chmod u+s testfile # 为 testfile 文件加上 SUID 权限。<br>$ chmod g+s testdir  # 为 testdir 目录加上 SGID 权限。<br>$ chmod o+t testdir  # 为 testdir 目录加上 SBIT 权限。</p>
-<p>总结<br>SUID、SGID、SBIT 权限都是为了实现特殊功能而设计的，其目的是弥补 ugo 权限无法实现的一些使用场景。</p>
-<h2 id="2-2文件的隐藏属性"><a href="#2-2文件的隐藏属性" class="headerlink" title="2.2文件的隐藏属性"></a>2.2文件的隐藏属性</h2><p>linux文件除了具备一般权限和特殊权限外，还具有隐藏权限；  </p>
-<p>1.chattr：用于设置文件的隐藏权限，添加隐藏功能“+参数”，移除隐藏功能“-参数”。  </p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>i</td>
-<td>无法对文件进行修改；若对目录设置了该参数，则仅能修改其中的子文件内容而不能新建或删除文件</td>
-</tr>
-<tr>
-<td>a</td>
-<td>仅允许补充（追加）内容，无法覆盖/删除内容（Append Only）</td>
-</tr>
-<tr>
-<td>s</td>
-<td>彻底从硬盘中删除，不可恢复（用0填充原文件所在硬盘区域）</td>
-</tr>
-<tr>
-<td>A</td>
-<td>不再修改这个文件或目录的最后访问时间（atime）</td>
-</tr>
-<tr>
-<td>b</td>
-<td>不再修改文件或目录的存取时间</td>
-</tr>
-<tr>
-<td>u</td>
-<td>当删除该文件后依然保留其在硬盘中的数据，方便日后恢复</td>
-</tr>
-</tbody></table>
-<p>2.lsattr：用于显示文件的隐藏权限；</p>
-<h2 id="2-3-文件访问控制列表"><a href="#2-3-文件访问控制列表" class="headerlink" title="2.3 文件访问控制列表"></a>2.3 文件访问控制列表</h2><p>一般权限、特殊权限、隐藏权限其实有一个共性—权限是针对某一类用户设置的；如果需要对某个指定的用户进行单独的权限控制，就需要用到文件访问控制列表（ACL);如果针对某个目录设置了ACL，则目录中的文件会继承其ACL；若针对文件设置了ACL，则文件不再继承其所在目录的ACL。</p>
-<p>1.setfacl：可以针对单一用户或用户组、单一文件或目录来进行读/写/执行权限的控制。<br>-R：针对目录文件；    -m：针对普通文件；    -b：删除文件的ACL</p>
-<pre><code>[root@linuxprobe ~]# setfacl -Rm u:linuxprobe:rwx /root
-[root@linuxprobe ~]# su - linuxprobe
-Last login: Sat Mar 21 15:45:03 CST 2017 on pts/1
-[linuxprobe@linuxprobe ~]$ cd /root
-[linuxprobe@linuxprobe root]$ ls
-anaconda-ks.cfg Downloads Pictures Public
-[linuxprobe@linuxprobe root]$ cat anaconda-ks.cfg
-[linuxprobe@linuxprobe root]$ exit</code></pre>
-<p>当文件权限的最后一个点（.）变成（+）时，意味着文件设置了ACL。</p>
-<p>2.getfacl：用于显示文件的ACL信息；</p>
-<h2 id="2-4-su命令与sudo服务"><a href="#2-4-su命令与sudo服务" class="headerlink" title="2.4 su命令与sudo服务"></a>2.4 su命令与sudo服务</h2><p>su命令可以解决切换用户身份的需求，使得当前用户在不退出登录的情况下，顺畅地切换到其他用户；上面的su命令与用户名之间有一个减号（-），这意味着完全切换到新的用户，即把环境变量信息也变更为新用户的相应信息，而不是保留原始的信息。</p>
-<p>sudo命令用于给普通用户提供额外的权限来完成原本root管理员才能完成的任务，格式为“sudo [参数] 命令名称”。</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-l</td>
-<td>列出当前用户可执行的命令</td>
-</tr>
-<tr>
-<td>-u</td>
-<td>以指定的用户身份执行命令</td>
-</tr>
-<tr>
-<td>-k</td>
-<td>清空密码的有效时间，下次执行sudo时需要再次进行密码验证</td>
-</tr>
-<tr>
-<td>-b</td>
-<td>在后台执行指定的命令</td>
-</tr>
-<tr>
-<td>-p</td>
-<td>更改询问密码的提示语</td>
-</tr>
-</tbody></table>
-<p>配置文件（/etc/sudoers）提供集中的用户管理、权限与主机等参数；只有root管理员才可以使用visudo命令编辑sudo服务的配置文件。  </p>
-<pre><code>谁可以使用  允许使用的主机=（以谁的身份）  可执行命令的列表
-99 linuxprobe ALL=(ALL) ALL
-99 linuxprobe ALL=(ALL) /usr/bin/cat（命令的绝对路径）
-99 linuxprobe ALL=NOPASSWD: /usr/sbin/poweroff</code></pre>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第5章节：用户身份与文件权限</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学：安装samba服务时packagekit报错解决方法</title>
-    <url>/2021/02/12/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AE%89%E8%A3%85samba%E6%9C%8D%E5%8A%A1%E6%97%B6packagekit%E6%8A%A5%E9%94%99%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/</url>
-    <content><![CDATA[<p>在linux虚拟机Redhat7.0版本系统终端中输入命令：yum install samba，安装samba服务时，在安装过程中，出现以下报错信息：</p>
-<a id="more"></a>
-
-<pre><code>Error: initscripts conflicts with redhat-release-server-7.0-1.el7.x86_64
- You could try using --skip-broken to work around the problem
-Found 2 pre-existing rpmdb problem(s), &#39;yum check&#39; output follows:
-PackageKit-0.8.9-11.el7.x86_64 has missing requires of PackageKit-backend
-rhn-check-2.0.2-5.el7.noarch has missing requires of yum-rhn-plugin &gt;= (&#39;0&#39;, &#39;1.6.4&#39;, &#39;1&#39;)</code></pre>
-<p>有2个problem，1个error；先解决problem：</p>
-<pre><code>（1）在http://rpm.pbone.net/网站中下载PackageKit-yum-0.8.9-11.el7.x86_64.rpm,然后将rpm文件拖入linux系统中，输入命令：rpm -Uvh PackageKit-yum-0.8.9-11.el7.x86_64.rpm，解决第1个problem。
-（2）在终端中输入命令：yum install yum-rhn-plugin，解决第2个problem。</code></pre>
-<p>再解决initscripts conflicts的error：</p>
-<pre><code>首先，先查一下本机的initscripts的版本，有没有更适合自己系统的，输入以下命令：yum list initscripts，
-
-显示以下信息：
-
-Loading mirror speeds from cached hostfile
-Installed Packages
-initscripts.x86_64                9.49.17-1.el7                @anaconda/7.0
-Available Packages
-initscripts.x86_64                9.49.53-1.el7_9.1                updates  
-
-说明当前版本是initscripts.x86_64  9.49.17-1.el7   @anaconda/7.0  
-
-可以用更适合系统的initscripts.x86_64   9.49.53-1.el7_9.1版本来替换。
-
-再输入命令：yum list centos-release，看看合适的centos-release版本：
-
-Loading mirror speeds from cached hostfile
-Available Packages
-centos-release.x86_64               7-9.2009.1.el7.centos                updates
-
-使用以上命令可以知道，最合适的版本是centos-release.x86_64  7-9.2009.1.el7.centos
-
-从http://rpm.pbone.net/网站中分别下载initscripts-9.49.53-1.el7.x86_64.rpm和centos-release-7-9.2009.1.el7.centos.x86_64.rpm，然后输入命令：rpm -e redhat-release-server-7.0-1.el7.x86_64 --nodeps，将有冲突的版本删掉，删除redhat-release以后，不重启机器，马上安装centos-release.x86_64：
-
-[root@linuxprobe Desktop]# rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm
-Preparing...                          ################################# [100%]
-Updating / installing...
-   1:centos-release-7-9.2009.1.el7.cenwarning: /etc/yum.repos.d/CentOS-Base.repo created as /etc/yum.repos.d/CentOS-Base.repo.rpmnew
-################################# [100%]
-error: unpacking of archive failed on file /usr/share/doc/redhat-release: cpio: rename failed - Is a directory
-error: centos-release-7-9.2009.1.el7.centos.x86_64: install failed</code></pre>
-<p>安装时出错！提示“/usr/share/doc/redhat-release 失败：cpio: rename 失败 - 是一个目录”</p>
-<p>推测：安装centos-release时，这个redhat-release目录碍事了，所以我们手动把它删除掉（注意备份）。</p>
-<pre><code>[root@linuxprobe doc]# rm -r /usr/share/doc/redhat-release 
-rm：是否删除目录 &quot;/usr/share/doc/redhat-release&quot;？y
-
-如果还是报错，则再在/usr/share目录中删除redhat-release：
-
-[root@linuxprobe share]# rm -r /usr/share/redhat-release 
-rm：是否删除目录 &quot;/usr/share/redhat-release&quot;？y
-
-然后再终端中输入命令：rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm：
-
-[root@linuxprobe Desktop]# rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm
-Preparing...                          ################################# [100%]
-Updating / installing...
-  1:centos-release-7-9.2009.1.el7.cenwarning: /etc/yum.repos.d/CentOS-Base.repo created as /etc/yum.repos.d/CentOS-Base.repo.rpmnew
-################################# [100%]</code></pre>
-<p>到这一步，基本安装samba服务过程中的problem和error都已经解决，但此时如果输入yum install samba命令安装samba服务时，</p>
-<p>可能会引起SELinux的报警，因此需要将SELinux关闭；在/etc/selinux/config配置文件中查看SELinux的默认状态。如果是</p>
-<p>enforcing，建议赶紧修改为permissive或disabled；SELinux服务的主配置文件中，定义的是SELinux的默认运行状态，可以将其</p>
-<p>理解为系统重启后的状态，因此它不会在更改后立即生效。可以使用getenforce命令获得当前SELinux服务的运行模式：</p>
-<pre><code>[root@linuxprobe ~]# getenforce 
-Enforcing</code></pre>
-<p>再用setenforce [0|1]命令修改SELinux当前的运行模式（0为禁用，1为启用）。注意，这种修改只是临时的，在系统重启后就会失效：</p>
-<pre><code>[root@linuxprobe ~]# setenforce 0
-[root@linuxprobe ~]# getenforce
-Permissive</code></pre>
-<p>之后在终端中输入：yum install samba，安装samba服务，成功！</p>
-<p>具体方法可参考以下链接：</p>
-<p><a href="http://www.likecs.com/default/index/show?id=20904">http://www.likecs.com/default/index/show?id=20904</a><br><a href="https://blog.csdn.net/zz24_com/article/details/105127746">https://blog.csdn.net/zz24_com/article/details/105127746</a></p>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>安装samba服务时packagekit报错解决方法</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux虚拟机外网网络访问设置指南</title>
-    <url>/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/</url>
-    <content><![CDATA[<p>要达到的效果就是在Linux虚拟机中可以上网：ping <a href="http://www.baidu.com/">http://www.baidu.com</a></p>
-<p>VMware中安装完 redhat7 后， 默认初始配置如下：</p>
-<a id="more"></a>
-
-<h1 id="1-VMware-网络配置"><a href="#1-VMware-网络配置" class="headerlink" title="1.VMware 网络配置"></a>1.VMware 网络配置</h1><p>（编辑 –&gt; 虚拟网络编辑器）查看</p>
-<p>默认配置为： (这些配置都不需要发生变更， 看看就好)</p>
-<pre><code>子网IP：192.168.154.0
-
-子网掩码 : 255.255.255.0
-
-可设置的IP网段为： 192.168.154.128 ~ 254
-
-&#123;% asset_img 1.jpg %&#125;
-
-点开 NAT设置可以看到 GATEWAY : 192.168.154.2:</code></pre>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/2.jpg" class>
-
-<p>下面介绍 redhat 本身配置m修改配置参数如下：</p>
-<p>注意各个参数与第一步 VMware 中的默认配置的联系 :</p>
-<pre><code>BOOTPROTO ： dhcp --&gt; static （静态IP）
-
-ONBOOT : no --&gt; YES (开机自动连接网络)
-
-IPADDR : 192.168.154.128 ~ 254 之间即可
-
-NETMASK : 子网， 与 VMware 默认一致
-
-GATEWAY : 网关， 与VMware 默认一致
-
-DNS1 : 首选 DNS, 不配置会出现外网不通， 只能与内网互通的问题.
-
-这里DNS要说一下的是，其他资料上有说要跟本机上网的DNS一致，还有说跟网关一致，或者改成8.8.8.8，都试过，ping www.baidu.com 都可以，不同的机器可能有不同，希望可以共同探讨。
-
-NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进行设置，而不是通过网络管理器进行管理。“ONBOOT=yes”告诉我们，系统将在启动时开启该接口。</code></pre>
-<p>编辑/etc/sysconfig/network-scipts/网卡名称：</p>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/3.jpg" class>
-
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/4.jpg" class>
-
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/5.jpg" class>
-
-<p>重启网络服务命令： systemctl restart network；</p>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/6.jpg" class>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>linux虚拟机外网网络访问设置指南</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux就该这么学：使用ssh服务管理远程主机</title>
     <url>/2021/02/04/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8ssh%E6%9C%8D%E5%8A%A1%E7%AE%A1%E7%90%86%E8%BF%9C%E7%A8%8B%E4%B8%BB%E6%9C%BA/</url>
     <content><![CDATA[<h1 id="1-配置网卡服务"><a href="#1-配置网卡服务" class="headerlink" title="1.配置网卡服务"></a>1.配置网卡服务</h1><p>介绍了SSH协议与sshd服务程序的理论知识、Linux系统的远程管理方法以及在系统中配置服务程序的方法，并采用实验的形式演示了使用基于密码验证的sshd服务程序进行远程登录，以及使用screen服务程序远程管理Linux系统的不间断会话等技术。</p>
@@ -2517,6 +1874,291 @@ Red Hat Enterprise Linux Server release 7.0 (Maipo)</code></pre>
       </tags>
   </entry>
   <entry>
+    <title>linux就该这么学：使用win10主机ping通虚拟机</title>
+    <url>/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
+    <content><![CDATA[<p>在win10系统中安装了vm12版本，Linux我选用的是redhat 7版本；成功安装redhat 7后，将linux虚拟机的IP地址固定：</p>
+<a id="more"></a>
+
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/1.png" class>
+
+<p>linux虚拟机的外部连接方式为NAT模式，在linux虚拟机中能够ping通自己的IP，但无法ping通win10系统的IP，win10系统也无法ping通linux虚拟机IP。</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/2.png" class>
+
+<p>解决方法如下：</p>
+<p>1.首先确认了本机的网络有无VMware Network Adapter VMnet8这两个网络：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/3.png" class>
+
+<p>有以上两个网络的话，跳过此步骤；没有的话，则将VM虚拟机卸载，之后清理完之后再重新安装VM虚拟机软件。</p>
+<p>2.安装好虚拟机后，打开终端，输入：vim /etc/sysconfig/network-scripts/ifcfg-eno16777728（网卡名称），编辑下网卡文件，将BOOTPROTO的值修改为static，并添加参数：IPADDR，GATEWAR，NETMASK，NM_CONTROLLED。IPADDR，GATEWAR这两个设置注意网段要与VMware Network Adapter VMnet8 的一致：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/4.png" class>
+
+<p>3.设置好之后，保存退出；之后重启系统，用linux虚拟机ping下win10系统IP地址，测试是否能够ping通，如果可以，那就ok了。</p>
+<p>linux虚拟机ping win10系统：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/5.png" class>
+
+<p>win10系统ping linux虚拟机：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/6.png" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>使用win10主机ping通虚拟机</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：存储结构与磁盘划分</title>
+    <url>/2021/02/01/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E4%B8%8E%E7%A3%81%E7%9B%98%E5%88%92%E5%88%86/</url>
+    <content><![CDATA[<h1 id="1-一切从“-”开始"><a href="#1-一切从“-”开始" class="headerlink" title="1.一切从“/”开始"></a>1.一切从“/”开始</h1><p>Linux系统中的一切文件都是从“根（/）”目录开始的，并按照文件系统层次化标准（FHS）采用树形结构来存放文件，以及定义了常见目录的用途。另外，Linux系统中的文件和目录名称是严格区分大小写的。  </p>
+<a id="more"></a>
+
+<table>
+<thead>
+<tr>
+<th>目录名称</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>/boot</td>
+<td>开机所需文件—内核、开机菜单以及所需配置文件等</td>
+</tr>
+<tr>
+<td>/dev</td>
+<td>以文件形式存放任何设备与接口</td>
+</tr>
+<tr>
+<td>/etc</td>
+<td>配置文件</td>
+</tr>
+<tr>
+<td>/home</td>
+<td>用户主目录</td>
+</tr>
+<tr>
+<td>/media</td>
+<td>用于挂载设备文件的目录</td>
+</tr>
+</tbody></table>
+<p>主分区或扩展分区的编号从1开始，到4结束；逻辑分区从编号5开始。</p>
+<p>mount命令用于挂载文件系统，格式为“mount 文件系统 挂载目录”；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>挂载所有在/etc/fstab中定义的文件系统</td>
+</tr>
+<tr>
+<td>-t</td>
+<td>指定文件系统的类型</td>
+</tr>
+</tbody></table>
+<p>如果想让硬件设备和目录永久地进行自动关联，就必须把挂载信息按照指定的填写格式“设备文件 挂载目录 格式类型 权限选项 是否备份 是否自检”（各字段的意义见表6-4）写入到/etc/fstab文件中。</p>
+<p>umount命令用于撤销已经挂载的设备文件，格式为“umount [挂载点/设备文件]”。</p>
+<h2 id="1-1添加硬盘设备"><a href="#1-1添加硬盘设备" class="headerlink" title="1.1添加硬盘设备"></a>1.1添加硬盘设备</h2><p>1.fdisk命令：用于管理磁盘分区，格式为“fdisk  [磁盘名称]”，它提供了集添加、删除、转换分区等功能于一身的“一站式分区服务”；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>m</td>
+<td>查看全部可用的参数</td>
+</tr>
+<tr>
+<td>n</td>
+<td>添加新的分区</td>
+</tr>
+<tr>
+<td>d</td>
+<td>删除某个分区</td>
+</tr>
+<tr>
+<td>p</td>
+<td>查看分区表信息</td>
+</tr>
+<tr>
+<td>w</td>
+<td>保存并退出</td>
+</tr>
+<tr>
+<td>q</td>
+<td>不保存直接退出</td>
+</tr>
+</tbody></table>
+<p>2.mkfs：存储设备进行分区后进行格式化操作；</p>
+<p>3.mount：挂载存储设备；</p>
+<p>4.du：查看文件数据占用量；du -sh /*命令来查看在Linux系统根目录下所有一级目录分别占用的空间大小。</p>
+<p>如果想让这个设备文件的挂载永久有效，则需要把挂载的信息写入到配置文件中：</p>
+<h2 id="1-2添加交换分区"><a href="#1-2添加交换分区" class="headerlink" title="1.2添加交换分区"></a>1.2添加交换分区</h2><p>SWAP（交换）分区是一种通过在硬盘中预先划分一定的空间，然后将把内存中暂时不常用的数据临时存放到硬盘中，以便腾出物理内存空间让更活跃的程序服务来使用的技术，其设计目的是为了解决真实物理内存不足的问题。但由于交换分区毕竟是通过硬盘设备读写数据的，速度肯定要比物理内存慢，所以只有当真实的物理内存耗尽后才会调用交换分区的资源。</p>
+<p>生产环境中，交换分区的大小一般为真实物理内存的1.5～2倍；</p>
+<pre><code>（1）fdisk
+（2）mkswap:SWAP分区专用的格式化命令；
+（3）free -m：用于查看交换分区的大小；
+（4）将相关信息写入配置文件（/etc/fstab），并保存！如：/dev/sdb2 swap swap defaults 0 0 </code></pre>
+<h2 id="1-3磁盘容量配额"><a href="#1-3磁盘容量配额" class="headerlink" title="1.3磁盘容量配额"></a>1.3磁盘容量配额</h2><p>使用quota命令进行磁盘容量配额管理，从而限制用户的硬盘可用容量或所能创建的最大文件个数。quota命令还有软限制和硬限制的功能。</p>
+<p>软限制：当达到软限制时会提示用户，但仍允许用户在限定的额度内继续使用。</p>
+<p>硬限制：当达到硬限制时会提示用户，且强制终止用户的操作。</p>
+<p>1.xfs_quota：-c参数用于以参数的形式设置要执行的命令；-x参数是专家模式，让运维人员能够对quota服务进行更多复杂的配置。</p>
+<pre><code>[root@linuxprobe ~]# xfs_quota -x -c &#39;limit bsoft=3m bhard=6m isoft=3 ihard=6 tom&#39; /boot
+[root@linuxprobe ~]# xfs_quota -x -c report /boot</code></pre>
+<p>2.edquota：用于编辑用户的quota配额限制，格式为“edquota [参数] [用户] ”。-u参数表示要针对哪个用户进行设置；-g参数表示要针对哪个用户组进行设置。</p>
+<h2 id="1-4软硬方式链接"><a href="#1-4软硬方式链接" class="headerlink" title="1.4软硬方式链接"></a>1.4软硬方式链接</h2><p>硬链接： 是指针，所有的硬链接都是指向同一个磁盘块； 删除一个指针不会真正删除文件，只有把所有的指针都删除才会真正删除文件。<br>软链接： 保存了其代表的文件的绝对路径，是另外一种文件，在硬盘上有独立的区块，访问时替换自身路径。</p>
+<p>1.ln：用于创建链接文件，格式为“ln [选项] 目标”；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-s</td>
+<td>创建“符号链接”（如果不带-s参数，则默认创建硬链接）</td>
+</tr>
+<tr>
+<td>-f</td>
+<td>强制创建文件或目录的链接</td>
+</tr>
+<tr>
+<td>-i</td>
+<td>覆盖前先询问</td>
+</tr>
+<tr>
+<td>-v</td>
+<td>显示创建链接的过程</td>
+</tr>
+</tbody></table>
+<pre><code>[root@linuxprobe ~]# echo &quot;Welcome to linuxprobe.com&quot; &gt; readme.txt
+[root@linuxprobe ~]# ln -s readme.txt readit.txt
+[root@linuxprobe ~]# cat readme.txt 
+ Welcome to linuxprobe.com
+[root@linuxprobe ~]# cat readit.txt 
+ Welcome to linuxprobe.com
+[root@linuxprobe ~]# ls -l readme.txt 
+ -rw-r--r-- 1 root root 26 Jan 11 00:08 readme.txt
+[root@linuxprobe ~]# rm -f readme.txt 
+[root@linuxprobe ~]# cat readit.txt 
+ cat: readit.txt: No such file or directory</code></pre>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第6章节：存储结构与磁盘划分</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：安装samba服务时packagekit报错解决方法</title>
+    <url>/2021/02/12/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AE%89%E8%A3%85samba%E6%9C%8D%E5%8A%A1%E6%97%B6packagekit%E6%8A%A5%E9%94%99%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/</url>
+    <content><![CDATA[<p>在linux虚拟机Redhat7.0版本系统终端中输入命令：yum install samba，安装samba服务时，在安装过程中，出现以下报错信息：</p>
+<a id="more"></a>
+
+<pre><code>Error: initscripts conflicts with redhat-release-server-7.0-1.el7.x86_64
+ You could try using --skip-broken to work around the problem
+Found 2 pre-existing rpmdb problem(s), &#39;yum check&#39; output follows:
+PackageKit-0.8.9-11.el7.x86_64 has missing requires of PackageKit-backend
+rhn-check-2.0.2-5.el7.noarch has missing requires of yum-rhn-plugin &gt;= (&#39;0&#39;, &#39;1.6.4&#39;, &#39;1&#39;)</code></pre>
+<p>有2个problem，1个error；先解决problem：</p>
+<pre><code>（1）在http://rpm.pbone.net/网站中下载PackageKit-yum-0.8.9-11.el7.x86_64.rpm,然后将rpm文件拖入linux系统中，输入命令：rpm -Uvh PackageKit-yum-0.8.9-11.el7.x86_64.rpm，解决第1个problem。
+（2）在终端中输入命令：yum install yum-rhn-plugin，解决第2个problem。</code></pre>
+<p>再解决initscripts conflicts的error：</p>
+<pre><code>首先，先查一下本机的initscripts的版本，有没有更适合自己系统的，输入以下命令：yum list initscripts，
+
+显示以下信息：
+
+Loading mirror speeds from cached hostfile
+Installed Packages
+initscripts.x86_64                9.49.17-1.el7                @anaconda/7.0
+Available Packages
+initscripts.x86_64                9.49.53-1.el7_9.1                updates  
+
+说明当前版本是initscripts.x86_64  9.49.17-1.el7   @anaconda/7.0  
+
+可以用更适合系统的initscripts.x86_64   9.49.53-1.el7_9.1版本来替换。
+
+再输入命令：yum list centos-release，看看合适的centos-release版本：
+
+Loading mirror speeds from cached hostfile
+Available Packages
+centos-release.x86_64               7-9.2009.1.el7.centos                updates
+
+使用以上命令可以知道，最合适的版本是centos-release.x86_64  7-9.2009.1.el7.centos
+
+从http://rpm.pbone.net/网站中分别下载initscripts-9.49.53-1.el7.x86_64.rpm和centos-release-7-9.2009.1.el7.centos.x86_64.rpm，然后输入命令：rpm -e redhat-release-server-7.0-1.el7.x86_64 --nodeps，将有冲突的版本删掉，删除redhat-release以后，不重启机器，马上安装centos-release.x86_64：
+
+[root@linuxprobe Desktop]# rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:centos-release-7-9.2009.1.el7.cenwarning: /etc/yum.repos.d/CentOS-Base.repo created as /etc/yum.repos.d/CentOS-Base.repo.rpmnew
+################################# [100%]
+error: unpacking of archive failed on file /usr/share/doc/redhat-release: cpio: rename failed - Is a directory
+error: centos-release-7-9.2009.1.el7.centos.x86_64: install failed</code></pre>
+<p>安装时出错！提示“/usr/share/doc/redhat-release 失败：cpio: rename 失败 - 是一个目录”</p>
+<p>推测：安装centos-release时，这个redhat-release目录碍事了，所以我们手动把它删除掉（注意备份）。</p>
+<pre><code>[root@linuxprobe doc]# rm -r /usr/share/doc/redhat-release 
+rm：是否删除目录 &quot;/usr/share/doc/redhat-release&quot;？y
+
+如果还是报错，则再在/usr/share目录中删除redhat-release：
+
+[root@linuxprobe share]# rm -r /usr/share/redhat-release 
+rm：是否删除目录 &quot;/usr/share/redhat-release&quot;？y
+
+然后再终端中输入命令：rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm：
+
+[root@linuxprobe Desktop]# rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm
+Preparing...                          ################################# [100%]
+Updating / installing...
+  1:centos-release-7-9.2009.1.el7.cenwarning: /etc/yum.repos.d/CentOS-Base.repo created as /etc/yum.repos.d/CentOS-Base.repo.rpmnew
+################################# [100%]</code></pre>
+<p>到这一步，基本安装samba服务过程中的problem和error都已经解决，但此时如果输入yum install samba命令安装samba服务时，</p>
+<p>可能会引起SELinux的报警，因此需要将SELinux关闭；在/etc/selinux/config配置文件中查看SELinux的默认状态。如果是</p>
+<p>enforcing，建议赶紧修改为permissive或disabled；SELinux服务的主配置文件中，定义的是SELinux的默认运行状态，可以将其</p>
+<p>理解为系统重启后的状态，因此它不会在更改后立即生效。可以使用getenforce命令获得当前SELinux服务的运行模式：</p>
+<pre><code>[root@linuxprobe ~]# getenforce 
+Enforcing</code></pre>
+<p>再用setenforce [0|1]命令修改SELinux当前的运行模式（0为禁用，1为启用）。注意，这种修改只是临时的，在系统重启后就会失效：</p>
+<pre><code>[root@linuxprobe ~]# setenforce 0
+[root@linuxprobe ~]# getenforce
+Permissive</code></pre>
+<p>之后在终端中输入：yum install samba，安装samba服务，成功！</p>
+<p>具体方法可参考以下链接：</p>
+<p><a href="http://www.likecs.com/default/index/show?id=20904">http://www.likecs.com/default/index/show?id=20904</a><br><a href="https://blog.csdn.net/zz24_com/article/details/105127746">https://blog.csdn.net/zz24_com/article/details/105127746</a></p>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>安装samba服务时packagekit报错解决方法</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux就该这么学：管道符、重定向与环境变量</title>
     <url>/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
     <content><![CDATA[<h1 id="1-输入输出重定向"><a href="#1-输入输出重定向" class="headerlink" title="1.输入输出重定向"></a>1.输入输出重定向</h1><p>输入重定向：是指把文件导入到命令中； 输出重定向：是指把原本要输出到屏幕的数据写入到指定文件中。输出重定向又分为标准输出重定向和错误输出重定向。<br>输入重定向中用到的符号及其作用：</p>
@@ -2631,34 +2273,361 @@ Red Hat Enterprise Linux Server release 7.0 (Maipo)</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>图片加载命令</title>
-    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
-]]></content>
-  </entry>
-  <entry>
-    <title>用hexo和github免费创建自己的博客</title>
-    <url>/2020/12/06/%E7%94%A8hexo%E5%92%8Cgithub%E5%85%8D%E8%B4%B9%E5%88%9B%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2/</url>
-    <content><![CDATA[<h2 id="1-安装Nodejs"><a href="#1-安装Nodejs" class="headerlink" title="1.安装Nodejs"></a>1.安装Nodejs</h2><p>官方网站: <a href="https://nodejs.org/">https://nodejs.org</a>, 安装步骤非常简单，一直next，下一步就可以了，默认安装就行。</p>
-<h2 id="2-安装Git"><a href="#2-安装Git" class="headerlink" title="2.安装Git"></a>2.安装Git</h2><p>官方网站：<a href="https://git-scm.com/downloads%EF%BC%8C">https://git-scm.com/downloads，</a> 然后我们选择windows版本的下载，安装也是一直点下一步，安装官方默认的来就行，<br>tips：这个Git Bash下载下来就相当于Linux中的终端窗口了，以后我们就用这个东东来打开终端。</p>
+    <title>linux就该这么学：用户身份与文件权限</title>
+    <url>/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/</url>
+    <content><![CDATA[<h1 id="1-用户身份与能力"><a href="#1-用户身份与能力" class="headerlink" title="1.用户身份与能力"></a>1.用户身份与能力</h1><p>管理员UID为0：系统的管理员用户。</p>
+<p>系统用户UID为1～999： Linux系统为了避免因某个服务程序出现漏洞而被黑客提权至整台服务器，默认服务程序会有独立的系统用户负责运行，进而有效控制被破坏范围。</p>
+<p>普通用户UID从1000开始：是由管理员创建的用于日常工作的用户。</p>
 <a id="more"></a>
-<h2 id="3-安装hexo"><a href="#3-安装hexo" class="headerlink" title="3.安装hexo"></a>3.安装hexo</h2><p>新建一个文件夹，比如我这里建了blog；打开你的文件夹，然后在空白处点鼠标的右键，选择 ==Git Bash Here==；<br>看看 node，npm是否安装成功，没有成功的就重新安装node：<br>node -v    #查看node版本<br>npm -v    #查看npm版本<br>我们需要先来安装个cnpm提高速度，以后下载什么东西都用cnpm，在上面终端继续输入：<br>npm install -g cnpm –registry=<a href="https://registry.npm.taobao.org/">https://registry.npm.taobao.org</a><br>测试cnpm-成功:<br>cnpm -v    #查看cnpm版本<br>完成之后安装hexo：<br>cnpm install -g hexo-cli    #安装hexo框架<br>验证是否安装成功：<br>hexo -v    #查看hexo版本<br>用pwd命令查看当前路径，然后新建文件夹blog1：<br>mkdir blog1    #创建blog1目录<br>cd blog1     #进入blog1目录目录<br>hexo init     #生成博客 初始化博客（用Git Bash运行）<br>hexo s    #启动本地博客服务<br><a href="http://localhost:4000/">http://localhost:4000/</a>    #本地访问地址<br>hexo n “我的第一篇文章” #创建新的文章 </p>
-<h2 id="4-返回blog目录"><a href="#4-返回blog目录" class="headerlink" title="4.返回blog目录"></a>4.返回blog目录</h2><p>hexo clean #清理<br>hexo g #生成</p>
-<h2 id="5-将博客部署到GitHub上"><a href="#5-将博客部署到GitHub上" class="headerlink" title="5.将博客部署到GitHub上"></a>5.将博客部署到GitHub上</h2><p>在Github创建一个新的仓库 YourGithubName.github.io<br>然后输入cnpm install –save hexo-deployer-git #在blog目录下安装git部署插件</p>
-<h2 id="6-配置-config-yml"><a href="#6-配置-config-yml" class="headerlink" title="6.配置_config.yml"></a>6.配置_config.yml</h2><pre><code># Deployment
-## Docs: https://hexo.io/docs/deployment.html
-deploy:
-      type: git
-     repo: https://github.com/YourGithubName/YourGithubName.github.io.git
-      branch: master</code></pre>
-<p>win10 记得在 hexo d 之前输入以下命令：<br>git config –global user.email “xxx”<br>git config –global user.name “xxx”<br>然后用hexo d命令将博客部署到Github仓库里<br><a href="https://yourgithubname.github.io/">https://YourGithubName.github.io/</a>  #访问这个地址可以查看博客<br>注：<br>如果在输入hexo d命令时，提示有以下报错：ERROR Deployer not found: git<br>则在hexo的文件目录内输入以下命令：npm install –save hexo-deployer-git，之后再次输入hexo d命令即可</p>
-<h2 id="7-安装主题"><a href="#7-安装主题" class="headerlink" title="7.安装主题"></a>7.安装主题</h2><p>下载yilia主题到本地：git clone <a href="https://github.com/litten/hexo-theme-yilia.git">https://github.com/litten/hexo-theme-yilia.git</a> themes/yilia<br>修改hexo根目录下的 _config.yml 文件 ： theme: yilia<br>hexo c    #清理一下<br>hexo g    #生成<br>hexo d    #部署到远程Github仓库<br><a href="https://yourgithubname.github.io/">https://YourGithubName.github.io/</a>  #查看博客</p>
+<p>一个用户只有一个基本用户组，但是可以有多个扩展用户组，从而满足日常的工作需要。</p>
+<p>（1）useradd：用于创建新的用户；默认的用户家目录会被存放在/home目录中，默认的Shell解释器为/bin/bash，而且默认会创建一个与该用户同名的基本用户组。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-d</td>
+<td>指定用户的家目录</td>
+</tr>
+<tr>
+<td>-u</td>
+<td>指定该用户的默认UID</td>
+</tr>
+<tr>
+<td>-g</td>
+<td>指定一个初始的用户基本组（必须已存在）</td>
+</tr>
+<tr>
+<td>-G</td>
+<td>指定一个或多个扩展用户组</td>
+</tr>
+<tr>
+<td>-s</td>
+<td>指定该用户的默认Shell解释器</td>
+</tr>
+</tbody></table>
+<p>/sbin/nologin，它是终端解释器中的一员，与Bash解释器有着天壤之别。一旦用户的解释器被设置为nologin，则代表该用户不能登录到系统中：</p>
+<p>（2）groupadd:用于创建用户组；</p>
+<p>（3）usermod：用于修改用户属性；用户的信息保存在/etc/passwd文件中，可以直接用文本编辑器来修改其中的用户参数项目，也可以用usermod命令修改已经创建的用户信息，诸如用户的UID、基本/扩展用户组、默认终端等。  </p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-d -m</td>
+<td>参数-m与参数-d连用，可重新指定用户的家目录并自动把旧的数据转移过去</td>
+</tr>
+<tr>
+<td>-g</td>
+<td>变更所属用户组</td>
+</tr>
+<tr>
+<td>-G</td>
+<td>变更扩展用户组</td>
+</tr>
+<tr>
+<td>-L</td>
+<td>锁定用户禁止其登录系统</td>
+</tr>
+<tr>
+<td>-U</td>
+<td>解锁用户，允许其登陆系统</td>
+</tr>
+<tr>
+<td>-s</td>
+<td>变更默认终端</td>
+</tr>
+</tbody></table>
+<p>（4）passwd：用于修改用户密码、过期时间、认证信息等；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-l</td>
+<td>锁定用户禁止其登录系统</td>
+</tr>
+<tr>
+<td>-u</td>
+<td>解锁用户，允许其登陆系统</td>
+</tr>
+<tr>
+<td>–stdin</td>
+<td>允许通过标准输入修改用户密码，如echo “NewPassWord”</td>
+</tr>
+<tr>
+<td>-d</td>
+<td>使该用户可用空密码登录系统</td>
+</tr>
+<tr>
+<td>-e</td>
+<td>强制用户在下次登录时修改密码</td>
+</tr>
+<tr>
+<td>-S</td>
+<td>显示用户的密码是否被锁定，以及密码所采用的加密算法名称</td>
+</tr>
+</tbody></table>
+<p>（5）userdel：用于删除用户；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-f</td>
+<td>强制删除用户</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>同时删除用户及用户家目录</td>
+</tr>
+</tbody></table>
+<h1 id="2-文件权限与归属"><a href="#2-文件权限与归属" class="headerlink" title="2.文件权限与归属"></a>2.文件权限与归属</h1><p> -：普通文件；d：目录文件；l：链接文件；b：块设备文件；c：字符设备文件；p：管道文件</p>
+<p>对于一般文件来说，权限比较容易理解：“可读”表示能够读取文件的实际内容；“可写”表示能够编辑、新增、修改、删除文件的实际内容；“可执行”则表示能够运行一个脚本程序。</p>
+<p>对目录文件来说，“可读”表示能够读取目录内的文件列表；“可写”表示能够在目录内新增、删除、重命名文件；而“可执行”则表示能够进入该目录。</p>
+<h2 id="2-1-文件的特殊权限"><a href="#2-1-文件的特殊权限" class="headerlink" title="2.1 文件的特殊权限"></a>2.1 文件的特殊权限</h2><p>详细内容可参考：<a href="https://www.cnblogs.com/sparkdev/p/9651622.html%EF%BC%9B">https://www.cnblogs.com/sparkdev/p/9651622.html；</a></p>
+<p>（1）SUID：让执行者临时获得命令的所有者的权限；</p>
+<p>（2）SGID：目录内新文件所有组，继承原有目录所有组的名称！</p>
+<p>1.SUID<br>在 Linux 中，所有账号的密码记录在 /etc/shadow 这个文件中，并且只有 root 可以读写入这个文件：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/1.png" class>
+
+<p>如果另一个普通账号 tester 需要修改自己的密码，就要访问 /etc/shadow 这个文件。但是明明只有 root 才能访问 /etc/shadow 这个文件，这究竟是如何做到的呢？事实上，tester 用户是可以修改 /etc/shadow 这个文件内的密码的，就是通过 SUID 的功能。让我们看看 passwd 程序文件的权限信息：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/2.png" class>
+
+<p>上图红框中的权限信息有些奇怪，owner 的信息为 rws 而不是 rwx。当 s 出现在文件拥有者的 x 权限上时，就被称为 SETUID BITS 或 SETUID ，其特点如下：</p>
+<p>-SUID 权限仅对二进制可执行文件有效<br>-如果执行者对于该二进制可执行文件具有 x 的权限，执行者将具有该文件的所有者的权限<br>-本权限仅在执行该二进制可执行文件的过程中有效</p>
+<p>下面我们来看 tester 用户是如何利用 SUID 权限完成密码修改的：</p>
+<pre><code>(1)tester 用户对于 /usr/bin/passwd 这个程序具有执行权限，因此可以执行 passwd 程序
+(2)passwd 程序的所有者为 root
+(3)tester 用户执行 passwd 程序的过程中会暂时获得 root 权限
+(4)因此 tester 用户在执行 passwd 程序的过程中可以修改 /etc/shadow 文件</code></pre>
+<p>但是如果由 tester 用户执行 cat 命令去读取 /etc/shadow 文件确是不行的：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/3.png" class>
+
+<p>原因很清楚，tester 用户没有读 /etc/shadow 文件的权限，同时 cat 程序也没有被设置 SUID。我们可以通过下图来理解这两种情况：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/4.png" class>
+
+<p>如果想让任意用户通过 cat 命令读取 /etc/shadow 文件的内容也是非常容易的，给它设置 SUID 权限就可以了：</p>
+<p>$ sudo chmod 4755 /bin/cat</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/5.png" class>
+
+<p>现在 cat 已经具有了 SUID 权限，试试看，是不是已经可以 cat 到 /etc/shadow 的内容了。因为这样做非常不安全，所以赶快通过下面的命令把 cat 的 SUID 权限移除掉：</p>
+<p>$ sudo chmod 755 /bin/cat</p>
+<p>2.SGID</p>
+<p>当 s 标志出现在用户组的 x 权限时称为 SGID。SGID 的特点与 SUID 相同，我们通过 /usr/bin/mlocate 程序来演示其用法。mlocate 程序通过查询数据库文件 /var/lib/mlocate/mlocate.db 实现快速的文件查找。 mlocate 程序的权限如下图所示：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/6.png" class>
+
+<p>很明显，它被设置了 SGID 权限。下面是数据库文件 /var/lib/mlocate/mlocate.db 的权限信息：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/7.png" class>
+
+<p>普通用户 tester 执行 mlocate 命令时，tester 就会获得用户组 mlocate 的执行权限，又由于用户组 mlocate 对 mlocate.db 具有读权限，所以 tester 就可以读取 mlocate.db 了。程序的执行过程如下图所示：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/8.png" class>
+
+<p>除二进制程序外，SGID 也可以用在目录上。当一个目录设置了 SGID 权限后，它具有如下功能：</p>
+<pre><code>(1)用户若对此目录具有 r 和 x 权限，该用户能够进入该目录
+(2)用户在此目录下的有效用户组将变成该目录的用户组
+(3)若用户在此目录下拥有 w 权限，则用户所创建的新文件的用户组与该目录的用户组相同</code></pre>
+<p>下面看个例子，创建 testdir 目录，目录的权限设置如下：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/9.png" class>
+
+<p>此时目录 testdir 的 owner 是 nick，所属的 group 为 tester。<br>先创建一个名为 nickfile 的文件：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/10.png" class>
+
+<p>这个文件的权限看起来没有什么特别的。然后给 testdir 目录设置 SGID 权限：</p>
+<p>$ sudo chmod 2775 testdir</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/11.png" class>
+
+<p>然后再创建一个文件 nickfile2：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/12.png" class>
+
+<p>新建的文件所属的组为 tester！</p>
+<p>总结一下，当 SGID 作用于普通文件时，和 SUID 类似，在执行该文件时，用户将获得该文件所属组的权限。当 SGID 作用于目录时，意义就非常重大了。当用户对某一目录有写和执行权限时，该用户就可以在该目录下建立文件，如果该目录用 SGID 修饰，则该用户在这个目录下建立的文件都是属于这个目录所属的组。</p>
+<p>SBIT<br>其实 SBIT 与 SUID 和 SGID 的关系并不大。<br>SBIT 是 the  restricted  deletion  flag  or  sticky  bit 的简称。<br>SBIT 目前只对目录有效，用来阻止非文件的所有者删除文件。比较常见的例子就是 /tmp 目录：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/13.png" class>
+
+<p>权限信息中最后一位 t 表明该目录被设置了 SBIT 权限。SBIT 对目录的作用是：当用户在该目录下创建新文件或目录时，仅有自己和 root 才有权力删除。</p>
+<p>设置 SUID、SGID、SBIT 权限<br>以数字的方式设置权限<br>SUID、SGID、SBIT 权限对应的数字如下：</p>
+<p>SUID-&gt;4<br>SGID-&gt;2<br>SBIT-&gt;1<br>所以如果要为一个文件权限为 “-rwxr-xr-x” 的文件设置 SUID 权限，需要在原先的 755 前面加上 4，也就是 4755：</p>
+<p>$ chmod 4755 filename</p>
+<p>同样，可以用 2 和 1 来设置 SGID 和 SBIT 权限。设置完成后分别会用 s, s, t 代替文件权限中的 x。</p>
+<p>其实，还可能出现 S 和 T 的情况。S 和 t 是替代 x 这个权限的，但是，如果它本身没有 x 这个权限，添加 SUID、SGID、SBIT 权限后就会显示为大写 S 或大写 T。比如我们为一个权限为 666 的文件添加 SUID、SGID、SBIT 权限：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/14.png" class>
+
+<p>执行 chmod 7666 nickfile，因为 666 表示 “-rw-rw-rw”，均没有 x 权限，所以最后变成了 “-rwSrwSrwT”。</p>
+<p>通过符号类型改变权限</p>
+<p>除了使用数字来修改权限，还可以使用符号：</p>
+<p>$ chmod u+s testfile # 为 testfile 文件加上 SUID 权限。<br>$ chmod g+s testdir  # 为 testdir 目录加上 SGID 权限。<br>$ chmod o+t testdir  # 为 testdir 目录加上 SBIT 权限。</p>
+<p>总结<br>SUID、SGID、SBIT 权限都是为了实现特殊功能而设计的，其目的是弥补 ugo 权限无法实现的一些使用场景。</p>
+<h2 id="2-2文件的隐藏属性"><a href="#2-2文件的隐藏属性" class="headerlink" title="2.2文件的隐藏属性"></a>2.2文件的隐藏属性</h2><p>linux文件除了具备一般权限和特殊权限外，还具有隐藏权限；  </p>
+<p>1.chattr：用于设置文件的隐藏权限，添加隐藏功能“+参数”，移除隐藏功能“-参数”。  </p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>i</td>
+<td>无法对文件进行修改；若对目录设置了该参数，则仅能修改其中的子文件内容而不能新建或删除文件</td>
+</tr>
+<tr>
+<td>a</td>
+<td>仅允许补充（追加）内容，无法覆盖/删除内容（Append Only）</td>
+</tr>
+<tr>
+<td>s</td>
+<td>彻底从硬盘中删除，不可恢复（用0填充原文件所在硬盘区域）</td>
+</tr>
+<tr>
+<td>A</td>
+<td>不再修改这个文件或目录的最后访问时间（atime）</td>
+</tr>
+<tr>
+<td>b</td>
+<td>不再修改文件或目录的存取时间</td>
+</tr>
+<tr>
+<td>u</td>
+<td>当删除该文件后依然保留其在硬盘中的数据，方便日后恢复</td>
+</tr>
+</tbody></table>
+<p>2.lsattr：用于显示文件的隐藏权限；</p>
+<h2 id="2-3-文件访问控制列表"><a href="#2-3-文件访问控制列表" class="headerlink" title="2.3 文件访问控制列表"></a>2.3 文件访问控制列表</h2><p>一般权限、特殊权限、隐藏权限其实有一个共性—权限是针对某一类用户设置的；如果需要对某个指定的用户进行单独的权限控制，就需要用到文件访问控制列表（ACL);如果针对某个目录设置了ACL，则目录中的文件会继承其ACL；若针对文件设置了ACL，则文件不再继承其所在目录的ACL。</p>
+<p>1.setfacl：可以针对单一用户或用户组、单一文件或目录来进行读/写/执行权限的控制。<br>-R：针对目录文件；    -m：针对普通文件；    -b：删除文件的ACL</p>
+<pre><code>[root@linuxprobe ~]# setfacl -Rm u:linuxprobe:rwx /root
+[root@linuxprobe ~]# su - linuxprobe
+Last login: Sat Mar 21 15:45:03 CST 2017 on pts/1
+[linuxprobe@linuxprobe ~]$ cd /root
+[linuxprobe@linuxprobe root]$ ls
+anaconda-ks.cfg Downloads Pictures Public
+[linuxprobe@linuxprobe root]$ cat anaconda-ks.cfg
+[linuxprobe@linuxprobe root]$ exit</code></pre>
+<p>当文件权限的最后一个点（.）变成（+）时，意味着文件设置了ACL。</p>
+<p>2.getfacl：用于显示文件的ACL信息；</p>
+<h2 id="2-4-su命令与sudo服务"><a href="#2-4-su命令与sudo服务" class="headerlink" title="2.4 su命令与sudo服务"></a>2.4 su命令与sudo服务</h2><p>su命令可以解决切换用户身份的需求，使得当前用户在不退出登录的情况下，顺畅地切换到其他用户；上面的su命令与用户名之间有一个减号（-），这意味着完全切换到新的用户，即把环境变量信息也变更为新用户的相应信息，而不是保留原始的信息。</p>
+<p>sudo命令用于给普通用户提供额外的权限来完成原本root管理员才能完成的任务，格式为“sudo [参数] 命令名称”。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-l</td>
+<td>列出当前用户可执行的命令</td>
+</tr>
+<tr>
+<td>-u</td>
+<td>以指定的用户身份执行命令</td>
+</tr>
+<tr>
+<td>-k</td>
+<td>清空密码的有效时间，下次执行sudo时需要再次进行密码验证</td>
+</tr>
+<tr>
+<td>-b</td>
+<td>在后台执行指定的命令</td>
+</tr>
+<tr>
+<td>-p</td>
+<td>更改询问密码的提示语</td>
+</tr>
+</tbody></table>
+<p>配置文件（/etc/sudoers）提供集中的用户管理、权限与主机等参数；只有root管理员才可以使用visudo命令编辑sudo服务的配置文件。  </p>
+<pre><code>谁可以使用  允许使用的主机=（以谁的身份）  可执行命令的列表
+99 linuxprobe ALL=(ALL) ALL
+99 linuxprobe ALL=(ALL) /usr/bin/cat（命令的绝对路径）
+99 linuxprobe ALL=NOPASSWD: /usr/sbin/poweroff</code></pre>
 ]]></content>
       <categories>
-        <category>博客</category>
+        <category>linux就该这么学</category>
       </categories>
       <tags>
-        <tag>博客</tag>
+        <tag>第5章节：用户身份与文件权限</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux虚拟机外网网络访问设置指南</title>
+    <url>/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/</url>
+    <content><![CDATA[<p>要达到的效果就是在Linux虚拟机中可以上网：ping <a href="http://www.baidu.com/">http://www.baidu.com</a></p>
+<p>VMware中安装完 redhat7 后， 默认初始配置如下：</p>
+<a id="more"></a>
+
+<h1 id="1-VMware-网络配置"><a href="#1-VMware-网络配置" class="headerlink" title="1.VMware 网络配置"></a>1.VMware 网络配置</h1><p>（编辑 –&gt; 虚拟网络编辑器）查看</p>
+<p>默认配置为： (这些配置都不需要发生变更， 看看就好)</p>
+<pre><code>子网IP：192.168.154.0
+
+子网掩码 : 255.255.255.0
+
+可设置的IP网段为： 192.168.154.128 ~ 254
+
+&#123;% asset_img 1.jpg %&#125;
+
+点开 NAT设置可以看到 GATEWAY : 192.168.154.2:</code></pre>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/2.jpg" class>
+
+<p>下面介绍 redhat 本身配置m修改配置参数如下：</p>
+<p>注意各个参数与第一步 VMware 中的默认配置的联系 :</p>
+<pre><code>BOOTPROTO ： dhcp --&gt; static （静态IP）
+
+ONBOOT : no --&gt; YES (开机自动连接网络)
+
+IPADDR : 192.168.154.128 ~ 254 之间即可
+
+NETMASK : 子网， 与 VMware 默认一致
+
+GATEWAY : 网关， 与VMware 默认一致
+
+DNS1 : 首选 DNS, 不配置会出现外网不通， 只能与内网互通的问题.
+
+这里DNS要说一下的是，其他资料上有说要跟本机上网的DNS一致，还有说跟网关一致，或者改成8.8.8.8，都试过，ping www.baidu.com 都可以，不同的机器可能有不同，希望可以共同探讨。
+
+NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进行设置，而不是通过网络管理器进行管理。“ONBOOT=yes”告诉我们，系统将在启动时开启该接口。</code></pre>
+<p>编辑/etc/sysconfig/network-scipts/网卡名称：</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/3.jpg" class>
+
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/4.jpg" class>
+
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/5.jpg" class>
+
+<p>重启网络服务命令： systemctl restart network；</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/6.jpg" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>linux虚拟机外网网络访问设置指南</tag>
       </tags>
   </entry>
   <entry>
@@ -2946,6 +2915,37 @@ esac</code></pre>
     <url>/2021/07/24/zhangxiaolei/</url>
     <content><![CDATA[<p>撒酒疯立即受到法律为了和发射东风双方的和我姐夫航空技术的广发卡是山东悍匪未婚夫s</p>
 <img src="/2021/07/24/zhangxiaolei/114.jpg" class>]]></content>
+  </entry>
+  <entry>
+    <title>图片加载命令</title>
+    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
+]]></content>
+  </entry>
+  <entry>
+    <title>用hexo和github免费创建自己的博客</title>
+    <url>/2020/12/06/%E7%94%A8hexo%E5%92%8Cgithub%E5%85%8D%E8%B4%B9%E5%88%9B%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2/</url>
+    <content><![CDATA[<h2 id="1-安装Nodejs"><a href="#1-安装Nodejs" class="headerlink" title="1.安装Nodejs"></a>1.安装Nodejs</h2><p>官方网站: <a href="https://nodejs.org/">https://nodejs.org</a>, 安装步骤非常简单，一直next，下一步就可以了，默认安装就行。</p>
+<h2 id="2-安装Git"><a href="#2-安装Git" class="headerlink" title="2.安装Git"></a>2.安装Git</h2><p>官方网站：<a href="https://git-scm.com/downloads%EF%BC%8C">https://git-scm.com/downloads，</a> 然后我们选择windows版本的下载，安装也是一直点下一步，安装官方默认的来就行，<br>tips：这个Git Bash下载下来就相当于Linux中的终端窗口了，以后我们就用这个东东来打开终端。</p>
+<a id="more"></a>
+<h2 id="3-安装hexo"><a href="#3-安装hexo" class="headerlink" title="3.安装hexo"></a>3.安装hexo</h2><p>新建一个文件夹，比如我这里建了blog；打开你的文件夹，然后在空白处点鼠标的右键，选择 ==Git Bash Here==；<br>看看 node，npm是否安装成功，没有成功的就重新安装node：<br>node -v    #查看node版本<br>npm -v    #查看npm版本<br>我们需要先来安装个cnpm提高速度，以后下载什么东西都用cnpm，在上面终端继续输入：<br>npm install -g cnpm –registry=<a href="https://registry.npm.taobao.org/">https://registry.npm.taobao.org</a><br>测试cnpm-成功:<br>cnpm -v    #查看cnpm版本<br>完成之后安装hexo：<br>cnpm install -g hexo-cli    #安装hexo框架<br>验证是否安装成功：<br>hexo -v    #查看hexo版本<br>用pwd命令查看当前路径，然后新建文件夹blog1：<br>mkdir blog1    #创建blog1目录<br>cd blog1     #进入blog1目录目录<br>hexo init     #生成博客 初始化博客（用Git Bash运行）<br>hexo s    #启动本地博客服务<br><a href="http://localhost:4000/">http://localhost:4000/</a>    #本地访问地址<br>hexo n “我的第一篇文章” #创建新的文章 </p>
+<h2 id="4-返回blog目录"><a href="#4-返回blog目录" class="headerlink" title="4.返回blog目录"></a>4.返回blog目录</h2><p>hexo clean #清理<br>hexo g #生成</p>
+<h2 id="5-将博客部署到GitHub上"><a href="#5-将博客部署到GitHub上" class="headerlink" title="5.将博客部署到GitHub上"></a>5.将博客部署到GitHub上</h2><p>在Github创建一个新的仓库 YourGithubName.github.io<br>然后输入cnpm install –save hexo-deployer-git #在blog目录下安装git部署插件</p>
+<h2 id="6-配置-config-yml"><a href="#6-配置-config-yml" class="headerlink" title="6.配置_config.yml"></a>6.配置_config.yml</h2><pre><code># Deployment
+## Docs: https://hexo.io/docs/deployment.html
+deploy:
+      type: git
+     repo: https://github.com/YourGithubName/YourGithubName.github.io.git
+      branch: master</code></pre>
+<p>win10 记得在 hexo d 之前输入以下命令：<br>git config –global user.email “xxx”<br>git config –global user.name “xxx”<br>然后用hexo d命令将博客部署到Github仓库里<br><a href="https://yourgithubname.github.io/">https://YourGithubName.github.io/</a>  #访问这个地址可以查看博客<br>注：<br>如果在输入hexo d命令时，提示有以下报错：ERROR Deployer not found: git<br>则在hexo的文件目录内输入以下命令：npm install –save hexo-deployer-git，之后再次输入hexo d命令即可</p>
+<h2 id="7-安装主题"><a href="#7-安装主题" class="headerlink" title="7.安装主题"></a>7.安装主题</h2><p>下载yilia主题到本地：git clone <a href="https://github.com/litten/hexo-theme-yilia.git">https://github.com/litten/hexo-theme-yilia.git</a> themes/yilia<br>修改hexo根目录下的 _config.yml 文件 ： theme: yilia<br>hexo c    #清理一下<br>hexo g    #生成<br>hexo d    #部署到远程Github仓库<br><a href="https://yourgithubname.github.io/">https://YourGithubName.github.io/</a>  #查看博客</p>
+]]></content>
+      <categories>
+        <category>博客</category>
+      </categories>
+      <tags>
+        <tag>博客</tag>
+      </tags>
   </entry>
   <entry>
     <title>linux就该这么学-13：使用Bind提供域名解析服务</title>
@@ -4046,6 +4046,432 @@ Logout of [sid: 7, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c
       </tags>
   </entry>
   <entry>
+    <title>linux就该这么学：使用Apache服务部署静态网站</title>
+    <url>/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/</url>
+    <content><![CDATA[<h1 id="1-网站服务程序"><a href="#1-网站服务程序" class="headerlink" title="1.网站服务程序"></a>1.网站服务程序</h1><a id="more"></a>
+
+<p>第1步：把光盘设备中的系统镜像挂载到/media/cdrom目录。</p>
+<pre><code>[root@linuxprobe ~]# mkdir -p /media/cdrom
+[root@linuxprobe ~]# mount /dev/cdrom /media/cdrom
+mount: /dev/sr0 is write-protected, mounting read-only</code></pre>
+<p>第2步：使用Vim文本编辑器创建Yum仓库的配置文件。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/yum.repos.d/rhel7.repo
+[rhel7]
+name=rhel7
+baseurl=file:///media/cdrom
+enabled=1
+gpgcheck=0</code></pre>
+<p>第3步：动手安装Apache服务程序。注意，使用yum命令进行安装时，跟在命令后面的Apache服务的软件包名称为httpd。如果直接执行yum install apache命令，则系统会报错。</p>
+<pre><code>[root@linuxprobe ~]# yum install httpd
+Loaded plugins: langpacks, product-id, subscription-manager
+………………省略部分输出信息………………
+Complete!</code></pre>
+<p>第4步：启用httpd服务程序并将其加入到开机启动项中，使其能够随系统开机而运行，从而持续为用户提供Web服务：</p>
+<pre><code>[root@linuxprobe ~]# systemctl start httpd
+[root@linuxprobe ~]# systemctl enable httpd
+ln -s &#39;/usr/lib/systemd/system/httpd.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/httpd.service&#39;
+
+[root@linuxprobe ~]# firefox</code></pre>
+<h1 id="2-配置服务文件参数"><a href="#2-配置服务文件参数" class="headerlink" title="2.配置服务文件参数"></a>2.配置服务文件参数</h1><table>
+<thead>
+<tr>
+<th>作用</th>
+<th>文件名称</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>服务目录</td>
+<td>/etc/httpd</td>
+</tr>
+<tr>
+<td>主配置文件</td>
+<td>/etc/httpd/conf/httpd.conf</td>
+</tr>
+<tr>
+<td>网站数据目录</td>
+<td>/var/www/html</td>
+</tr>
+<tr>
+<td>访问日志</td>
+<td>/var/log/httpd/access_log</td>
+</tr>
+<tr>
+<td>错误日志</td>
+<td>/var/log/httpd/error_log</td>
+</tr>
+</tbody></table>
+<p>在httpd服务程序的主配置文件中，存在三种类型的信息：注释行信息、全局配置、区域配置；</p>
+<p> 配置httpd服务程序时最常用的参数以及用途描述：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ServerRoot</td>
+<td>服务目录</td>
+</tr>
+<tr>
+<td>ServerAdmin</td>
+<td>管理员邮箱</td>
+</tr>
+<tr>
+<td>User</td>
+<td>运行服务的用户</td>
+</tr>
+<tr>
+<td>Group</td>
+<td>运行服务的用户组</td>
+</tr>
+<tr>
+<td>ServerName</td>
+<td>网站服务器的域名</td>
+</tr>
+<tr>
+<td>DocumentRoot</td>
+<td>网站数据目录</td>
+</tr>
+<tr>
+<td>Listen</td>
+<td>监听的IP地址与端口号</td>
+</tr>
+<tr>
+<td>DirectoryIndex</td>
+<td>默认的索引页页面</td>
+</tr>
+<tr>
+<td>ErrorLog</td>
+<td>错误日志文件</td>
+</tr>
+<tr>
+<td>CustomLog</td>
+<td>访问日志文件</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>网页超时时间，默认为300秒</td>
+</tr>
+</tbody></table>
+<p>在默认情况下，网站数据是保存在/var/www/html目录中，打开httpd服务程序的主配置文件，将约第119行用于定义网站数据保存路径的参数DocumentRoot修改为/home/wwwroot，同时还需要将约第124行用于定义目录权限的参数Directory后面的路径也修改为/home/wwwroot。配置文件修改完毕后即可保存并退出。</p>
+<h1 id="3-SELinux安全子系统"><a href="#3-SELinux安全子系统" class="headerlink" title="3.SELinux安全子系统"></a>3.SELinux安全子系统</h1><p>“SELinux域”和“SELinux安全上下文”称为是Linux系统中的双保险</p>
+<p>SELinux服务有三种配置模式，具体如下：</p>
+<pre><code>enforcing：强制启用安全策略模式，将拦截服务的不合法请求。
+
+permissive：遇到服务越权访问时，只发出警告而不强制拦截。
+
+disabled：对于越权的行为不警告也不拦截。</code></pre>
+<p>SELinux服务主配置文件目录：/etc/selinux/config；</p>
+<p>getenforce：获取当前SELinux服务的运行模式； setenforce[0|1]：修改SELinux当前的运行模式（0为禁用，1为启用）；修改是暂时的，系统重启后失效。</p>
+<p>查看网站数据保存目录的SELinux安全上下文值：</p>
+<pre><code>[root@linuxprobe ~]# setenforce 1
+[root@linuxprobe ~]# ls -Zd /var/www/html
+drwxr-xr-x. root root system_u:object_r:httpd_sys_content_t:s0 /var/www/html
+[root@linuxprobe ~]# ls -Zd /home/wwwroot
+drwxrwxrwx. root root unconfined_u:object_r:home_root_t:s0 /home/wwwroot</code></pre>
+<p>在文件上设置的SELinux安全上下文是由用户段、角色段以及类型段等多个信息项共同组成的。其中，用户段system_u代表系统进程的身份，角色段object_r代表文件目录的角色，类型段httpd_sys_content_t代表网站服务的系统文件。</p>
+<h2 id="3-1-semanage命令"><a href="#3-1-semanage命令" class="headerlink" title="3.1 semanage命令"></a>3.1 semanage命令</h2><p>emanage命令用于管理SELinux的策略，格式为“semanage [选项] [文件]”，经常用到的几个参数及其功能如下所示：</p>
+<pre><code>    -l参数用于查询；    -a参数用于添加；    -m参数用于修改；    -d参数用于删除。</code></pre>
+<p>可以向新的网站数据目录中新添加一条SELinux安全上下文，让这个目录以及里面的所有文件能够被httpd服务程序所访问到：</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/*</code></pre>
+<p>注意，执行上述设置之后，还无法立即访问网站，还需要使用restorecon命令将设置好的SELinux安全上下文立即生效。在使用restorecon命令时，可以加上-Rv参数对指定的目录进行递归操作，以及显示SELinux安全上下文的修改过程。最后，再次刷新页面，就可以正常看到网页内容了：</p>
+<pre><code>[root@linuxprobe ~]# restorecon -Rv /home/wwwroot/
+restorecon reset /home/wwwroot context unconfined_u:object_r:home_root_t:s0-&gt;unconfined_u:object_r:httpd_sys_content_t:s0</code></pre>
+<p>再添加systemctl enable httpd命令，将所需服务添加到开机启动项中。</p>
+<h1 id="4-个人用户主页功能"><a href="#4-个人用户主页功能" class="headerlink" title="4.个人用户主页功能"></a>4.个人用户主页功能</h1><p>第1步：在httpd服务程序中，默认没有开启个人用户主页功能。为此，我们需要编辑下面的配置文件，然后在第17行的UserDir disabled参数前面加上井号（#），表示让httpd服务程序开启个人用户主页功能；同时再把第24行的UserDir public_html参数前面的井号（#）去掉（UserDir参数表示网站数据在用户家目录中的保存目录名称，即public_html目录）。最后，在修改完毕后记得保存。</p>
+<pre><code> 15 # permissions).
+ 16 #
+ 17 # UserDir disabled
+ 18 
+ 19 #
+ 20 # To enable requests to /~user/ to serve the user&#39;s public_html
+ 21 # directory, remove the &quot;UserDir disabled&quot; line above, and uncomment
+ 22 # the following line instead:
+ 23 # 
+ 24   UserDir public_html
+ 25 &lt;/IfModule&gt;
+ …… …… …… ……</code></pre>
+<p>第2步：在用户家目录中建立用于保存网站数据的目录及首页面文件。另外，还需要把家目录的权限修改为755，保证其他人也有权限读取里面的内容。</p>
+<pre><code>[root@linuxprobe home]# su - linuxprobe
+Last login: Fri May 22 13:17:37 CST 2017 on :0
+[linuxprobe@linuxprobe ~]$ mkdir public_html
+[linuxprobe@linuxprobe ~]$ echo &quot;This is linuxprobe&#39;s website&quot; &gt; public_html/index.html
+[linuxprobe@linuxprobe ~]$ chmod -Rf 755 /home/linuxprobe</code></pre>
+<p>第3步：使用getsebool命令查询并过滤出所有与HTTP协议相关的安全策略。其中，off为禁止状态，on为允许状态。</p>
+<pre><code>[root@linuxprobe ~]# getsebool -a | grep http
+httpd_anon_write --&gt; off
+httpd_builtin_scripting --&gt; on
+……
+**httpd_enable_homedirs --&gt; off**
+……</code></pre>
+<p>第4步：用setsebool命令来修改SELinux策略中规则的布尔值，在setsebool命令后面加上-P参数，让修改后的SELinux策略规则永久生效且立即生效，并重新启动httpd服务程序：</p>
+<pre><code>[root@linuxprobe ~]# setsebool -P httpd_enable_homedirs=on
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<p>第5步：在浏览器的地址栏中输入网址，其格式为“网址/<del>用户名”（其中的波浪号是必需的，而且网址、波浪号、用户名之间没有空格）如：127.0.0.1/</del>linuxprobe，就可以看到用户的个人网站了。</p>
+<h2 id="4-1在网页中添加口令功能"><a href="#4-1在网页中添加口令功能" class="headerlink" title="4.1在网页中添加口令功能"></a>4.1在网页中添加口令功能</h2><p>第1步：先使用htpasswd命令生成密码数据库。-c参数表示第一次生成；后面再分别添加密码数据库的存放文件，以及验证要用到的用户名称（该用户不必是系统中已有的本地账户）。</p>
+<pre><code>[root@linuxprobe ~]# htpasswd -c /etc/httpd/passwd linuxprobe
+New password:此处输入用于网页验证的密码
+Re-type new password:再输入一遍进行确认
+Adding password for user linuxprobe</code></pre>
+<p>第2步：编辑个人用户主页功能的配置文件。把第31～35行的参数信息修改成下列内容，其中井号（#）开头的内容为刘遄老师添加的注释信息，可将其忽略。随后保存并退出配置文件，重启httpd服务程序即可生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf.d/userdir.conf
+31 &lt;Directory &quot;/home/*/public_html&quot;&gt;
+32 AllowOverride all
+#刚刚生成出来的密码验证文件保存路径
+33 authuserfile &quot;/etc/httpd/passwd&quot;
+#当用户尝试访问个人用户网站时的提示信息
+34 authname &quot;My privately website&quot;
+35 authtype basic
+#用户进行账户密码登录时需要验证的用户名称
+36 require user linuxprobe
+37 &lt;/Directory&gt;
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<p>此后，当用户再想访问某个用户的个人网站时，就必须要输入账户和密码才能正常访问了。另外，验证时使用的账户和密码是用htpasswd命令生成的专门用于网站登录的口令密码，而不是系统中的用户密码，请不要搞错了。</p>
+<h2 id="4-3虚拟网站主机功能"><a href="#4-3虚拟网站主机功能" class="headerlink" title="4.3虚拟网站主机功能"></a>4.3虚拟网站主机功能</h2><p>利用虚拟主机功能，可以把一台处于运行状态的物理服务器分割成多个“虚拟的服务器”。但是，该技术无法实现目前云主机技术的硬件资源隔离，让这些虚拟的服务器共同使用物理服务器的硬件资源，供应商只能限制硬盘的使用空间大小。</p>
+<p>Apache的虚拟主机功能是服务器基于用户请求的不同IP地址、主机域名或端口号，实现提供多个网站同时为外部提供访问服务的技术，用户请求的资源不同，最终获取到的网页内容也各不相同。</p>
+<h3 id="4-3-1基于IP地址"><a href="#4-3-1基于IP地址" class="headerlink" title="4.3.1基于IP地址"></a>4.3.1基于IP地址</h3><p>第1步：使用nmtui命令，创建三个IP地址，如：192.168.10.10、192.168.10.20、192.168.10.30；</p>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/1.png" class>
+
+<p>第2步：分别在/home/wwwroot中创建用于保存不同网站数据的3个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/2.png" class>
+
+<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/10
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/20
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/30
+[root@linuxprobe ~]# echo &quot;IP:192.168.10.10&quot; &gt; /home/wwwroot/10/index.html
+[root@linuxprobe ~]# echo &quot;IP:192.168.10.20&quot; &gt; /home/wwwroot/20/index.html
+[root@linuxprobe ~]# echo &quot;IP:192.168.10.30&quot; &gt; /home/wwwroot/30/index.html</code></pre>
+<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入三个基于IP地址的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+113 &lt;VirtualHost 192.168.10.10&gt;
+114 DocumentRoot /home/wwwroot/10
+115 ServerName www.linuxprobe.com
+116 &lt;Directory /home/wwwroot/10 &gt;
+117 AllowOverride None
+118 Require all granted
+119 &lt;/Directory&gt;
+120 &lt;/VirtualHost&gt;
+121 &lt;VirtualHost 192.168.10.20&gt;
+122 DocumentRoot /home/wwwroot/20
+123 ServerName bbs.linuxprobe.com
+124 &lt;Directory /home/wwwroot/20 &gt;
+125 AllowOverride None
+126 Require all granted
+127 &lt;/Directory&gt;
+128 &lt;/VirtualHost&gt;
+129 &lt;VirtualHost 192.168.10.30&gt;
+130 DocumentRoot /home/wwwroot/30
+131 ServerName tech.linuxprobe.com
+132 &lt;Directory /home/wwwroot/30 &gt;
+133 AllowOverride None
+134 Require all granted
+135 &lt;/Directory&gt;
+136 &lt;/VirtualHost&gt;
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<p>第3步：手动把新的网站数据目录的SELinux安全上下文设置正确，并使用restorecon命令让新设置的SELinux安全上下文立即生效;</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/10
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/10/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/20
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/20/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/30
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/30/*
+[root@linuxprobe ~]# restorecon -Rv /home/wwwroot</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/3.png" class>
+
+<h3 id="4-3-2基于主机域名"><a href="#4-3-2基于主机域名" class="headerlink" title="4.3.2基于主机域名"></a>4.3.2基于主机域名</h3><p>当服务器无法为每个网站都分配一个独立IP地址的时候，可以尝试让Apache自动识别用户请求的域名，从而根据不同的域名请求来传输不同的内容。在这种情况下的配置更加简单，只需要保证位于生产环境中的服务器上有一个可用的IP地址（这里以192.168.10.10为例）就可以了。</p>
+<p>/etc/hosts是Linux系统中用于强制把某个主机域名解析到指定IP地址的配置文件。</p>
+<p>第1步：手工定义IP地址与域名之间对应关系的配置文件，保存并退出后会立即生效。可以通过分别ping这些域名来验证域名是否已经成功解析为IP地址。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/hosts
+127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1 localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.10.10 www.linuxprobe.com bbs.linuxprobe.com tech.linuxprobe.com
+[root@linuxprobe ~]# ping -c 4 www.linuxprobe.com
+PING www.linuxprobe.com (192.168.10.10) 56(84) bytes of data.
+64 bytes from www.linuxprobe.com (192.168.10.10): icmp_seq=1 ttl=64 time=0.070 ms</code></pre>
+<p>第2步：分别在/home/wwwroot中创建用于保存不同网站数据的三个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
+<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/www
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/bbs
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/tech
+[root@linuxprobe ~]# echo &quot;WWW.linuxprobe.com&quot; &gt; /home/wwwroot/www/index.html
+[root@linuxprobe ~]# echo &quot;BBS.linuxprobe.com&quot; &gt; /home/wwwroot/bbs/index.html
+[root@linuxprobe ~]# echo &quot;TECH.linuxprobe.com&quot; &gt; /home/wwwroot/tech/index.html</code></pre>
+<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入三个基于主机名的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+113 &lt;VirtualHost 192.168.10.10&gt;
+114 DocumentRoot &quot;/home/wwwroot/www&quot;
+115 ServerName &quot;www.linuxprobe.com&quot;
+116 &lt;Directory &quot;/home/wwwroot/www&quot;&gt;
+117 AllowOverride None
+118 Require all granted
+119 &lt;/directory&gt; 
+120 &lt;/VirtualHost&gt;
+121 &lt;VirtualHost 192.168.10.10&gt;
+122 DocumentRoot &quot;/home/wwwroot/bbs&quot;
+123 ServerName &quot;bbs.linuxprobe.com&quot;
+124 &lt;Directory &quot;/home/wwwroot/bbs&quot;&gt;
+125 AllowOverride None
+126 Require all granted
+127 &lt;/Directory&gt;
+128 &lt;/VirtualHost&gt;
+129 &lt;VirtualHost 192.168.10.10&gt;
+130 DocumentRoot &quot;/home/wwwroot/tech&quot;
+131 ServerName &quot;tech.linuxprobe.com&quot;
+132 &lt;Directory &quot;/home/wwwroot/tech&quot;&gt;
+133 AllowOverride None
+134 Require all granted
+135 &lt;/directory&gt;
+136 &lt;/VirtualHost&gt;</code></pre>
+<p>第4步：因为当前的网站数据目录还是在/home/wwwroot目录中，因此还是必须要正确设置网站数据目录文件的SELinux安全上下文，使其与网站服务功能相吻合。最后记得用restorecon命令让新配置的SELinux安全上下文立即生效，这样就可以立即访问到虚拟主机网站了。</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/www
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/www/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/bbs
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/bbs/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/tech
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/tech/*
+[root@linuxprobe ~]# restorecon -Rv /home/wwwroot</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/4.png" class>
+
+<h3 id="4-3-3基于端口号"><a href="#4-3-3基于端口号" class="headerlink" title="4.3.3基于端口号"></a>4.3.3基于端口号</h3><p>基于端口号的虚拟主机功能可以让用户通过指定的端口号来访问服务器上的网站资源。一般来说，使用80、443、8080等端口号来提供网站访问服务是比较合理的，如果使用其他端口号则会受到SELinux服务的限制。</p>
+<p>在接下来的实验中，我们不但要考虑到目录上应用的SELinux安全上下文的限制，还需要考虑SELinux域对httpd服务程序的管控。</p>
+<p>第1步：分别在/home/wwwroot中创建用于保存不同网站数据的两个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
+<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/6111
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/6222
+[root@linuxprobe ~]# echo &quot;port:6111&quot; &gt; /home/wwwroot/6111/index.html
+[root@linuxprobe ~]# echo &quot;port:6222&quot; &gt; /home/wwwroot/6222/index.html</code></pre>
+<p>第2步：在httpd服务配置文件的第43行和第44行分别添加用于监听6111和6222端口的参数。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf 
+………………省略部分输出信息……………… 
+ 33 #
+ 34 # Listen: Allows you to bind Apache to specific IP addresses and/or
+ 35 # ports, instead of the default. See also the &lt;VirtualHost&gt;
+ 36 # directive.
+ 37 #
+ 38 # Change this to Listen on specific IP addresses as shown below to 
+ 39 # prevent Apache from glomming onto all bound IP addresses.
+ 40 #
+ 41 #Listen 12.34.56.78:80
+ 42 Listen 80
+ 43 Listen 6111
+ 44 Listen 6222
+………………省略部分输出信息……………… </code></pre>
+<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入两个基于端口号的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息……………… 
+113 &lt;VirtualHost 192.168.10.10:6111&gt;
+114 DocumentRoot &quot;/home/wwwroot/6111&quot;
+115 ServerName www.linuxprobe.com
+116 &lt;Directory &quot;/home/wwwroot/6111&quot;&gt;
+117 AllowOverride None
+118 Require all granted
+119 &lt;/Directory&gt; 
+120 &lt;/VirtualHost&gt;
+121 &lt;VirtualHost 192.168.10.10:6222&gt;
+122 DocumentRoot &quot;/home/wwwroot/6222&quot;
+123 ServerName bbs.linuxprobe.com
+124 &lt;Directory &quot;/home/wwwroot/6222&quot;&gt;
+125 AllowOverride None
+126 Require all granted
+127 &lt;/Directory&gt;
+128 &lt;/VirtualHost&gt;
+………………省略部分输出信息………………</code></pre>
+<p>第4步：因为我们把网站数据目录存放在/home/wwwroot目录中，因此还是必须要正确设置网站数据目录文件的SELinux安全上下文，使其与网站服务功能相吻合。最后记得用restorecon命令让新配置的SELinux安全上下文立即生效。</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6111
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6111/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6222
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6222/*
+[root@linuxprobe ~]# restorecon -Rv /home/wwwroot/</code></pre>
+<p>第5步：用semanage命令查询并过滤出所有与HTTP协议相关且SELinux服务允许的端口列表。</p>
+<pre><code>[root@linuxprobe ~]# semanage port -l | grep http
+http_cache_port_t tcp 8080, 8118, 8123, 10001-10010
+http_cache_port_t udp 3130
+http_port_t tcp 80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t tcp 5988
+pegasus_https_port_t tcp 5989</code></pre>
+<p>第6步：SELinux允许的与HTTP协议相关的端口号中默认没有包含6111和6222，因此需要将这两个端口号手动添加进去。该操作会立即生效，而且在系统重启过后依然有效。设置好后再重启httpd服务程序</p>
+<pre><code>[root@linuxprobe ~]# semanage port -a -t http_port_t -p tcp 6111
+[root@linuxprobe ~]# semanage port -a -t http_port_t -p tcp 6222
+[root@linuxprobe ~]# semanage port -l| grep http
+http_cache_port_t tcp 8080, 8118, 8123, 10001-10010
+http_cache_port_t udp 3130
+http_port_t tcp  6222, 6111, 80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t tcp 5988
+pegasus_https_port_t tcp 5989
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/5.png" class>
+
+<h1 id="5-Apache的访问控制"><a href="#5-Apache的访问控制" class="headerlink" title="5.Apache的访问控制"></a>5.Apache的访问控制</h1><p>Apache通过Allow指令允许某个主机访问服务器上的网站资源，通过Deny指令实现禁止访问。在允许或禁止访问网站资源时，还会用到Order指令，这个指令用来定义Allow或Deny指令起作用的顺序，其匹配原则是按照顺序进行匹配，若匹配成功则执行后面的默认指令。比如“Order Allow, Deny”表示先将源主机与允许规则进行匹配，若匹配成功则允许访问请求，反之则拒绝访问请求。</p>
+<p>第1步：先在服务器上的网站数据目录中新建一个子目录，并在这个子目录中创建一个包含Successful单词的首页文件；</p>
+<pre><code>[root@linuxprobe ~]# mkdir /var/www/html/server
+[root@linuxprobe ~]# echo &quot;Successful&quot; &gt; /var/www/html/server/index.html</code></pre>
+<p>第2步：打开httpd服务的配置文件，在第129行后面添加下述规则来限制源主机的访问。这段规则的含义是允许使用Firefox浏览器的主机访问服务器上的首页文件，除此之外的所有请求都将被拒绝。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+129 &lt;Directory &quot;/var/www/html/server&quot;&gt;
+130 SetEnvIf User-Agent &quot;Firefox&quot; ff=1
+131 Order allow,deny
+132 Allow from env=ff
+133 &lt;/Directory&gt;
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart httpd
+[root@linuxprobe ~]# firefox</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/6.png" class>
+
+<p>除了匹配源主机的浏览器特征之外，还可以通过匹配源主机的IP地址进行访问控制。例如，我们只允许IP地址为192.168.10.20的主机访问网站资源，那么就可以在httpd服务配置文件的第129行后面添加下述规则。这样在重启httpd服务程序后再用本机（即服务器，其IP地址为192.168.10.10）来访问网站的首页面时就会提示访问被拒绝了。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+129 &lt;Directory &quot;/var/www/html/server&quot;&gt;
+130 Order allow,deny 
+131 Allow from 192.168.10.20
+132 &lt;/Directory&gt;
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart httpd
+[root@linuxprobe ~]# firefox</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/7.jpg" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第10章节：使用Apache服务部署静态网站</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux就该这么学：使用Vsftpd服务传输文件</title>
     <url>/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Vsftpd%E6%9C%8D%E5%8A%A1%E4%BC%A0%E8%BE%93%E6%96%87%E4%BB%B6/</url>
     <content><![CDATA[<h1 id="1-文件传输协议"><a href="#1-文件传输协议" class="headerlink" title="1.文件传输协议"></a>1.文件传输协议</h1><p>FTP是一种在互联网中进行文件传输的协议，基于客户端/服务器模式，默认使用20、21号端口，其中端口20（数据端口）用于进行数据传输，端口21（命令端口）用于接受客户端发出的相关FTP命令与参数。</p>
@@ -4601,432 +5027,6 @@ i love linux</code></pre>
       </categories>
       <tags>
         <tag>第11章节：使用Vsftpd服务传输文件</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学：使用Apache服务部署静态网站</title>
-    <url>/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/</url>
-    <content><![CDATA[<h1 id="1-网站服务程序"><a href="#1-网站服务程序" class="headerlink" title="1.网站服务程序"></a>1.网站服务程序</h1><a id="more"></a>
-
-<p>第1步：把光盘设备中的系统镜像挂载到/media/cdrom目录。</p>
-<pre><code>[root@linuxprobe ~]# mkdir -p /media/cdrom
-[root@linuxprobe ~]# mount /dev/cdrom /media/cdrom
-mount: /dev/sr0 is write-protected, mounting read-only</code></pre>
-<p>第2步：使用Vim文本编辑器创建Yum仓库的配置文件。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/yum.repos.d/rhel7.repo
-[rhel7]
-name=rhel7
-baseurl=file:///media/cdrom
-enabled=1
-gpgcheck=0</code></pre>
-<p>第3步：动手安装Apache服务程序。注意，使用yum命令进行安装时，跟在命令后面的Apache服务的软件包名称为httpd。如果直接执行yum install apache命令，则系统会报错。</p>
-<pre><code>[root@linuxprobe ~]# yum install httpd
-Loaded plugins: langpacks, product-id, subscription-manager
-………………省略部分输出信息………………
-Complete!</code></pre>
-<p>第4步：启用httpd服务程序并将其加入到开机启动项中，使其能够随系统开机而运行，从而持续为用户提供Web服务：</p>
-<pre><code>[root@linuxprobe ~]# systemctl start httpd
-[root@linuxprobe ~]# systemctl enable httpd
-ln -s &#39;/usr/lib/systemd/system/httpd.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/httpd.service&#39;
-
-[root@linuxprobe ~]# firefox</code></pre>
-<h1 id="2-配置服务文件参数"><a href="#2-配置服务文件参数" class="headerlink" title="2.配置服务文件参数"></a>2.配置服务文件参数</h1><table>
-<thead>
-<tr>
-<th>作用</th>
-<th>文件名称</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>服务目录</td>
-<td>/etc/httpd</td>
-</tr>
-<tr>
-<td>主配置文件</td>
-<td>/etc/httpd/conf/httpd.conf</td>
-</tr>
-<tr>
-<td>网站数据目录</td>
-<td>/var/www/html</td>
-</tr>
-<tr>
-<td>访问日志</td>
-<td>/var/log/httpd/access_log</td>
-</tr>
-<tr>
-<td>错误日志</td>
-<td>/var/log/httpd/error_log</td>
-</tr>
-</tbody></table>
-<p>在httpd服务程序的主配置文件中，存在三种类型的信息：注释行信息、全局配置、区域配置；</p>
-<p> 配置httpd服务程序时最常用的参数以及用途描述：</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>ServerRoot</td>
-<td>服务目录</td>
-</tr>
-<tr>
-<td>ServerAdmin</td>
-<td>管理员邮箱</td>
-</tr>
-<tr>
-<td>User</td>
-<td>运行服务的用户</td>
-</tr>
-<tr>
-<td>Group</td>
-<td>运行服务的用户组</td>
-</tr>
-<tr>
-<td>ServerName</td>
-<td>网站服务器的域名</td>
-</tr>
-<tr>
-<td>DocumentRoot</td>
-<td>网站数据目录</td>
-</tr>
-<tr>
-<td>Listen</td>
-<td>监听的IP地址与端口号</td>
-</tr>
-<tr>
-<td>DirectoryIndex</td>
-<td>默认的索引页页面</td>
-</tr>
-<tr>
-<td>ErrorLog</td>
-<td>错误日志文件</td>
-</tr>
-<tr>
-<td>CustomLog</td>
-<td>访问日志文件</td>
-</tr>
-<tr>
-<td>Timeout</td>
-<td>网页超时时间，默认为300秒</td>
-</tr>
-</tbody></table>
-<p>在默认情况下，网站数据是保存在/var/www/html目录中，打开httpd服务程序的主配置文件，将约第119行用于定义网站数据保存路径的参数DocumentRoot修改为/home/wwwroot，同时还需要将约第124行用于定义目录权限的参数Directory后面的路径也修改为/home/wwwroot。配置文件修改完毕后即可保存并退出。</p>
-<h1 id="3-SELinux安全子系统"><a href="#3-SELinux安全子系统" class="headerlink" title="3.SELinux安全子系统"></a>3.SELinux安全子系统</h1><p>“SELinux域”和“SELinux安全上下文”称为是Linux系统中的双保险</p>
-<p>SELinux服务有三种配置模式，具体如下：</p>
-<pre><code>enforcing：强制启用安全策略模式，将拦截服务的不合法请求。
-
-permissive：遇到服务越权访问时，只发出警告而不强制拦截。
-
-disabled：对于越权的行为不警告也不拦截。</code></pre>
-<p>SELinux服务主配置文件目录：/etc/selinux/config；</p>
-<p>getenforce：获取当前SELinux服务的运行模式； setenforce[0|1]：修改SELinux当前的运行模式（0为禁用，1为启用）；修改是暂时的，系统重启后失效。</p>
-<p>查看网站数据保存目录的SELinux安全上下文值：</p>
-<pre><code>[root@linuxprobe ~]# setenforce 1
-[root@linuxprobe ~]# ls -Zd /var/www/html
-drwxr-xr-x. root root system_u:object_r:httpd_sys_content_t:s0 /var/www/html
-[root@linuxprobe ~]# ls -Zd /home/wwwroot
-drwxrwxrwx. root root unconfined_u:object_r:home_root_t:s0 /home/wwwroot</code></pre>
-<p>在文件上设置的SELinux安全上下文是由用户段、角色段以及类型段等多个信息项共同组成的。其中，用户段system_u代表系统进程的身份，角色段object_r代表文件目录的角色，类型段httpd_sys_content_t代表网站服务的系统文件。</p>
-<h2 id="3-1-semanage命令"><a href="#3-1-semanage命令" class="headerlink" title="3.1 semanage命令"></a>3.1 semanage命令</h2><p>emanage命令用于管理SELinux的策略，格式为“semanage [选项] [文件]”，经常用到的几个参数及其功能如下所示：</p>
-<pre><code>    -l参数用于查询；    -a参数用于添加；    -m参数用于修改；    -d参数用于删除。</code></pre>
-<p>可以向新的网站数据目录中新添加一条SELinux安全上下文，让这个目录以及里面的所有文件能够被httpd服务程序所访问到：</p>
-<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/*</code></pre>
-<p>注意，执行上述设置之后，还无法立即访问网站，还需要使用restorecon命令将设置好的SELinux安全上下文立即生效。在使用restorecon命令时，可以加上-Rv参数对指定的目录进行递归操作，以及显示SELinux安全上下文的修改过程。最后，再次刷新页面，就可以正常看到网页内容了：</p>
-<pre><code>[root@linuxprobe ~]# restorecon -Rv /home/wwwroot/
-restorecon reset /home/wwwroot context unconfined_u:object_r:home_root_t:s0-&gt;unconfined_u:object_r:httpd_sys_content_t:s0</code></pre>
-<p>再添加systemctl enable httpd命令，将所需服务添加到开机启动项中。</p>
-<h1 id="4-个人用户主页功能"><a href="#4-个人用户主页功能" class="headerlink" title="4.个人用户主页功能"></a>4.个人用户主页功能</h1><p>第1步：在httpd服务程序中，默认没有开启个人用户主页功能。为此，我们需要编辑下面的配置文件，然后在第17行的UserDir disabled参数前面加上井号（#），表示让httpd服务程序开启个人用户主页功能；同时再把第24行的UserDir public_html参数前面的井号（#）去掉（UserDir参数表示网站数据在用户家目录中的保存目录名称，即public_html目录）。最后，在修改完毕后记得保存。</p>
-<pre><code> 15 # permissions).
- 16 #
- 17 # UserDir disabled
- 18 
- 19 #
- 20 # To enable requests to /~user/ to serve the user&#39;s public_html
- 21 # directory, remove the &quot;UserDir disabled&quot; line above, and uncomment
- 22 # the following line instead:
- 23 # 
- 24   UserDir public_html
- 25 &lt;/IfModule&gt;
- …… …… …… ……</code></pre>
-<p>第2步：在用户家目录中建立用于保存网站数据的目录及首页面文件。另外，还需要把家目录的权限修改为755，保证其他人也有权限读取里面的内容。</p>
-<pre><code>[root@linuxprobe home]# su - linuxprobe
-Last login: Fri May 22 13:17:37 CST 2017 on :0
-[linuxprobe@linuxprobe ~]$ mkdir public_html
-[linuxprobe@linuxprobe ~]$ echo &quot;This is linuxprobe&#39;s website&quot; &gt; public_html/index.html
-[linuxprobe@linuxprobe ~]$ chmod -Rf 755 /home/linuxprobe</code></pre>
-<p>第3步：使用getsebool命令查询并过滤出所有与HTTP协议相关的安全策略。其中，off为禁止状态，on为允许状态。</p>
-<pre><code>[root@linuxprobe ~]# getsebool -a | grep http
-httpd_anon_write --&gt; off
-httpd_builtin_scripting --&gt; on
-……
-**httpd_enable_homedirs --&gt; off**
-……</code></pre>
-<p>第4步：用setsebool命令来修改SELinux策略中规则的布尔值，在setsebool命令后面加上-P参数，让修改后的SELinux策略规则永久生效且立即生效，并重新启动httpd服务程序：</p>
-<pre><code>[root@linuxprobe ~]# setsebool -P httpd_enable_homedirs=on
-[root@linuxprobe ~]# systemctl restart httpd</code></pre>
-<p>第5步：在浏览器的地址栏中输入网址，其格式为“网址/<del>用户名”（其中的波浪号是必需的，而且网址、波浪号、用户名之间没有空格）如：127.0.0.1/</del>linuxprobe，就可以看到用户的个人网站了。</p>
-<h2 id="4-1在网页中添加口令功能"><a href="#4-1在网页中添加口令功能" class="headerlink" title="4.1在网页中添加口令功能"></a>4.1在网页中添加口令功能</h2><p>第1步：先使用htpasswd命令生成密码数据库。-c参数表示第一次生成；后面再分别添加密码数据库的存放文件，以及验证要用到的用户名称（该用户不必是系统中已有的本地账户）。</p>
-<pre><code>[root@linuxprobe ~]# htpasswd -c /etc/httpd/passwd linuxprobe
-New password:此处输入用于网页验证的密码
-Re-type new password:再输入一遍进行确认
-Adding password for user linuxprobe</code></pre>
-<p>第2步：编辑个人用户主页功能的配置文件。把第31～35行的参数信息修改成下列内容，其中井号（#）开头的内容为刘遄老师添加的注释信息，可将其忽略。随后保存并退出配置文件，重启httpd服务程序即可生效。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf.d/userdir.conf
-31 &lt;Directory &quot;/home/*/public_html&quot;&gt;
-32 AllowOverride all
-#刚刚生成出来的密码验证文件保存路径
-33 authuserfile &quot;/etc/httpd/passwd&quot;
-#当用户尝试访问个人用户网站时的提示信息
-34 authname &quot;My privately website&quot;
-35 authtype basic
-#用户进行账户密码登录时需要验证的用户名称
-36 require user linuxprobe
-37 &lt;/Directory&gt;
-[root@linuxprobe ~]# systemctl restart httpd</code></pre>
-<p>此后，当用户再想访问某个用户的个人网站时，就必须要输入账户和密码才能正常访问了。另外，验证时使用的账户和密码是用htpasswd命令生成的专门用于网站登录的口令密码，而不是系统中的用户密码，请不要搞错了。</p>
-<h2 id="4-3虚拟网站主机功能"><a href="#4-3虚拟网站主机功能" class="headerlink" title="4.3虚拟网站主机功能"></a>4.3虚拟网站主机功能</h2><p>利用虚拟主机功能，可以把一台处于运行状态的物理服务器分割成多个“虚拟的服务器”。但是，该技术无法实现目前云主机技术的硬件资源隔离，让这些虚拟的服务器共同使用物理服务器的硬件资源，供应商只能限制硬盘的使用空间大小。</p>
-<p>Apache的虚拟主机功能是服务器基于用户请求的不同IP地址、主机域名或端口号，实现提供多个网站同时为外部提供访问服务的技术，用户请求的资源不同，最终获取到的网页内容也各不相同。</p>
-<h3 id="4-3-1基于IP地址"><a href="#4-3-1基于IP地址" class="headerlink" title="4.3.1基于IP地址"></a>4.3.1基于IP地址</h3><p>第1步：使用nmtui命令，创建三个IP地址，如：192.168.10.10、192.168.10.20、192.168.10.30；</p>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/1.png" class>
-
-<p>第2步：分别在/home/wwwroot中创建用于保存不同网站数据的3个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/2.png" class>
-
-<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/10
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/20
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/30
-[root@linuxprobe ~]# echo &quot;IP:192.168.10.10&quot; &gt; /home/wwwroot/10/index.html
-[root@linuxprobe ~]# echo &quot;IP:192.168.10.20&quot; &gt; /home/wwwroot/20/index.html
-[root@linuxprobe ~]# echo &quot;IP:192.168.10.30&quot; &gt; /home/wwwroot/30/index.html</code></pre>
-<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入三个基于IP地址的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
-………………省略部分输出信息………………
-113 &lt;VirtualHost 192.168.10.10&gt;
-114 DocumentRoot /home/wwwroot/10
-115 ServerName www.linuxprobe.com
-116 &lt;Directory /home/wwwroot/10 &gt;
-117 AllowOverride None
-118 Require all granted
-119 &lt;/Directory&gt;
-120 &lt;/VirtualHost&gt;
-121 &lt;VirtualHost 192.168.10.20&gt;
-122 DocumentRoot /home/wwwroot/20
-123 ServerName bbs.linuxprobe.com
-124 &lt;Directory /home/wwwroot/20 &gt;
-125 AllowOverride None
-126 Require all granted
-127 &lt;/Directory&gt;
-128 &lt;/VirtualHost&gt;
-129 &lt;VirtualHost 192.168.10.30&gt;
-130 DocumentRoot /home/wwwroot/30
-131 ServerName tech.linuxprobe.com
-132 &lt;Directory /home/wwwroot/30 &gt;
-133 AllowOverride None
-134 Require all granted
-135 &lt;/Directory&gt;
-136 &lt;/VirtualHost&gt;
-………………省略部分输出信息………………
-[root@linuxprobe ~]# systemctl restart httpd</code></pre>
-<p>第3步：手动把新的网站数据目录的SELinux安全上下文设置正确，并使用restorecon命令让新设置的SELinux安全上下文立即生效;</p>
-<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/10
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/10/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/20
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/20/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/30
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/30/*
-[root@linuxprobe ~]# restorecon -Rv /home/wwwroot</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/3.png" class>
-
-<h3 id="4-3-2基于主机域名"><a href="#4-3-2基于主机域名" class="headerlink" title="4.3.2基于主机域名"></a>4.3.2基于主机域名</h3><p>当服务器无法为每个网站都分配一个独立IP地址的时候，可以尝试让Apache自动识别用户请求的域名，从而根据不同的域名请求来传输不同的内容。在这种情况下的配置更加简单，只需要保证位于生产环境中的服务器上有一个可用的IP地址（这里以192.168.10.10为例）就可以了。</p>
-<p>/etc/hosts是Linux系统中用于强制把某个主机域名解析到指定IP地址的配置文件。</p>
-<p>第1步：手工定义IP地址与域名之间对应关系的配置文件，保存并退出后会立即生效。可以通过分别ping这些域名来验证域名是否已经成功解析为IP地址。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/hosts
-127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4
-::1 localhost localhost.localdomain localhost6 localhost6.localdomain6
-192.168.10.10 www.linuxprobe.com bbs.linuxprobe.com tech.linuxprobe.com
-[root@linuxprobe ~]# ping -c 4 www.linuxprobe.com
-PING www.linuxprobe.com (192.168.10.10) 56(84) bytes of data.
-64 bytes from www.linuxprobe.com (192.168.10.10): icmp_seq=1 ttl=64 time=0.070 ms</code></pre>
-<p>第2步：分别在/home/wwwroot中创建用于保存不同网站数据的三个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
-<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/www
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/bbs
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/tech
-[root@linuxprobe ~]# echo &quot;WWW.linuxprobe.com&quot; &gt; /home/wwwroot/www/index.html
-[root@linuxprobe ~]# echo &quot;BBS.linuxprobe.com&quot; &gt; /home/wwwroot/bbs/index.html
-[root@linuxprobe ~]# echo &quot;TECH.linuxprobe.com&quot; &gt; /home/wwwroot/tech/index.html</code></pre>
-<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入三个基于主机名的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
-………………省略部分输出信息………………
-113 &lt;VirtualHost 192.168.10.10&gt;
-114 DocumentRoot &quot;/home/wwwroot/www&quot;
-115 ServerName &quot;www.linuxprobe.com&quot;
-116 &lt;Directory &quot;/home/wwwroot/www&quot;&gt;
-117 AllowOverride None
-118 Require all granted
-119 &lt;/directory&gt; 
-120 &lt;/VirtualHost&gt;
-121 &lt;VirtualHost 192.168.10.10&gt;
-122 DocumentRoot &quot;/home/wwwroot/bbs&quot;
-123 ServerName &quot;bbs.linuxprobe.com&quot;
-124 &lt;Directory &quot;/home/wwwroot/bbs&quot;&gt;
-125 AllowOverride None
-126 Require all granted
-127 &lt;/Directory&gt;
-128 &lt;/VirtualHost&gt;
-129 &lt;VirtualHost 192.168.10.10&gt;
-130 DocumentRoot &quot;/home/wwwroot/tech&quot;
-131 ServerName &quot;tech.linuxprobe.com&quot;
-132 &lt;Directory &quot;/home/wwwroot/tech&quot;&gt;
-133 AllowOverride None
-134 Require all granted
-135 &lt;/directory&gt;
-136 &lt;/VirtualHost&gt;</code></pre>
-<p>第4步：因为当前的网站数据目录还是在/home/wwwroot目录中，因此还是必须要正确设置网站数据目录文件的SELinux安全上下文，使其与网站服务功能相吻合。最后记得用restorecon命令让新配置的SELinux安全上下文立即生效，这样就可以立即访问到虚拟主机网站了。</p>
-<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/www
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/www/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/bbs
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/bbs/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/tech
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/tech/*
-[root@linuxprobe ~]# restorecon -Rv /home/wwwroot</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/4.png" class>
-
-<h3 id="4-3-3基于端口号"><a href="#4-3-3基于端口号" class="headerlink" title="4.3.3基于端口号"></a>4.3.3基于端口号</h3><p>基于端口号的虚拟主机功能可以让用户通过指定的端口号来访问服务器上的网站资源。一般来说，使用80、443、8080等端口号来提供网站访问服务是比较合理的，如果使用其他端口号则会受到SELinux服务的限制。</p>
-<p>在接下来的实验中，我们不但要考虑到目录上应用的SELinux安全上下文的限制，还需要考虑SELinux域对httpd服务程序的管控。</p>
-<p>第1步：分别在/home/wwwroot中创建用于保存不同网站数据的两个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
-<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/6111
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/6222
-[root@linuxprobe ~]# echo &quot;port:6111&quot; &gt; /home/wwwroot/6111/index.html
-[root@linuxprobe ~]# echo &quot;port:6222&quot; &gt; /home/wwwroot/6222/index.html</code></pre>
-<p>第2步：在httpd服务配置文件的第43行和第44行分别添加用于监听6111和6222端口的参数。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf 
-………………省略部分输出信息……………… 
- 33 #
- 34 # Listen: Allows you to bind Apache to specific IP addresses and/or
- 35 # ports, instead of the default. See also the &lt;VirtualHost&gt;
- 36 # directive.
- 37 #
- 38 # Change this to Listen on specific IP addresses as shown below to 
- 39 # prevent Apache from glomming onto all bound IP addresses.
- 40 #
- 41 #Listen 12.34.56.78:80
- 42 Listen 80
- 43 Listen 6111
- 44 Listen 6222
-………………省略部分输出信息……………… </code></pre>
-<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入两个基于端口号的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
-………………省略部分输出信息……………… 
-113 &lt;VirtualHost 192.168.10.10:6111&gt;
-114 DocumentRoot &quot;/home/wwwroot/6111&quot;
-115 ServerName www.linuxprobe.com
-116 &lt;Directory &quot;/home/wwwroot/6111&quot;&gt;
-117 AllowOverride None
-118 Require all granted
-119 &lt;/Directory&gt; 
-120 &lt;/VirtualHost&gt;
-121 &lt;VirtualHost 192.168.10.10:6222&gt;
-122 DocumentRoot &quot;/home/wwwroot/6222&quot;
-123 ServerName bbs.linuxprobe.com
-124 &lt;Directory &quot;/home/wwwroot/6222&quot;&gt;
-125 AllowOverride None
-126 Require all granted
-127 &lt;/Directory&gt;
-128 &lt;/VirtualHost&gt;
-………………省略部分输出信息………………</code></pre>
-<p>第4步：因为我们把网站数据目录存放在/home/wwwroot目录中，因此还是必须要正确设置网站数据目录文件的SELinux安全上下文，使其与网站服务功能相吻合。最后记得用restorecon命令让新配置的SELinux安全上下文立即生效。</p>
-<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6111
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6111/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6222
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6222/*
-[root@linuxprobe ~]# restorecon -Rv /home/wwwroot/</code></pre>
-<p>第5步：用semanage命令查询并过滤出所有与HTTP协议相关且SELinux服务允许的端口列表。</p>
-<pre><code>[root@linuxprobe ~]# semanage port -l | grep http
-http_cache_port_t tcp 8080, 8118, 8123, 10001-10010
-http_cache_port_t udp 3130
-http_port_t tcp 80, 81, 443, 488, 8008, 8009, 8443, 9000
-pegasus_http_port_t tcp 5988
-pegasus_https_port_t tcp 5989</code></pre>
-<p>第6步：SELinux允许的与HTTP协议相关的端口号中默认没有包含6111和6222，因此需要将这两个端口号手动添加进去。该操作会立即生效，而且在系统重启过后依然有效。设置好后再重启httpd服务程序</p>
-<pre><code>[root@linuxprobe ~]# semanage port -a -t http_port_t -p tcp 6111
-[root@linuxprobe ~]# semanage port -a -t http_port_t -p tcp 6222
-[root@linuxprobe ~]# semanage port -l| grep http
-http_cache_port_t tcp 8080, 8118, 8123, 10001-10010
-http_cache_port_t udp 3130
-http_port_t tcp  6222, 6111, 80, 81, 443, 488, 8008, 8009, 8443, 9000
-pegasus_http_port_t tcp 5988
-pegasus_https_port_t tcp 5989
-[root@linuxprobe ~]# systemctl restart httpd</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/5.png" class>
-
-<h1 id="5-Apache的访问控制"><a href="#5-Apache的访问控制" class="headerlink" title="5.Apache的访问控制"></a>5.Apache的访问控制</h1><p>Apache通过Allow指令允许某个主机访问服务器上的网站资源，通过Deny指令实现禁止访问。在允许或禁止访问网站资源时，还会用到Order指令，这个指令用来定义Allow或Deny指令起作用的顺序，其匹配原则是按照顺序进行匹配，若匹配成功则执行后面的默认指令。比如“Order Allow, Deny”表示先将源主机与允许规则进行匹配，若匹配成功则允许访问请求，反之则拒绝访问请求。</p>
-<p>第1步：先在服务器上的网站数据目录中新建一个子目录，并在这个子目录中创建一个包含Successful单词的首页文件；</p>
-<pre><code>[root@linuxprobe ~]# mkdir /var/www/html/server
-[root@linuxprobe ~]# echo &quot;Successful&quot; &gt; /var/www/html/server/index.html</code></pre>
-<p>第2步：打开httpd服务的配置文件，在第129行后面添加下述规则来限制源主机的访问。这段规则的含义是允许使用Firefox浏览器的主机访问服务器上的首页文件，除此之外的所有请求都将被拒绝。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
-………………省略部分输出信息………………
-129 &lt;Directory &quot;/var/www/html/server&quot;&gt;
-130 SetEnvIf User-Agent &quot;Firefox&quot; ff=1
-131 Order allow,deny
-132 Allow from env=ff
-133 &lt;/Directory&gt;
-………………省略部分输出信息………………
-[root@linuxprobe ~]# systemctl restart httpd
-[root@linuxprobe ~]# firefox</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/6.png" class>
-
-<p>除了匹配源主机的浏览器特征之外，还可以通过匹配源主机的IP地址进行访问控制。例如，我们只允许IP地址为192.168.10.20的主机访问网站资源，那么就可以在httpd服务配置文件的第129行后面添加下述规则。这样在重启httpd服务程序后再用本机（即服务器，其IP地址为192.168.10.10）来访问网站的首页面时就会提示访问被拒绝了。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
-………………省略部分输出信息………………
-129 &lt;Directory &quot;/var/www/html/server&quot;&gt;
-130 Order allow,deny 
-131 Allow from 192.168.10.20
-132 &lt;/Directory&gt;
-………………省略部分输出信息………………
-[root@linuxprobe ~]# systemctl restart httpd
-[root@linuxprobe ~]# firefox</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/7.jpg" class>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第10章节：使用Apache服务部署静态网站</tag>
       </tags>
   </entry>
   <entry>
