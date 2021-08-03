@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zhuxiaowei0924.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="1.电子邮件系统电子邮件系统基于邮件协议来完成电子邮件的传输，常见的邮件协议有下面这些：">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux就该这么学-15:使用Postfix与Dovecot部署邮件系统">
+<meta property="og:url" content="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/index.html">
+<meta property="og:site_name" content="随笔&amp;博客">
+<meta property="og:description" content="1.电子邮件系统电子邮件系统基于邮件协议来完成电子邮件的传输，常见的邮件协议有下面这些：">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/1.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/2.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/3.jpg">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/4.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/7.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/8.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/9.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/10.png">
+<meta property="article:published_time" content="2021-02-16T07:14:21.000Z">
+<meta property="article:modified_time" content="2021-03-04T04:30:16.941Z">
+<meta property="article:author" content="晓">
+<meta property="article:tag" content="第15章节：使用Postfix与Dovecot部署邮件系统">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/1.png">
+
+<link rel="canonical" href="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>linux就该这么学-15:使用Postfix与Dovecot部署邮件系统 | 随笔&博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  <!-- 页面点击小红花 -->
+  <script type="text/javascript" src="/js/fairyDustCursor.js"></script>
+  <!-- 引入jQuery -->
+  <script type="text/javascript" src="//libs.baidu.com/jquery/1.8.3/jquery.min.js"></script>
+  <!-- 雪花特效/2 -->
+  <script type="text/javascript" src="/js/snow.js"></script>
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">随笔&博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">生于忧患，死于安乐</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="晓">
+      <meta itemprop="description" content="看得懂的书，请仔细看；看不懂的书，请硬着头皮看。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="随笔&博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          linux就该这么学-15:使用Postfix与Dovecot部署邮件系统
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-16 15:14:21" itemprop="dateCreated datePublished" datetime="2021-02-16T15:14:21+08:00">2021-02-16</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-04 12:30:16" itemprop="dateModified" datetime="2021-03-04T12:30:16+08:00">2021-03-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">linux就该这么学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.2k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="1-电子邮件系统"><a href="#1-电子邮件系统" class="headerlink" title="1.电子邮件系统"></a>1.电子邮件系统</h1><p>电子邮件系统基于邮件协议来完成电子邮件的传输，常见的邮件协议有下面这些：</p>
+<a id="more"></a>
+
+<pre><code>简单邮件传输协议（Simple Mail Transfer Protocol，SMTP）：用于发送和中转发出的电子邮件，占用服务器的25/TCP端口。
+
+邮局协议版本3（Post Office Protocol 3）：用于将电子邮件存储到本地主机，占用服务器的110/TCP端口。
+
+Internet消息访问协议版本4（Internet Message Access Protocol 4）：用于在本地主机上访问邮件，占用服务器的143/TCP端口。</code></pre>
+<p>MUA：Mail User Agent，邮件用户代理；    MDA：Mail Delivery Agent，邮件投递代理；    </p>
+<p>MTA：Mail Transfer Agent，邮件传输代理。</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/1.png" class="">
+
+<p>在生产环境中部署企业级的电子邮件系统时，有4个注意事项请留意。</p>
+<pre><code>1.添加反垃圾与反病毒模块：它能够很有效地阻止垃圾邮件或病毒邮件对企业信箱的干扰。
+2.对邮件加密：可有效保护邮件内容不被黑客盗取和篡改。
+3.添加邮件监控审核模块：可有效地监控企业全体员工的邮件中是否有敏感词、是否有透露企业资料等违规行为。
+4.保障稳定性：电子邮件系统的稳定性至关重要，运维人员应做到保证电子邮件系统的稳定运行，并及时做好防范分布式拒绝服务（Distributed Denial of Service，DDoS）攻击的准备。</code></pre>
+<h1 id="2-部署基础的电子邮件系统"><a href="#2-部署基础的电子邮件系统" class="headerlink" title="2.部署基础的电子邮件系统"></a>2.部署基础的电子邮件系统</h1><p>一个最基础的电子邮件系统肯定要能提供发件服务和收件服务，为此需要使用基于SMTP协议的Postfix服务程序提供发件服务功能，并使用基于POP3协议的Dovecot服务程序提供收件服务功能。</p>
+<p>要想更好地检验电子邮件系统的配置效果，需要先部署bind服务程序，为电子邮件服务器和客户端提供DNS域名解析服务。</p>
+<p>第1步：部署bind服务程序。</p>
+<pre><code>[root@linuxprobe ~]# yum install bind-chroot</code></pre>
+<p>第2步：配置服务器主机名称，需要保证服务器主机名称与发信域名保持一致：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/hostname
+mail.linuxprobe.com
+[root@linuxprobe ~]# hostname
+mail.linuxprobe.com
+[root@linuxprobe ~]# vim /etc/hosts
+192.168.10.10 mail.linuxprobe.com</code></pre>
+<p>第3步：清空iptables防火墙默认策略，并保存策略状态，避免因防火墙中默认存在的策略阻止了客户端DNS解析域名及收发邮件：</p>
+<pre><code>[root@localhost ~]# iptables -F
+[root@localhost ~]# service iptables save
+iptables: Saving firewall rules to /etc/sysconfig/iptables:[  OK  ]</code></pre>
+<p>第4步：为电子邮件系统提供域名解析。</p>
+<pre><code>[root@linuxprobe ~]# cat /etc/named.conf
+ 10 options &#123;
+ 11 listen-on port 53 &#123; any; &#125;;
+ 12 listen-on-v6 port 53 &#123; ::1; &#125;;
+ 13 directory &quot;/var/named&quot;;
+ 14 dump-file &quot;/var/named/data/cache_dump.db&quot;;
+ 15 statistics-file &quot;/var/named/data/named_stats.txt&quot;;
+ 16 memstatistics-file &quot;/var/named/data/named_mem_stats.txt&quot;;
+ 17 allow-query &#123; any; &#125;;
+ 18 
+ ………………省略部分输出信息………………
+
+[root@linuxprobe ~]# cat /etc/named.rfc1912.zones
+zone &quot;linuxprobe.com&quot; IN &#123;
+type master;
+file &quot;linuxprobe.com.zone&quot;;
+allow-update &#123;none;&#125;;
+&#125;;
+
+[root@linuxprobe ~]# cat /var/named/linuxprobe.com.zone</code></pre>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/2.png" class="">
+
+<pre><code>[root@linuxprobe ~]# systemctl restart named
+[root@linuxprobe ~]# systemctl enable named
+ln -s &#39;/usr/lib/systemd/system/named.service&#39; 
+&#39;/etc/systemd/system/multi-user.target.wants/named.service&#39;</code></pre>
+<p>测试时重启named服务时，显示报错：Job for named.service failed because the control process exited with error code. See “systemctl status named.service” and “journalctl -xe” for details.用named-checkconf -z /etc/named.conf（纠错命令）查看发现是由于配置文件内容写错导致！</p>
+<p>这样电子邮件系统所对应的服务器主机名即为mail.linuxprobe.com，而邮件域为@linuxprobe.com。把服务器的DNS地址修改成本地IP地址：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/3.jpg" class="">
+
+<p>修改完IP地址后，需要重启网卡，之后可用ping mail.linuxprobe.com或nslookup命令测试下配置是否成功：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/4.png" class="">
+
+<p>用nslookup命令测试时，出现以下报错：server can’t find mail.linuxprobe.com:NXDOMAIN，并提示当前的server 192.168.10.2 不能使用；此时可编辑/etc/resolv.conf文件，将报错的nameserver 192.168.10.2删除，保留nameserver 192.168.10.10即可！之后再重启网卡，测试一下！</p>
+<h2 id="2-1配置Postfix服务程序"><a href="#2-1配置Postfix服务程序" class="headerlink" title="2.1配置Postfix服务程序"></a>2.1配置Postfix服务程序</h2><p>第1步：安装Postfix服务程序；在安装完Postfix服务程序后，需要禁用iptables防火墙，否则外部用户无法访问电子邮件系统。</p>
+<pre><code>[root@linuxprobe ~]# yum install postfix
+Loaded plugins: langpacks, product-id, subscription-manager
+rhel7 | 4.1 kB 00:00
+(1/2): rhel7/group_gz | 134 kB 00:00
+(2/2): rhel7/primary_db | 3.4 MB 00:00
+Package 2:postfix-2.10.1-6.el7.x86_64 already installed and latest version
+Nothing to do
+[root@linuxprobe ~]# systemctl disable iptables</code></pre>
+<p>第2步：配置Postfix服务程序，Postfix服务程序主配置文件（/etc/ postfix/main.cf）。</p>
+<p>Postfix服务程序主配置文件中的重要参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>myhostname</td>
+<td>邮局系统的主机名</td>
+</tr>
+<tr>
+<td>mydomain</td>
+<td>邮局系统的域名</td>
+</tr>
+<tr>
+<td>myorigin</td>
+<td>从本机发出邮件的域名名称</td>
+</tr>
+<tr>
+<td>inet_interfaces</td>
+<td>监听的网卡接口</td>
+</tr>
+<tr>
+<td>mydestination</td>
+<td>可接收邮件的主机名或域名</td>
+</tr>
+<tr>
+<td>mynetworks</td>
+<td>设置可转发哪些主机的邮件</td>
+</tr>
+<tr>
+<td>relay_domains</td>
+<td>设置可转发哪些网域的邮件</td>
+</tr>
+</tbody></table>
+<p>在Postfix服务程序的主配置文件中，总计需要修改5处。首先是在第76行定义一个名为myhostname的变量，用来保存服务器的主机名称。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/postfix/main.cf
+………………省略部分输出信息………………
+68 # INTERNET HOST AND DOMAIN NAMES
+69 # 
+70 # The myhostname parameter specifies the internet hostname of this
+71 # mail system. The default is to use the fully-qualified domain name
+72 # from gethostname(). $myhostname is used as a default value for many
+73 # other configuration parameters.
+74 #
+75 #myhostname = host.domain.tld
+76 myhostname = mail.linuxprobe.com
+………………省略部分输出信息………………</code></pre>
+<p>然后在第83行定义一个名为mydomain的变量，用来保存邮件域的名称。大家也要记住这个变量名称，下面将调用它：</p>
+<pre><code>78 # The mydomain parameter specifies the local internet domain name.
+79 # The default is to use $myhostname minus the first component.
+80 # $mydomain is used as a default value for many other configuration
+81 # parameters.
+82 #
+83 mydomain = linuxprobe.com</code></pre>
+<p>在第99行调用前面的mydomain变量，用来定义发出邮件的域。调用变量的好处是避免重复写入信息，以及便于日后统一修改：</p>
+<pre><code>94 # For the sake of consistency between sender and recipient addresses,
+95 # myorigin also specifies the default domain name that is appended
+96 # to recipient addresses that have no @domain part.
+97 #
+98 #myorigin = $myhostname
+99 myorigin = $mydomain</code></pre>
+<p>第4处修改是在第116行定义网卡监听地址。可以指定要使用服务器的哪些IP地址对外提供电子邮件服务；也可以干脆写成all，代表所有IP地址都能提供电子邮件服务：</p>
+<pre><code>111 # Note: you need to stop/start Postfix when this parameter changes.
+112 #
+113 #inet_interfaces = all
+114 #inet_interfaces = $myhostname
+115 #inet_interfaces = $myhostname, localhost
+116 inet_interfaces = all</code></pre>
+<p>最后一处修改是在第164行定义可接收邮件的主机名或域名列表。这里可以直接调用前面定义好的myhostname和mydomain变量（如果不想调用变量，也可以直接调用变量中的值）：</p>
+<pre><code>162 # See also below, section &quot;REJECTING MAIL FOR UNKNOWN LOCAL USERS&quot;.
+163 #
+164 mydestination = $myhostname , $mydomain
+165 #mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
+166 #mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain,</code></pre>
+<p>第3步：创建电子邮件系统的登录账户。Postfix与vsftpd服务程序一样，都可以调用本地系统的账户和密码，因此在本地系统创建常规账户即可。最后重启配置妥当的postfix服务程序，并将其添加到开机启动项中。大功告成！</p>
+<pre><code>[root@linuxprobe ~]# useradd boss
+[root@linuxprobe ~]# echo &quot;linuxprobe&quot; | passwd --stdin boss
+Changing password for user boss. passwd: all authentication tokens updated successfully.
+[root@linuxprobe ~]# systemctl restart postfix
+[root@linuxprobe ~]# systemctl enable postfix
+ln -s &#39;/usr/lib/systemd/system/postfix.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/postfix.service&#39;</code></pre>
+<h2 id="2-2配置Dovecot服务程序"><a href="#2-2配置Dovecot服务程序" class="headerlink" title="2.2配置Dovecot服务程序"></a>2.2配置Dovecot服务程序</h2><p>第1步：安装Dovecot服务程序软件包。大家可自行配置Yum软件仓库、挂载光盘镜像到指定目录，然后输入要安装的dovecot软件包名称即可：</p>
+<pre><code>[root@linuxprobe ~]# yum install dovecot</code></pre>
+<p>第2步：配置部署Dovecot服务程序。在Dovecot服务程序的主配置文件中进行如下修改。首先是第24行，把Dovecot服务程序支持的电子邮件协议修改为imap、pop3和lmtp。然后在这一行下面添加一行参数，允许用户使用明文进行密码验证。之所以这样操作，是因为Dovecot服务程序为了保证电子邮件系统的安全而默认强制用户使用加密方式进行登录，而由于当前还没有加密系统，因此需要添加该参数来允许用户的明文登录。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/dovecot/dovecot.conf
+………………省略部分输出信息………………
+23 # Protocols we want to be serving.
+24 protocols = imap pop3 lmtp
+25 disable_plaintext_auth = no
+………………省略部分输出信息………………</code></pre>
+<p>在主配置文件中的第48行，设置允许登录的网段地址，也就是说我们可以在这里限制只有来自于某个网段的用户才能使用电子邮件系统。如果想允许所有人都能使用，则不用修改本参数：</p>
+<pre><code>44 # Space separated list of trusted network ranges. Connections from these
+45 # IPs are allowed to override their IP addresses and ports (for logging and
+46 # for authentication checks). disable_plaintext_auth is also ignored for
+47 # these networks. Typically you&#39;d specify your IMAP proxy servers here.
+48 login_trusted_networks = 192.168.10.0/24</code></pre>
+<p>第3步：配置邮件格式与存储路径。在Dovecot服务程序单独的子配置文件中，定义一个路径，用于指定要将收到的邮件存放到服务器本地的哪个位置。这个路径默认已经定义好了，我们只需要将该配置文件中第24行前面的井号（#）删除即可。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/dovecot/conf.d/10-mail.conf
+21 # See doc/wiki/Variables.txt for full list. Some examples:
+22 #
+23 # mail_location = maildir:~/Maildir
+24 mail_location = mbox:~/mail:INBOX=/var/mail/%u
+25 # mail_location = mbox:/var/mail/%d/%1n/%n:INDEX=/var/indexes/%d/%1n/%n
+………………省略部分输出信息………………</code></pre>
+<p>然后切换到配置Postfix服务程序时创建的boss账户，并在家目录中建立用于保存邮件的目录。记得要重启Dovecot服务并将其添加到开机启动项中。</p>
+<pre><code>[root@linuxprobe ~]# su - linuxprobe
+Last login: Sat Aug 15 16:15:58 CST 2017 on pts/1
+[linuxprobe@mail ~]$ mkdir -p mail/.imap/INBOX
+[linuxprobe@mail ~]$ exit
+[root@linuxprobe ~]# systemctl restart dovecot 
+[root@linuxprobe ~]# systemctl enable dovecot 
+ln -s &#39;/usr/lib/systemd/system/dovecot.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/dovecot.service&#39;</code></pre>
+<h2 id="2-3使用电子邮件系统"><a href="#2-3使用电子邮件系统" class="headerlink" title="2.3使用电子邮件系统"></a>2.3使用电子邮件系统</h2><p> 服务器与客户端的操作系统与IP地址：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>电子邮件系统及DNS服务器</td>
+<td>RHEL 7</td>
+<td>192.168.10.10</td>
+</tr>
+<tr>
+<td>客户端主机</td>
+<td>Windows 10</td>
+<td>192.168.10.30</td>
+</tr>
+</tbody></table>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png" class="">
+
+<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#x6c;&#105;&#110;&#117;&#x78;&#x70;&#114;&#x6f;&#98;&#x65;&#x40;&#x6c;&#x69;&#x6e;&#117;&#x78;&#112;&#x72;&#111;&#98;&#101;&#x2e;&#x63;&#x6f;&#x6d;">&#x6c;&#105;&#110;&#117;&#x78;&#x70;&#114;&#x6f;&#98;&#x65;&#x40;&#x6c;&#x69;&#x6e;&#117;&#x78;&#112;&#x72;&#111;&#98;&#101;&#x2e;&#x63;&#x6f;&#x6d;</a>,linuxprobe是linux用户名）和用户密码：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png" class="">
+
+<p>第2步：设置接收服务器类型为POP3，输入邮件帐号和密码，设置POP服务器和SMTP服务器地址，两个为同一地址，如192.168.10.10，SSL端口处不勾选，之后创建成功！</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/7.png" class="">
+
+<p>第3步：账号建立后，即可从win 10系统向linux发送邮件：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/8.png" class="">
+
+<p>第4步：发送邮件后，可在linux系统内部输入mail命令，并输入对应邮件数值编号查看邮件：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/9.png" class="">
+
+<p>第5步：从linux系统向win10电脑发送邮件，只需输入mail 邮件地址，然后输入subject和正文；最后输入点（.)结束：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/10.png" class="">
+
+<h1 id="3-设置用户别名邮箱"><a href="#3-设置用户别名邮箱" class="headerlink" title="3.设置用户别名邮箱"></a>3.设置用户别名邮箱</h1><p>用户别名功能是一项简单实用的邮件账户伪装技术，可以用来设置多个虚拟信箱的账户以接受发送的邮件，从而保证自身的邮件地址不被泄露，还可以用来接收自己的多个信箱中的邮件。</p>
+<pre><code>[root@linuxprobe ~]# cat /etc/aliases
+#
+# Aliases in this file will NOT be expanded in the header from
+# Mail, but WILL be visible over networks or from /bin/mail.
+#
+# &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; The program &quot;newaliases&quot; must be run after
+# &gt;&gt; NOTE &gt;&gt; this file is updated for any changes to
+# &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; show through to sendmail.
+#
+# Basic system aliases -- these MUST be present.
+mailer-daemon: postmaster
+postmaster: root
+# General redirections for pseudo accounts.
+bin: root
+daemon: root
+adm: root
+lp: root
+sync: root
+shutdown: root
+halt: root
+mail: root
+news: root
+……</code></pre>
+<p>保存并退出aliases邮件别名服务的配置文件后，需要再执行一下newaliases命令，其目的是让新的用户别名配置文件立即生效。</p>
+
+    </div>
+
+    
+    
+    
+	
+	<div>
+		
+			<div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+		
+	</div>
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>晓
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://zhuxiaowei0924.github.io/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/" title="linux就该这么学-15:使用Postfix与Dovecot部署邮件系统">https://zhuxiaowei0924.github.io/2021/02/16/linux就该这么学-15-使用Postfix与Dovecot部署邮件系统/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%AC%AC15%E7%AB%A0%E8%8A%82%EF%BC%9A%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="tag"># 第15章节：使用Postfix与Dovecot部署邮件系统</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/" rel="prev" title="linux就该这么学-14：使用DHCP动态管理主机地址">
+      <i class="fa fa-chevron-left"></i> linux就该这么学-14：使用DHCP动态管理主机地址
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/" rel="next" title="liunx就该这么学-16：使用Squid部署代理缓存服务">
+      liunx就该这么学-16：使用Squid部署代理缓存服务 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E7%94%B5%E5%AD%90%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-text">1.电子邮件系统</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E9%83%A8%E7%BD%B2%E5%9F%BA%E7%A1%80%E7%9A%84%E7%94%B5%E5%AD%90%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-text">2.部署基础的电子邮件系统</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#2-1%E9%85%8D%E7%BD%AEPostfix%E6%9C%8D%E5%8A%A1%E7%A8%8B%E5%BA%8F"><span class="nav-text">2.1配置Postfix服务程序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-2%E9%85%8D%E7%BD%AEDovecot%E6%9C%8D%E5%8A%A1%E7%A8%8B%E5%BA%8F"><span class="nav-text">2.2配置Dovecot服务程序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-3%E4%BD%BF%E7%94%A8%E7%94%B5%E5%AD%90%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="nav-text">2.3使用电子邮件系统</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E8%AE%BE%E7%BD%AE%E7%94%A8%E6%88%B7%E5%88%AB%E5%90%8D%E9%82%AE%E7%AE%B1"><span class="nav-text">3.设置用户别名邮箱</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="晓"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">晓</p>
+  <div class="site-description" itemprop="description">看得懂的书，请仔细看；看不懂的书，请硬着头皮看。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">24</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2020 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">晓</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">155k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:21</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>-->
+
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共65k字</span>
+  <span class="post-meta-divider">|</span>
+  本站总访问量<span id="busuanzi_value_site_pv"></span>次
+  <span class="post-meta-divider">|</span>
+  本站访客数<span id="busuanzi_value_site_uv"></span>人次
+  <span class="post-meta-divider">|</span>
+  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+</div>
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script color='255,255,255' opacity='0.5' zIndex='-1' count='200' src="/lib/canvas-nest/canvas-nest-nomobile.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  <script async src="/js/cursor/fireworks.js"></script>
+
+  
+<!--3D飘雪花特效 整理(此部分代码存在影响六角雪花特效）by yaxi.net-->
+<script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="snow.js"></script>
+<style type="text/css">
+.snow-container{
+position:fixed;
+top:0;left:0;
+width:100%;
+height:100%;
+pointer-events:none;
+z-index:100001;
+}
+</style>
+<div class="snow-container"></div>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/z16.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>

@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zhuxiaowei0924.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="1.代理缓存服务">
+<meta property="og:type" content="article">
+<meta property="og:title" content="liunx就该这么学-16：使用Squid部署代理缓存服务">
+<meta property="og:url" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/index.html">
+<meta property="og:site_name" content="随笔&amp;博客">
+<meta property="og:description" content="1.代理缓存服务">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/1.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/2.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/3.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/4.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/5.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/6.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/7.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/8.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/9.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/10.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/11.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/12.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/13.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/14.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/15.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/16.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/17.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/18.jpg">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/19.jpg">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/20.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/21.png">
+<meta property="article:published_time" content="2021-02-17T05:28:38.000Z">
+<meta property="article:modified_time" content="2021-03-04T04:30:17.030Z">
+<meta property="article:author" content="晓">
+<meta property="article:tag" content="第16章节：使用Squid部署代理缓存服务">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/1.png">
+
+<link rel="canonical" href="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>liunx就该这么学-16：使用Squid部署代理缓存服务 | 随笔&博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  <!-- 页面点击小红花 -->
+  <script type="text/javascript" src="/js/fairyDustCursor.js"></script>
+  <!-- 引入jQuery -->
+  <script type="text/javascript" src="//libs.baidu.com/jquery/1.8.3/jquery.min.js"></script>
+  <!-- 雪花特效/2 -->
+  <script type="text/javascript" src="/js/snow.js"></script>
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">随笔&博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">生于忧患，死于安乐</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="晓">
+      <meta itemprop="description" content="看得懂的书，请仔细看；看不懂的书，请硬着头皮看。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="随笔&博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          liunx就该这么学-16：使用Squid部署代理缓存服务
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-17 13:28:38" itemprop="dateCreated datePublished" datetime="2021-02-17T13:28:38+08:00">2021-02-17</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-04 12:30:17" itemprop="dateModified" datetime="2021-03-04T12:30:17+08:00">2021-03-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">linux就该这么学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>8.1k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>7 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="1-代理缓存服务"><a href="#1-代理缓存服务" class="headerlink" title="1.代理缓存服务"></a>1.代理缓存服务</h1><a id="more"></a>
+
+<p>Squid是Linux系统中最为流行的一款高性能代理服务软件，通常用作Web网站的前置缓存服务，能够代替用户向网站服务器请求页面数据并进行缓存。简单来说，Squid服务程序会按照收到的用户请求向网站源服务器请求页面、图片等所需的数据，并将服务器返回的数据存储在运行Squid服务程序的服务器上。当有用户再请求相同的数据时，则可以直接将存储服务器本地的数据交付给用户，这样不仅减少了用户的等待时间，还缓解了网站服务器的负载压力。</p>
+<p>在使用Squid服务程序为用户提供缓存代理服务时，具有正向代理模式和反向代理模式之分。</p>
+<p>所谓正向代理模式，是指让用户通过Squid服务程序获取网站页面等资源，以及基于访问控制列表（ACL）功能对用户访问网站行为进行限制，在具体的服务方式上又分为标准代理模式与透明代理模式。标准正向代理模式是把网站数据缓存到服务器本地，提高数据资源被再次访问时的效率，但是用户在上网时必须在浏览器等软件中填写代理服务器的IP地址与端口号信息，否则默认不使用代理服务。而透明正向代理模式的作用与标准正向代理模式基本相同，区别是用户不需要手动指定代理服务器的IP地址与端口号，所以这种代理服务对于用户来讲是相对透明的。</p>
+<p>Squid服务程序提供正向代理服务：</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/1.png" class="">
+
+<p>反向代理模式是指让多台节点主机反向缓存网站数据，从而加快用户访问速度。因为一般来讲，网站中会普遍加载大量的文字、图片等静态资源，而且它们相对来说都是比较稳定的数据信息，当用户发起网站页面中这些静态资源的访问请求时，我们可以使用Squid服务程序提供的反向代理模式来进行响应。而且，如果反向代理服务器中恰巧已经有了用户要访问的静态资源，则直接将缓存的这些静态资源发送给用户，这不仅可以加快用户的网站访问速度，还在一定程度上降低了网站服务器的负载压力。</p>
+<p>Squid服务程序提供的反向代理模式:</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/2.png" class="">
+
+<h1 id="2-配置Squid服务程序"><a href="#2-配置Squid服务程序" class="headerlink" title="2.配置Squid服务程序"></a>2.配置Squid服务程序</h1><p>Squid服务程序的配置步骤虽然十分简单，但依然需要为大家交代一下实验所需的设备以及相应的设置。首先需要准备两台虚拟机，一台用作Squid服务器，另外一台用作Squid客户端；为了能够相互通信，需要将这两台虚拟机<strong>都设置为仅主机模式（Hostonly）</strong>，然后关闭其中一台虚拟机的电源，在添加一块新的网卡为<strong>桥接模式</strong>后开启电源：</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/3.png" class="">
+
+<p>需要注意的是，这块新添加的网卡设备必须选择为桥接模式，否则这两台虚拟机都无法访问外网。</p>
+<p>设置好桥接模式后，虚拟机还不能连接外网，还需要到虚拟机的编辑-虚拟网络编辑器，对VMnet0的桥接网卡进行指定：</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/4.png" class="">
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/5.png" class="">
+
+<p>之后回到linux系统，在终端中输入命令：nm-connection-editor，新建网卡：</p>
+<pre><code>[root@linuxprobe ~]#nm-connection-editor</code></pre>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/6.png" class="">
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/7.png" class="">
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/8.png" class="">
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/9.png" class="">
+
+<p>设置完成后，保存退出，之后重新启动网卡；也可以ping下网站，看是否能够成功：</p>
+<pre><code>[root@linuxprobe ~]#systemctl restart network
+[root@linuxprobe ~]#ping -c 4 www.baidu.com</code></pre>
+<p>当前Squid服务器和客户端的操作系统和IP地址信息：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Squid服务器</td>
+<td>RHEL 7</td>
+<td>外网卡：桥接DHCP模式</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>内网卡：192.168.10.10</td>
+</tr>
+<tr>
+<td>Squid客户端</td>
+<td>Windows 7/RHEL 7</td>
+<td>192.168.10.20</td>
+</tr>
+</tbody></table>
+<p>这样一来，我们就有了一台既能访问内网，又能访问外网的Squid服务器了；但当前的Squid服务器只能和外网或虚拟机间进行通讯，无法和宿主机进行连接；如果Squid服务器需要和宿主机间通过主机模式（host only）进行通讯的话，还需要在宿主机的VMnet1网络适配器进行以下设置：</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/10.png" class="">
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/11.png" class="">
+
+<p>至此，Squid服务器既能访问外网和内网，又能和宿主机进行通讯。</p>
+<p>但有一个问题，Squid服务器目前有两个网卡，一个网卡连接外网，一个网卡连接内网；但/etc/sysconfig/network-scripts目录内只有内网网卡的配置文件，并没有生成外网网卡的配置文件；自己手动新建配置文件的话，重启网卡后反而无法连接外网，会报错，不太清楚原因所在，难道使用DHCP的外网网卡不需要配置文件？</p>
+<p>当配置好Yum软件仓库并挂载好设备镜像后，就可以安装Squid服务程序了:</p>
+<pre><code>[root@linuxprobe ~]# yum install squid</code></pre>
+<p>Squid服务程序的配置文件也是存放在/etc/squid/squid.conf;常用的Squid服务程序配置参数以及作用:</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>http_port 3128</td>
+<td>监听的端口号</td>
+</tr>
+<tr>
+<td>cache_mem 64M</td>
+<td>内存缓冲区的大小</td>
+</tr>
+<tr>
+<td>cache_dir ufs /var/spool/squid 2000 16 256</td>
+<td>硬盘缓冲区的大小</td>
+</tr>
+<tr>
+<td>cache_effective_user squid</td>
+<td>设置缓存的有效用户</td>
+</tr>
+<tr>
+<td>cache_effective_group squid</td>
+<td>设置缓存的有效用户组</td>
+</tr>
+<tr>
+<td>dns_nameservers</td>
+<td>IP地址    一般不设置，而是用服务器默认的DNS地址</td>
+</tr>
+<tr>
+<td>cache_access_log /var/log/squid/access.log</td>
+<td>访问日志文件的保存路径</td>
+</tr>
+<tr>
+<td>cache_log /var/log/squid/cache.log</td>
+<td>缓存日志文件的保存路径</td>
+</tr>
+<tr>
+<td>visible_hostname linuxprobe.com</td>
+<td>设置Squid服务器的名称</td>
+</tr>
+</tbody></table>
+<h1 id="3-正向代理"><a href="#3-正向代理" class="headerlink" title="3.正向代理"></a>3.正向代理</h1><h2 id="3-1标准正向代理"><a href="#3-1标准正向代理" class="headerlink" title="3.1标准正向代理"></a>3.1标准正向代理</h2><pre><code>[root@linuxprobe ~]# systemctl restart squid
+[root@linuxprobe ~]# systemctl enable squid
+ln -s &#39;/usr/lib/systemd/system/squid.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/squid.service&#39;</code></pre>
+<p>接下来在Squid客户端进行操作，首先是windows7系统：</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/12.png" class="">
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/13.png" class="">
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/14.png" class="">
+
+<p>其次是RHEL 7系统,打开火狐浏览器:</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/15.png" class="">
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/16.png" class="">
+
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/17.png" class="">
+
+<p>需要注意的是，虽然在浏览器中已经设置好代理服务器，但目前在客户端系统上还不能连接外网；此时需要回到Squid服务器中，输入以下命令，清空防火墙：</p>
+<pre><code>[root@linuxprobe ~]# iptables -F
+[root@linuxprobe ~]# service iptables save</code></pre>
+<p>至此，Squid客户端系统可以连接外网！</p>
+<p>Squid服务程序默认使用3128、3401与4827等端口号，因此可以把默认使用的端口号修改为其他值，以便起到一定的保护作用：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/squid/squid.conf
+………………省略部分输出信息………………
+http_port 10000
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart squid 
+[root@linuxprobe ~]# systemctl enable squid 
+ ln -s &#39;/usr/lib/systemd/system/squid.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/squid.service&#39;</code></pre>
+<p>尽管现在重启Squid服务程序后系统没有报错，但是用户还不能使用代理服务。SElinux安全子系统认为Squid服务程序使用3128端口号是理所当然的，因此在默认策略规则中也是允许的，但是现在Squid服务程序却尝试使用新的10000端口号，而该端口原本并不属于Squid服务程序应该使用的系统资源，因此还需要手动把新的端口号添加到Squid服务程序在SElinux域的允许列表中。</p>
+<pre><code>[root@linuxprobe ~]# semanage port -l | grep squid_port_t
+squid_port_t                   tcp      3128, 3401, 4827
+squid_port_t                   udp      3401, 4827
+[root@linuxprobe ~]# semanage port -a -t squid_port_t -p tcp 10000
+[root@linuxprobe ~]# semanage port -l | grep squid_port_t
+squid_port_t                   tcp      10000, 3128, 3401, 4827
+squid_port_t                   udp      3401, 4827</code></pre>
+<h2 id="3-2ACL访问控制"><a href="#3-2ACL访问控制" class="headerlink" title="3.2ACL访问控制"></a>3.2ACL访问控制</h2><p>Squid服务程序的ACL是由多个策略规则组成的，它可以根据指定的策略规则来允许或限制访问请求，而且策略规则的匹配顺序与防火墙策略规则一样都是由上至下；在一旦形成匹配之后，则立即执行相应操作并结束匹配过程。为了避免ACL将所有流量全部禁止或全部放行，起不到预期的访问控制效果，运维人员通常会在ACL的最下面写上deny all或者allow all语句，以避免安全隐患。</p>
+<p>实验1：只允许IP地址为192.168.10.20的客户端使用服务器上的Squid服务程序提供的代理服务，禁止其余所有的主机代理请求。</p>
+<p>下面的配置文件依然是Squid服务程序的配置文件，但是需要留心配置参数的填写位置。如果写的太靠前，则有些Squid服务程序自身的语句都没有加载完，也会导致策略无效。当然也不用太靠后，大约在26~32行的位置就可以，而且采用分行填写的方式也便于日后的修改。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/squid/squid.conf
+ 23 acl Safe_ports port 591 # filemaker
+ 24 acl Safe_ports port 777 # multiling http
+ 25 acl CONNECT method CONNECT
+ 26 acl client src 192.168.10.20
+ 27 #
+ 28 # Recommended minimum Access Permission configuration:
+ 29 #
+ 30 # Deny requests to certain unsafe ports
+ 31 http_access allow client
+ 32 http_access deny all
+ 33 http_access deny !Safe_ports
+ 34
+[root@linuxprobe ~]# systemctl restart squid</code></pre>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/18.jpg" class="">
+
+<p>实验2：禁止所有客户端访问网址中包含linux关键词的网站。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/squid/squid.conf
+ 24 acl Safe_ports port 777 # multiling http
+ 25 acl CONNECT method CONNECT
+ 26 acl deny_keyword url_regex -i linux
+ 27 #
+ 28 # Recommended minimum Access Permission configuration:
+ 29 #
+ 30 # Deny requests to certain unsafe ports
+ 31 http_access deny deny_keyword
+ 33 http_access deny !Safe_ports
+ 34
+[root@linuxprobe ~]# systemctl restart squid</code></pre>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/19.jpg" class="">
+
+<p>实验3：禁止所有客户端访问某个特定的网站。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/squid/squid.conf
+ 24 acl Safe_ports port 777 # multiling http
+ 25 acl CONNECT method CONNECT
+ 26 acl deny_url url_regex http://www.linuxcool.com
+ 27 #
+ 28 # Recommended minimum Access Permission configuration:
+ 29 #
+ 30 # Deny requests to certain unsafe ports
+ 31 http_access deny deny_url
+ 33 http_access deny !Safe_ports
+ 34
+[root@linuxprobe ~]# systemctl restart squid</code></pre>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/20.png" class="">
+
+<p>实验4：禁止员工在企业网内部下载带有某些后缀的文件。</p>
+<p>[root@linuxprobe ~]# vim /etc/squid/squid.conf<br>     24 acl Safe_ports port 777 # multiling http<br>     25 acl CONNECT method CONNECT<br>     26 acl badfile urlpath_regex -i .mp3$ .rar$<br>     27 #<br>     28 # Recommended minimum Access Permission configuration:<br>     29 #<br>     30 # Deny requests to certain unsafe ports<br>     31 http_access deny badfile<br>     33 http_access deny !Safe_ports<br>     34<br>    [root@linuxprobe ~]# systemctl restart squid</p>
+<h2 id="3-3透明正向代理"><a href="#3-3透明正向代理" class="headerlink" title="3.3透明正向代理"></a>3.3透明正向代理</h2><p>透明”二字指的是让用户在没有感知的情况下使用代理服务，这样的好处是一方面不需要用户手动配置代理服务器的信息，进而降低了代理服务的使用门槛；另一方面也可以更隐秘地监督员工的上网行为。</p>
+<p>在透明代理模式中，用户无须在浏览器或其他软件中配置代理服务器地址、端口号等信息，而是由DHCP服务器将网络配置信息分配给客户端主机。这样只要用户打开浏览器便会自动使用代理服务了。如果大家此时并没有配置DHCP服务器，可以手动配置客户端主机的网卡参数。</p>
+<img src="/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/21.png" class="">
+
+<p>有些时候会因为Windows系统的缓存原因导致依然能看到网页内容，这时可以换个网站尝试一下访问效果。</p>
+<p>既然要让用户在无需过多配置系统的情况下就能使用代理服务，作为运维人员就必须提前将网络配置信息与数据转发功能配置好。前面已经配置好的网络参数，要使用SNAT技术完成数据的转发，让客户端主机将数据交给Squid代理服务器，再由后者转发到外网中。简单来说，就是让Squid服务器作为一个中间人，实现内网客户端主机与外部网络之间的数据传输。</p>
+<p>要想让内网中的客户端主机能够访问外网，客户端主机首先要能获取到DNS地址解析服务的数据，这样才能在互联网中找到对应网站的IP地址。下面通过iptables命令实现DNS地址解析服务53端口的数据转发功能，并且允许Squid服务器转发IPv4数据包。sysctl -p命令的作用是让转发参数立即生效：</p>
+<pre><code>[root@linuxprobe ~]# iptables -F
+[root@linuxprobe ~]# iptables -t nat -A POSTROUTING -p udp --dport 53 -o eno33554968 -j MASQUERADE
+[root@linuxprobe ~]# echo &quot;net.ipv4.ip_forward=1&quot; &gt;&gt; /etc/sysctl.conf
+[root@linuxprobe ~]# sysctl -p 
+net.ipv4.ip_forward = 1</code></pre>
+<p>现在回到客户端主机，再次ping某个外网地址。此时可以发现，虽然不能连通网站，但是此时已经能够获取到外网DNS服务的域名解析数据。这个步骤非常重要，为接下来的SNAT技术打下了扎实的基础。</p>
+<pre><code>C:\Users\linuxprobe&gt;ping www.linuxprobe.com
+正在 Ping www.linuxprobe.com [116.31.127.233] 具有 32 字节的数据:
+请求超时。
+请求超时。
+请求超时。
+请求超时。
+116.31.127.233 的 Ping 统计信息:
+    数据包: 已发送 = 4，已接收 = 0，丢失 = 4 (100% 丢失)，</code></pre>
+<p>Squid服务程序透明代理模式的配置过程就十分简单了，只需要在主配置文件中服务器端口号后面追加上transparent单词（意思为“透明的”），然后把第62行的井号（#）注释符删除，设置缓存的保存路径就可以了。保存主配置文件并退出后再使用squid -k parse命令检查主配置文件是否有错误，以及使用squid -z命令对Squid服务程序的透明代理技术进行初始化。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/squid/squid.conf
+………………省略部分输出信息………………
+58 # Squid normally listens to port 3128
+59 http_port 3128 transparent
+60
+61 # Uncomment and adjust the following to add a disk cache directory.
+62 cache_dir ufs /var/spool/squid 100 16 256
+63 
+………………省略部分输出信息………………
+[root@linuxprobe ~]# squid -k parse
+2017/04/13 06:40:44| Startup: Initializing Authentication Schemes ...
+2017/04/13 06:40:44| Startup: Initialized Authentication Scheme &#39;basic&#39;
+………………省略部分输出信息………………
+[root@linuxprobe ~]# squid -z
+2017/04/13 06:41:26 kid1| Creating missing swap directories
+2017/04/13 06:41:26 kid1| /var/spool/squid exists
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart squid</code></pre>
+<p>在配置妥当并重启Squid服务程序且系统没有提示报错信息后，接下来就可以完成SNAT数据转发功能了。它的原理其实很简单，就是使用iptables防火墙管理命令把所有客户端主机对网站80端口的请求转发至Squid服务器本地的3128端口上。SNAT数据转发功能的具体配置参数如下：</p>
+<pre><code>[root@linuxprobe ~]# iptables -t nat -A PREROUTING  -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 3128
+[root@linuxprobe ~]# iptables -t nat -A POSTROUTING -s 192.168.10.0/24 -o eno33554968 -j SNAT --to 您的桥接网卡IP地址
+[root@linuxprobe ~]# service iptables save
+iptables: Saving firewall rules to /etc/sysconfig/iptables:[ OK ]</code></pre>
+<p>这时客户端主机再刷新一下浏览器，就又能访问网络了。</p>
+<h1 id="4-反向代理"><a href="#4-反向代理" class="headerlink" title="4.反向代理"></a>4.反向代理</h1><p>反向代理是Squid服务程序的一种重要模式，其原理是把一部分原本向网站源服务器发起的用户请求交给Squid服务器缓存节点来处理。</p>
+<p>当前许多网站都默认禁止了反向代理功能。开启了CDN（内容分发网络）服务的网站也可以避免这种窃取行为。</p>
+<p>使用Squid服务程序来配置反向代理服务非常简单。首先找到一个网站源服务器的IP地址，然后编辑Squid服务程序的主配置文件，把端口号3128修改为网站源服务器的地址和端口号，此时正向解析服务会被暂停（它不能与反向代理服务同时使用）。然后按照下面的参数形式写入需要反向代理的网站源服务器的IP地址信息，保存退出后重启Squid服务程序。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/squid/squid.conf
+………………省略部分输出信息………………
+57 
+58 # Squid normally listens to port 3128
+59 http_port 您的桥接网卡IP地址:80 vhost
+60 cache_peer 网站源服务器IP地址 parent 80 0 originserver
+61 
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart squid</code></pre>
+
+    </div>
+
+    
+    
+    
+	
+	<div>
+		
+			<div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+		
+	</div>
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>晓
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://zhuxiaowei0924.github.io/2021/02/17/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-16%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/" title="liunx就该这么学-16：使用Squid部署代理缓存服务">https://zhuxiaowei0924.github.io/2021/02/17/liunx就该这么学-16：使用Squid部署代理缓存服务/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%AC%AC16%E7%AB%A0%E8%8A%82%EF%BC%9A%E4%BD%BF%E7%94%A8Squid%E9%83%A8%E7%BD%B2%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1/" rel="tag"># 第16章节：使用Squid部署代理缓存服务</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/" rel="prev" title="linux就该这么学-15:使用Postfix与Dovecot部署邮件系统">
+      <i class="fa fa-chevron-left"></i> linux就该这么学-15:使用Postfix与Dovecot部署邮件系统
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/" rel="next" title="linux就该这么学-17：使用ISCSI服务部署网络存储">
+      linux就该这么学-17：使用ISCSI服务部署网络存储 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E4%BB%A3%E7%90%86%E7%BC%93%E5%AD%98%E6%9C%8D%E5%8A%A1"><span class="nav-text">1.代理缓存服务</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E9%85%8D%E7%BD%AESquid%E6%9C%8D%E5%8A%A1%E7%A8%8B%E5%BA%8F"><span class="nav-text">2.配置Squid服务程序</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E6%AD%A3%E5%90%91%E4%BB%A3%E7%90%86"><span class="nav-text">3.正向代理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1%E6%A0%87%E5%87%86%E6%AD%A3%E5%90%91%E4%BB%A3%E7%90%86"><span class="nav-text">3.1标准正向代理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2ACL%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="nav-text">3.2ACL访问控制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3%E9%80%8F%E6%98%8E%E6%AD%A3%E5%90%91%E4%BB%A3%E7%90%86"><span class="nav-text">3.3透明正向代理</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86"><span class="nav-text">4.反向代理</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="晓"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">晓</p>
+  <div class="site-description" itemprop="description">看得懂的书，请仔细看；看不懂的书，请硬着头皮看。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">24</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2020 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">晓</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">155k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:21</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>-->
+
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共65k字</span>
+  <span class="post-meta-divider">|</span>
+  本站总访问量<span id="busuanzi_value_site_pv"></span>次
+  <span class="post-meta-divider">|</span>
+  本站访客数<span id="busuanzi_value_site_uv"></span>人次
+  <span class="post-meta-divider">|</span>
+  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+</div>
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script color='255,255,255' opacity='0.5' zIndex='-1' count='200' src="/lib/canvas-nest/canvas-nest-nomobile.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  <script async src="/js/cursor/fireworks.js"></script>
+
+  
+<!--3D飘雪花特效 整理(此部分代码存在影响六角雪花特效）by yaxi.net-->
+<script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="snow.js"></script>
+<style type="text/css">
+.snow-container{
+position:fixed;
+top:0;left:0;
+width:100%;
+height:100%;
+pointer-events:none;
+z-index:100001;
+}
+</style>
+<div class="snow-container"></div>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/z16.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>

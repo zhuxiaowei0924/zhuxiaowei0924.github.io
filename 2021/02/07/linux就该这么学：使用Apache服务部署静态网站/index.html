@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Monda:300,300italic,400,400italic,700,700italic|Lobster Two:300,300italic,400,400italic,700,700italic|Roboto Slab:300,300italic,400,400italic,700,700italic|PT Mono:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"zhuxiaowei0924.github.io","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="1.网站服务程序">
+<meta property="og:type" content="article">
+<meta property="og:title" content="linux就该这么学：使用Apache服务部署静态网站">
+<meta property="og:url" content="https://zhuxiaowei0924.github.io/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/index.html">
+<meta property="og:site_name" content="随笔&amp;博客">
+<meta property="og:description" content="1.网站服务程序">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/1.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/2.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/3.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/4.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/5.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/6.png">
+<meta property="og:image" content="https://zhuxiaowei0924.github.io/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/7.jpg">
+<meta property="article:published_time" content="2021-02-07T14:29:13.000Z">
+<meta property="article:modified_time" content="2021-03-04T04:30:17.007Z">
+<meta property="article:author" content="晓">
+<meta property="article:tag" content="第10章节：使用Apache服务部署静态网站">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://zhuxiaowei0924.github.io/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/1.png">
+
+<link rel="canonical" href="https://zhuxiaowei0924.github.io/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>linux就该这么学：使用Apache服务部署静态网站 | 随笔&博客</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+  <!-- 页面点击小红花 -->
+  <script type="text/javascript" src="/js/fairyDustCursor.js"></script>
+  <!-- 引入jQuery -->
+  <script type="text/javascript" src="//libs.baidu.com/jquery/1.8.3/jquery.min.js"></script>
+  <!-- 雪花特效/2 -->
+  <script type="text/javascript" src="/js/snow.js"></script>
+<link rel="stylesheet" href="/css/prism-tomorrow.css" type="text/css"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">随笔&博客</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">生于忧患，死于安乐</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://zhuxiaowei0924.github.io/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="晓">
+      <meta itemprop="description" content="看得懂的书，请仔细看；看不懂的书，请硬着头皮看。">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="随笔&博客">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          linux就该这么学：使用Apache服务部署静态网站
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-02-07 22:29:13" itemprop="dateCreated datePublished" datetime="2021-02-07T22:29:13+08:00">2021-02-07</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2021-03-04 12:30:17" itemprop="dateModified" datetime="2021-03-04T12:30:17+08:00">2021-03-04</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6/" itemprop="url" rel="index"><span itemprop="name">linux就该这么学</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span><br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>14k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>13 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="1-网站服务程序"><a href="#1-网站服务程序" class="headerlink" title="1.网站服务程序"></a>1.网站服务程序</h1><a id="more"></a>
+
+<p>第1步：把光盘设备中的系统镜像挂载到/media/cdrom目录。</p>
+<pre><code>[root@linuxprobe ~]# mkdir -p /media/cdrom
+[root@linuxprobe ~]# mount /dev/cdrom /media/cdrom
+mount: /dev/sr0 is write-protected, mounting read-only</code></pre>
+<p>第2步：使用Vim文本编辑器创建Yum仓库的配置文件。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/yum.repos.d/rhel7.repo
+[rhel7]
+name=rhel7
+baseurl=file:///media/cdrom
+enabled=1
+gpgcheck=0</code></pre>
+<p>第3步：动手安装Apache服务程序。注意，使用yum命令进行安装时，跟在命令后面的Apache服务的软件包名称为httpd。如果直接执行yum install apache命令，则系统会报错。</p>
+<pre><code>[root@linuxprobe ~]# yum install httpd
+Loaded plugins: langpacks, product-id, subscription-manager
+………………省略部分输出信息………………
+Complete!</code></pre>
+<p>第4步：启用httpd服务程序并将其加入到开机启动项中，使其能够随系统开机而运行，从而持续为用户提供Web服务：</p>
+<pre><code>[root@linuxprobe ~]# systemctl start httpd
+[root@linuxprobe ~]# systemctl enable httpd
+ln -s &#39;/usr/lib/systemd/system/httpd.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/httpd.service&#39;
+
+[root@linuxprobe ~]# firefox</code></pre>
+<h1 id="2-配置服务文件参数"><a href="#2-配置服务文件参数" class="headerlink" title="2.配置服务文件参数"></a>2.配置服务文件参数</h1><table>
+<thead>
+<tr>
+<th>作用</th>
+<th>文件名称</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>服务目录</td>
+<td>/etc/httpd</td>
+</tr>
+<tr>
+<td>主配置文件</td>
+<td>/etc/httpd/conf/httpd.conf</td>
+</tr>
+<tr>
+<td>网站数据目录</td>
+<td>/var/www/html</td>
+</tr>
+<tr>
+<td>访问日志</td>
+<td>/var/log/httpd/access_log</td>
+</tr>
+<tr>
+<td>错误日志</td>
+<td>/var/log/httpd/error_log</td>
+</tr>
+</tbody></table>
+<p>在httpd服务程序的主配置文件中，存在三种类型的信息：注释行信息、全局配置、区域配置；</p>
+<p> 配置httpd服务程序时最常用的参数以及用途描述：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ServerRoot</td>
+<td>服务目录</td>
+</tr>
+<tr>
+<td>ServerAdmin</td>
+<td>管理员邮箱</td>
+</tr>
+<tr>
+<td>User</td>
+<td>运行服务的用户</td>
+</tr>
+<tr>
+<td>Group</td>
+<td>运行服务的用户组</td>
+</tr>
+<tr>
+<td>ServerName</td>
+<td>网站服务器的域名</td>
+</tr>
+<tr>
+<td>DocumentRoot</td>
+<td>网站数据目录</td>
+</tr>
+<tr>
+<td>Listen</td>
+<td>监听的IP地址与端口号</td>
+</tr>
+<tr>
+<td>DirectoryIndex</td>
+<td>默认的索引页页面</td>
+</tr>
+<tr>
+<td>ErrorLog</td>
+<td>错误日志文件</td>
+</tr>
+<tr>
+<td>CustomLog</td>
+<td>访问日志文件</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>网页超时时间，默认为300秒</td>
+</tr>
+</tbody></table>
+<p>在默认情况下，网站数据是保存在/var/www/html目录中，打开httpd服务程序的主配置文件，将约第119行用于定义网站数据保存路径的参数DocumentRoot修改为/home/wwwroot，同时还需要将约第124行用于定义目录权限的参数Directory后面的路径也修改为/home/wwwroot。配置文件修改完毕后即可保存并退出。</p>
+<h1 id="3-SELinux安全子系统"><a href="#3-SELinux安全子系统" class="headerlink" title="3.SELinux安全子系统"></a>3.SELinux安全子系统</h1><p>“SELinux域”和“SELinux安全上下文”称为是Linux系统中的双保险</p>
+<p>SELinux服务有三种配置模式，具体如下：</p>
+<pre><code>enforcing：强制启用安全策略模式，将拦截服务的不合法请求。
+
+permissive：遇到服务越权访问时，只发出警告而不强制拦截。
+
+disabled：对于越权的行为不警告也不拦截。</code></pre>
+<p>SELinux服务主配置文件目录：/etc/selinux/config；</p>
+<p>getenforce：获取当前SELinux服务的运行模式； setenforce[0|1]：修改SELinux当前的运行模式（0为禁用，1为启用）；修改是暂时的，系统重启后失效。</p>
+<p>查看网站数据保存目录的SELinux安全上下文值：</p>
+<pre><code>[root@linuxprobe ~]# setenforce 1
+[root@linuxprobe ~]# ls -Zd /var/www/html
+drwxr-xr-x. root root system_u:object_r:httpd_sys_content_t:s0 /var/www/html
+[root@linuxprobe ~]# ls -Zd /home/wwwroot
+drwxrwxrwx. root root unconfined_u:object_r:home_root_t:s0 /home/wwwroot</code></pre>
+<p>在文件上设置的SELinux安全上下文是由用户段、角色段以及类型段等多个信息项共同组成的。其中，用户段system_u代表系统进程的身份，角色段object_r代表文件目录的角色，类型段httpd_sys_content_t代表网站服务的系统文件。</p>
+<h2 id="3-1-semanage命令"><a href="#3-1-semanage命令" class="headerlink" title="3.1 semanage命令"></a>3.1 semanage命令</h2><p>emanage命令用于管理SELinux的策略，格式为“semanage [选项] [文件]”，经常用到的几个参数及其功能如下所示：</p>
+<pre><code>    -l参数用于查询；    -a参数用于添加；    -m参数用于修改；    -d参数用于删除。</code></pre>
+<p>可以向新的网站数据目录中新添加一条SELinux安全上下文，让这个目录以及里面的所有文件能够被httpd服务程序所访问到：</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/*</code></pre>
+<p>注意，执行上述设置之后，还无法立即访问网站，还需要使用restorecon命令将设置好的SELinux安全上下文立即生效。在使用restorecon命令时，可以加上-Rv参数对指定的目录进行递归操作，以及显示SELinux安全上下文的修改过程。最后，再次刷新页面，就可以正常看到网页内容了：</p>
+<pre><code>[root@linuxprobe ~]# restorecon -Rv /home/wwwroot/
+restorecon reset /home/wwwroot context unconfined_u:object_r:home_root_t:s0-&gt;unconfined_u:object_r:httpd_sys_content_t:s0</code></pre>
+<p>再添加systemctl enable httpd命令，将所需服务添加到开机启动项中。</p>
+<h1 id="4-个人用户主页功能"><a href="#4-个人用户主页功能" class="headerlink" title="4.个人用户主页功能"></a>4.个人用户主页功能</h1><p>第1步：在httpd服务程序中，默认没有开启个人用户主页功能。为此，我们需要编辑下面的配置文件，然后在第17行的UserDir disabled参数前面加上井号（#），表示让httpd服务程序开启个人用户主页功能；同时再把第24行的UserDir public_html参数前面的井号（#）去掉（UserDir参数表示网站数据在用户家目录中的保存目录名称，即public_html目录）。最后，在修改完毕后记得保存。</p>
+<pre><code> 15 # permissions).
+ 16 #
+ 17 # UserDir disabled
+ 18 
+ 19 #
+ 20 # To enable requests to /~user/ to serve the user&#39;s public_html
+ 21 # directory, remove the &quot;UserDir disabled&quot; line above, and uncomment
+ 22 # the following line instead:
+ 23 # 
+ 24   UserDir public_html
+ 25 &lt;/IfModule&gt;
+ …… …… …… ……</code></pre>
+<p>第2步：在用户家目录中建立用于保存网站数据的目录及首页面文件。另外，还需要把家目录的权限修改为755，保证其他人也有权限读取里面的内容。</p>
+<pre><code>[root@linuxprobe home]# su - linuxprobe
+Last login: Fri May 22 13:17:37 CST 2017 on :0
+[linuxprobe@linuxprobe ~]$ mkdir public_html
+[linuxprobe@linuxprobe ~]$ echo &quot;This is linuxprobe&#39;s website&quot; &gt; public_html/index.html
+[linuxprobe@linuxprobe ~]$ chmod -Rf 755 /home/linuxprobe</code></pre>
+<p>第3步：使用getsebool命令查询并过滤出所有与HTTP协议相关的安全策略。其中，off为禁止状态，on为允许状态。</p>
+<pre><code>[root@linuxprobe ~]# getsebool -a | grep http
+httpd_anon_write --&gt; off
+httpd_builtin_scripting --&gt; on
+……
+**httpd_enable_homedirs --&gt; off**
+……</code></pre>
+<p>第4步：用setsebool命令来修改SELinux策略中规则的布尔值，在setsebool命令后面加上-P参数，让修改后的SELinux策略规则永久生效且立即生效，并重新启动httpd服务程序：</p>
+<pre><code>[root@linuxprobe ~]# setsebool -P httpd_enable_homedirs=on
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<p>第5步：在浏览器的地址栏中输入网址，其格式为“网址/<del>用户名”（其中的波浪号是必需的，而且网址、波浪号、用户名之间没有空格）如：127.0.0.1/</del>linuxprobe，就可以看到用户的个人网站了。</p>
+<h2 id="4-1在网页中添加口令功能"><a href="#4-1在网页中添加口令功能" class="headerlink" title="4.1在网页中添加口令功能"></a>4.1在网页中添加口令功能</h2><p>第1步：先使用htpasswd命令生成密码数据库。-c参数表示第一次生成；后面再分别添加密码数据库的存放文件，以及验证要用到的用户名称（该用户不必是系统中已有的本地账户）。</p>
+<pre><code>[root@linuxprobe ~]# htpasswd -c /etc/httpd/passwd linuxprobe
+New password:此处输入用于网页验证的密码
+Re-type new password:再输入一遍进行确认
+Adding password for user linuxprobe</code></pre>
+<p>第2步：编辑个人用户主页功能的配置文件。把第31～35行的参数信息修改成下列内容，其中井号（#）开头的内容为刘遄老师添加的注释信息，可将其忽略。随后保存并退出配置文件，重启httpd服务程序即可生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf.d/userdir.conf
+31 &lt;Directory &quot;/home/*/public_html&quot;&gt;
+32 AllowOverride all
+#刚刚生成出来的密码验证文件保存路径
+33 authuserfile &quot;/etc/httpd/passwd&quot;
+#当用户尝试访问个人用户网站时的提示信息
+34 authname &quot;My privately website&quot;
+35 authtype basic
+#用户进行账户密码登录时需要验证的用户名称
+36 require user linuxprobe
+37 &lt;/Directory&gt;
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<p>此后，当用户再想访问某个用户的个人网站时，就必须要输入账户和密码才能正常访问了。另外，验证时使用的账户和密码是用htpasswd命令生成的专门用于网站登录的口令密码，而不是系统中的用户密码，请不要搞错了。</p>
+<h2 id="4-3虚拟网站主机功能"><a href="#4-3虚拟网站主机功能" class="headerlink" title="4.3虚拟网站主机功能"></a>4.3虚拟网站主机功能</h2><p>利用虚拟主机功能，可以把一台处于运行状态的物理服务器分割成多个“虚拟的服务器”。但是，该技术无法实现目前云主机技术的硬件资源隔离，让这些虚拟的服务器共同使用物理服务器的硬件资源，供应商只能限制硬盘的使用空间大小。</p>
+<p>Apache的虚拟主机功能是服务器基于用户请求的不同IP地址、主机域名或端口号，实现提供多个网站同时为外部提供访问服务的技术，用户请求的资源不同，最终获取到的网页内容也各不相同。</p>
+<h3 id="4-3-1基于IP地址"><a href="#4-3-1基于IP地址" class="headerlink" title="4.3.1基于IP地址"></a>4.3.1基于IP地址</h3><p>第1步：使用nmtui命令，创建三个IP地址，如：192.168.10.10、192.168.10.20、192.168.10.30；</p>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/1.png" class="">
+
+<p>第2步：分别在/home/wwwroot中创建用于保存不同网站数据的3个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/2.png" class="">
+
+<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/10
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/20
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/30
+[root@linuxprobe ~]# echo &quot;IP:192.168.10.10&quot; &gt; /home/wwwroot/10/index.html
+[root@linuxprobe ~]# echo &quot;IP:192.168.10.20&quot; &gt; /home/wwwroot/20/index.html
+[root@linuxprobe ~]# echo &quot;IP:192.168.10.30&quot; &gt; /home/wwwroot/30/index.html</code></pre>
+<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入三个基于IP地址的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+113 &lt;VirtualHost 192.168.10.10&gt;
+114 DocumentRoot /home/wwwroot/10
+115 ServerName www.linuxprobe.com
+116 &lt;Directory /home/wwwroot/10 &gt;
+117 AllowOverride None
+118 Require all granted
+119 &lt;/Directory&gt;
+120 &lt;/VirtualHost&gt;
+121 &lt;VirtualHost 192.168.10.20&gt;
+122 DocumentRoot /home/wwwroot/20
+123 ServerName bbs.linuxprobe.com
+124 &lt;Directory /home/wwwroot/20 &gt;
+125 AllowOverride None
+126 Require all granted
+127 &lt;/Directory&gt;
+128 &lt;/VirtualHost&gt;
+129 &lt;VirtualHost 192.168.10.30&gt;
+130 DocumentRoot /home/wwwroot/30
+131 ServerName tech.linuxprobe.com
+132 &lt;Directory /home/wwwroot/30 &gt;
+133 AllowOverride None
+134 Require all granted
+135 &lt;/Directory&gt;
+136 &lt;/VirtualHost&gt;
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<p>第3步：手动把新的网站数据目录的SELinux安全上下文设置正确，并使用restorecon命令让新设置的SELinux安全上下文立即生效;</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/10
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/10/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/20
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/20/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/30
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/30/*
+[root@linuxprobe ~]# restorecon -Rv /home/wwwroot</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/3.png" class="">
+
+<h3 id="4-3-2基于主机域名"><a href="#4-3-2基于主机域名" class="headerlink" title="4.3.2基于主机域名"></a>4.3.2基于主机域名</h3><p>当服务器无法为每个网站都分配一个独立IP地址的时候，可以尝试让Apache自动识别用户请求的域名，从而根据不同的域名请求来传输不同的内容。在这种情况下的配置更加简单，只需要保证位于生产环境中的服务器上有一个可用的IP地址（这里以192.168.10.10为例）就可以了。</p>
+<p>/etc/hosts是Linux系统中用于强制把某个主机域名解析到指定IP地址的配置文件。</p>
+<p>第1步：手工定义IP地址与域名之间对应关系的配置文件，保存并退出后会立即生效。可以通过分别ping这些域名来验证域名是否已经成功解析为IP地址。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/hosts
+127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1 localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.10.10 www.linuxprobe.com bbs.linuxprobe.com tech.linuxprobe.com
+[root@linuxprobe ~]# ping -c 4 www.linuxprobe.com
+PING www.linuxprobe.com (192.168.10.10) 56(84) bytes of data.
+64 bytes from www.linuxprobe.com (192.168.10.10): icmp_seq=1 ttl=64 time=0.070 ms</code></pre>
+<p>第2步：分别在/home/wwwroot中创建用于保存不同网站数据的三个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
+<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/www
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/bbs
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/tech
+[root@linuxprobe ~]# echo &quot;WWW.linuxprobe.com&quot; &gt; /home/wwwroot/www/index.html
+[root@linuxprobe ~]# echo &quot;BBS.linuxprobe.com&quot; &gt; /home/wwwroot/bbs/index.html
+[root@linuxprobe ~]# echo &quot;TECH.linuxprobe.com&quot; &gt; /home/wwwroot/tech/index.html</code></pre>
+<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入三个基于主机名的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+113 &lt;VirtualHost 192.168.10.10&gt;
+114 DocumentRoot &quot;/home/wwwroot/www&quot;
+115 ServerName &quot;www.linuxprobe.com&quot;
+116 &lt;Directory &quot;/home/wwwroot/www&quot;&gt;
+117 AllowOverride None
+118 Require all granted
+119 &lt;/directory&gt; 
+120 &lt;/VirtualHost&gt;
+121 &lt;VirtualHost 192.168.10.10&gt;
+122 DocumentRoot &quot;/home/wwwroot/bbs&quot;
+123 ServerName &quot;bbs.linuxprobe.com&quot;
+124 &lt;Directory &quot;/home/wwwroot/bbs&quot;&gt;
+125 AllowOverride None
+126 Require all granted
+127 &lt;/Directory&gt;
+128 &lt;/VirtualHost&gt;
+129 &lt;VirtualHost 192.168.10.10&gt;
+130 DocumentRoot &quot;/home/wwwroot/tech&quot;
+131 ServerName &quot;tech.linuxprobe.com&quot;
+132 &lt;Directory &quot;/home/wwwroot/tech&quot;&gt;
+133 AllowOverride None
+134 Require all granted
+135 &lt;/directory&gt;
+136 &lt;/VirtualHost&gt;</code></pre>
+<p>第4步：因为当前的网站数据目录还是在/home/wwwroot目录中，因此还是必须要正确设置网站数据目录文件的SELinux安全上下文，使其与网站服务功能相吻合。最后记得用restorecon命令让新配置的SELinux安全上下文立即生效，这样就可以立即访问到虚拟主机网站了。</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/www
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/www/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/bbs
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/bbs/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/tech
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/tech/*
+[root@linuxprobe ~]# restorecon -Rv /home/wwwroot</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/4.png" class="">
+
+<h3 id="4-3-3基于端口号"><a href="#4-3-3基于端口号" class="headerlink" title="4.3.3基于端口号"></a>4.3.3基于端口号</h3><p>基于端口号的虚拟主机功能可以让用户通过指定的端口号来访问服务器上的网站资源。一般来说，使用80、443、8080等端口号来提供网站访问服务是比较合理的，如果使用其他端口号则会受到SELinux服务的限制。</p>
+<p>在接下来的实验中，我们不但要考虑到目录上应用的SELinux安全上下文的限制，还需要考虑SELinux域对httpd服务程序的管控。</p>
+<p>第1步：分别在/home/wwwroot中创建用于保存不同网站数据的两个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
+<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/6111
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/6222
+[root@linuxprobe ~]# echo &quot;port:6111&quot; &gt; /home/wwwroot/6111/index.html
+[root@linuxprobe ~]# echo &quot;port:6222&quot; &gt; /home/wwwroot/6222/index.html</code></pre>
+<p>第2步：在httpd服务配置文件的第43行和第44行分别添加用于监听6111和6222端口的参数。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf 
+………………省略部分输出信息……………… 
+ 33 #
+ 34 # Listen: Allows you to bind Apache to specific IP addresses and/or
+ 35 # ports, instead of the default. See also the &lt;VirtualHost&gt;
+ 36 # directive.
+ 37 #
+ 38 # Change this to Listen on specific IP addresses as shown below to 
+ 39 # prevent Apache from glomming onto all bound IP addresses.
+ 40 #
+ 41 #Listen 12.34.56.78:80
+ 42 Listen 80
+ 43 Listen 6111
+ 44 Listen 6222
+………………省略部分输出信息……………… </code></pre>
+<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入两个基于端口号的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息……………… 
+113 &lt;VirtualHost 192.168.10.10:6111&gt;
+114 DocumentRoot &quot;/home/wwwroot/6111&quot;
+115 ServerName www.linuxprobe.com
+116 &lt;Directory &quot;/home/wwwroot/6111&quot;&gt;
+117 AllowOverride None
+118 Require all granted
+119 &lt;/Directory&gt; 
+120 &lt;/VirtualHost&gt;
+121 &lt;VirtualHost 192.168.10.10:6222&gt;
+122 DocumentRoot &quot;/home/wwwroot/6222&quot;
+123 ServerName bbs.linuxprobe.com
+124 &lt;Directory &quot;/home/wwwroot/6222&quot;&gt;
+125 AllowOverride None
+126 Require all granted
+127 &lt;/Directory&gt;
+128 &lt;/VirtualHost&gt;
+………………省略部分输出信息………………</code></pre>
+<p>第4步：因为我们把网站数据目录存放在/home/wwwroot目录中，因此还是必须要正确设置网站数据目录文件的SELinux安全上下文，使其与网站服务功能相吻合。最后记得用restorecon命令让新配置的SELinux安全上下文立即生效。</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6111
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6111/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6222
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6222/*
+[root@linuxprobe ~]# restorecon -Rv /home/wwwroot/</code></pre>
+<p>第5步：用semanage命令查询并过滤出所有与HTTP协议相关且SELinux服务允许的端口列表。</p>
+<pre><code>[root@linuxprobe ~]# semanage port -l | grep http
+http_cache_port_t tcp 8080, 8118, 8123, 10001-10010
+http_cache_port_t udp 3130
+http_port_t tcp 80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t tcp 5988
+pegasus_https_port_t tcp 5989</code></pre>
+<p>第6步：SELinux允许的与HTTP协议相关的端口号中默认没有包含6111和6222，因此需要将这两个端口号手动添加进去。该操作会立即生效，而且在系统重启过后依然有效。设置好后再重启httpd服务程序</p>
+<pre><code>[root@linuxprobe ~]# semanage port -a -t http_port_t -p tcp 6111
+[root@linuxprobe ~]# semanage port -a -t http_port_t -p tcp 6222
+[root@linuxprobe ~]# semanage port -l| grep http
+http_cache_port_t tcp 8080, 8118, 8123, 10001-10010
+http_cache_port_t udp 3130
+http_port_t tcp  6222, 6111, 80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t tcp 5988
+pegasus_https_port_t tcp 5989
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/5.png" class="">
+
+<h1 id="5-Apache的访问控制"><a href="#5-Apache的访问控制" class="headerlink" title="5.Apache的访问控制"></a>5.Apache的访问控制</h1><p>Apache通过Allow指令允许某个主机访问服务器上的网站资源，通过Deny指令实现禁止访问。在允许或禁止访问网站资源时，还会用到Order指令，这个指令用来定义Allow或Deny指令起作用的顺序，其匹配原则是按照顺序进行匹配，若匹配成功则执行后面的默认指令。比如“Order Allow, Deny”表示先将源主机与允许规则进行匹配，若匹配成功则允许访问请求，反之则拒绝访问请求。</p>
+<p>第1步：先在服务器上的网站数据目录中新建一个子目录，并在这个子目录中创建一个包含Successful单词的首页文件；</p>
+<pre><code>[root@linuxprobe ~]# mkdir /var/www/html/server
+[root@linuxprobe ~]# echo &quot;Successful&quot; &gt; /var/www/html/server/index.html</code></pre>
+<p>第2步：打开httpd服务的配置文件，在第129行后面添加下述规则来限制源主机的访问。这段规则的含义是允许使用Firefox浏览器的主机访问服务器上的首页文件，除此之外的所有请求都将被拒绝。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+129 &lt;Directory &quot;/var/www/html/server&quot;&gt;
+130 SetEnvIf User-Agent &quot;Firefox&quot; ff=1
+131 Order allow,deny
+132 Allow from env=ff
+133 &lt;/Directory&gt;
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart httpd
+[root@linuxprobe ~]# firefox</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/6.png" class="">
+
+<p>除了匹配源主机的浏览器特征之外，还可以通过匹配源主机的IP地址进行访问控制。例如，我们只允许IP地址为192.168.10.20的主机访问网站资源，那么就可以在httpd服务配置文件的第129行后面添加下述规则。这样在重启httpd服务程序后再用本机（即服务器，其IP地址为192.168.10.10）来访问网站的首页面时就会提示访问被拒绝了。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+129 &lt;Directory &quot;/var/www/html/server&quot;&gt;
+130 Order allow,deny 
+131 Allow from 192.168.10.20
+132 &lt;/Directory&gt;
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart httpd
+[root@linuxprobe ~]# firefox</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/7.jpg" class="">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+    
+	
+	<div>
+		
+			<div>
+    
+        <div style="text-align:center;color: #ccc;font-size:14px;">-------------本文结束<i class="fa fa-paw"></i>感谢您的阅读-------------</div>
+    
+</div>
+		
+	</div>
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>晓
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://zhuxiaowei0924.github.io/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/" title="linux就该这么学：使用Apache服务部署静态网站">https://zhuxiaowei0924.github.io/2021/02/07/linux就该这么学：使用Apache服务部署静态网站/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%AC%AC10%E7%AB%A0%E8%8A%82%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/" rel="tag"># 第10章节：使用Apache服务部署静态网站</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/" rel="prev" title="linux虚拟机外网网络访问设置指南">
+      <i class="fa fa-chevron-left"></i> linux虚拟机外网网络访问设置指南
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Vsftpd%E6%9C%8D%E5%8A%A1%E4%BC%A0%E8%BE%93%E6%96%87%E4%BB%B6/" rel="next" title="linux就该这么学：使用Vsftpd服务传输文件">
+      linux就该这么学：使用Vsftpd服务传输文件 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E7%BD%91%E7%AB%99%E6%9C%8D%E5%8A%A1%E7%A8%8B%E5%BA%8F"><span class="nav-text">1.网站服务程序</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E9%85%8D%E7%BD%AE%E6%9C%8D%E5%8A%A1%E6%96%87%E4%BB%B6%E5%8F%82%E6%95%B0"><span class="nav-text">2.配置服务文件参数</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-SELinux%E5%AE%89%E5%85%A8%E5%AD%90%E7%B3%BB%E7%BB%9F"><span class="nav-text">3.SELinux安全子系统</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-semanage%E5%91%BD%E4%BB%A4"><span class="nav-text">3.1 semanage命令</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E4%B8%AA%E4%BA%BA%E7%94%A8%E6%88%B7%E4%B8%BB%E9%A1%B5%E5%8A%9F%E8%83%BD"><span class="nav-text">4.个人用户主页功能</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#4-1%E5%9C%A8%E7%BD%91%E9%A1%B5%E4%B8%AD%E6%B7%BB%E5%8A%A0%E5%8F%A3%E4%BB%A4%E5%8A%9F%E8%83%BD"><span class="nav-text">4.1在网页中添加口令功能</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-3%E8%99%9A%E6%8B%9F%E7%BD%91%E7%AB%99%E4%B8%BB%E6%9C%BA%E5%8A%9F%E8%83%BD"><span class="nav-text">4.3虚拟网站主机功能</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-1%E5%9F%BA%E4%BA%8EIP%E5%9C%B0%E5%9D%80"><span class="nav-text">4.3.1基于IP地址</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-2%E5%9F%BA%E4%BA%8E%E4%B8%BB%E6%9C%BA%E5%9F%9F%E5%90%8D"><span class="nav-text">4.3.2基于主机域名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-3%E5%9F%BA%E4%BA%8E%E7%AB%AF%E5%8F%A3%E5%8F%B7"><span class="nav-text">4.3.3基于端口号</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-Apache%E7%9A%84%E8%AE%BF%E9%97%AE%E6%8E%A7%E5%88%B6"><span class="nav-text">5.Apache的访问控制</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="晓"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">晓</p>
+  <div class="site-description" itemprop="description">看得懂的书，请仔细看；看不懂的书，请硬着头皮看。</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">24</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">22</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="cc-license motion-element" itemprop="license">
+    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" class="cc-opacity" rel="noopener" target="_blank"><img src="/images/cc-by-nc-sa.svg" alt="Creative Commons"></a>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2020 – 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">晓</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">155k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:21</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>-->
+
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+<div class="theme-info">
+  <div class="powered-by"></div>
+  <span class="post-count">博客全站共65k字</span>
+  <span class="post-meta-divider">|</span>
+  本站总访问量<span id="busuanzi_value_site_pv"></span>次
+  <span class="post-meta-divider">|</span>
+  本站访客数<span id="busuanzi_value_site_uv"></span>人次
+  <span class="post-meta-divider">|</span>
+  本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+</div>
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script color='255,255,255' opacity='0.5' zIndex='-1' count='200' src="/lib/canvas-nest/canvas-nest-nomobile.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+
+  <script async src="/js/cursor/fireworks.js"></script>
+
+  
+<!--3D飘雪花特效 整理(此部分代码存在影响六角雪花特效）by yaxi.net-->
+<script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="snow.js"></script>
+<style type="text/css">
+.snow-container{
+position:fixed;
+top:0;left:0;
+width:100%;
+height:100%;
+pointer-events:none;
+z-index:100001;
+}
+</style>
+<div class="snow-container"></div>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"pluginRootPath":"live2dw/","pluginJsPath":"lib/","pluginModelPath":"assets/","tagMode":false,"model":{"jsonPath":"/live2dw/assets/z16.model.json"},"display":{"position":"right","width":150,"height":300},"mobile":{"show":false},"log":false});</script></body>
+</html>
