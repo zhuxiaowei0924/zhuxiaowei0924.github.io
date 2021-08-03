@@ -1,68 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>linux内核升级到rhel7.9版本</title>
-    <url>/2021/03/08/linux%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E5%88%B0rhel7.9%E7%89%88%E6%9C%AC/</url>
-    <content><![CDATA[<p>当前的系统版本为rhel7.0，内核版本为“Linux 3.10.0-123.el7.x86_64”</p>
-<a id="more"></a>
-
-<pre><code>[root@rhel7_0 ~]# hostnamectl
-    ……
-    Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
-    Kernel: Linux 3.10.0-123.el7.x86_64
-    ……
-[root@rhel0 ~]# uname -rs
-    Linux 3.10.0-123.el7.x86_64</code></pre>
-<p>1、从网上下载RHEL7.9版本的系统镜像文件，然后在 RHEL7.0 服务器上进行挂载，并配置在本地YUM源：</p>
-<pre><code>[root@rhel7_0 ~]# mount /dev/cdrom /mnt/
-[root@rhel7_0 ~]# cat /etc/yum.repos.d/rhel_local.repo 
-    [mnt]
-    name=mnt
-    baseurl=file:///mnt
-    enable=1
-    gpgcheck=0</code></pre>
-<p>2、在RHEL7.0服务器上先执行yum clean all，再使用yum list kernel命令查看当前服务器上已安装的内核以及可更新的高版本内核。</p>
-<pre><code>[root@rhel7_0 ~]# yum list kernel
-Loaded plugins: product-id, search-disabled-repos, subscription-manager
-This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
-Installed Packages
-kernel.x86_64                                                    3.10.0-123.el7                                                    @anaconda/7.2
-Available Packages
-kernel.x86_64                                                    3.10.0-1160.el7                                                    mnt          </code></pre>
-<p>3、安装新内核.</p>
-<pre><code>[root@rhel7_0 ~]# yum install -y kernel   
-[root@rhel7_0 ~]# uname -rs</code></pre>
-<p>　　    Linux 3.10.0-123.el7.x86_64</p>
-<p>安装完成之后，再查看内核，发现没有变化，还是跟之前的一样。</p>
-<p>查看/boot/grub2/grub.cfg 配置文件，可以看到新内核3.10.0-1160.el7.x86_64已经是排在最前边了，RHEL7 可以不用调整内核启动顺序，默认会从新内核启动。</p>
-<p>这是进行系统重启reboot，系统会从新内核3.10.0-1160.el7.x86_64启动，但在登录界面显示一片黑屏或其他报错，因此在系统升级完后，不要着急重启，需要在终端输入：<strong>yum update</strong>进行更新，之后再重启，一切正常！</p>
-<p>正常情况下，是不需要修改内核启动顺序的，如果发现内核启动顺序不对，可以按下面的方式来修改：</p>
-<pre><code>[root@rhel7_0 ~]# grub2-editenv list  --查看系统默认内核版本
-saved_entry=Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)
-[root@rhel7_0 ~]# grep &quot;menuentry &quot; /boot/grub2/grub.cfg  --查看配置文件里的内核顺序；这个菜单条目对应上图中的三条选项。
-menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-123.el7.x86_64) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-menuentry &#39;Red Hat Enterprise Linux Server (0-rescue-1fbd678500124daea255a3b7a98e320c) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-0-rescue-1fbd678500124daea255a3b7a98e320c-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-[root@rhel7_0 ~]# grub2-set-default &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39;   --配置默认内核
-[root@rhel7_0 ~]# grub2-mkconfig -o /boot/grub2/grub.cfg    --将修改的内容写入到grub.cfg配置文件。
-Generating grub configuration file ...
-Found linux image: /boot/vmlinuz-3.10.0-1160.el7.x86_64
-Found initrd image: /boot/initramfs-3.10.0-1160.el7.x86_64.img
-Found linux image: /boot/vmlinuz-3.10.0-123.el7.x86_64
-Found initrd image: /boot/initramfs-3.10.0-123.el7.x86_64.img
-Found linux image: /boot/vmlinuz-0-rescue-1fbd678500124daea255a3b7a98e320c
-Found initrd image: /boot/initramfs-0-rescue-1fbd678500124daea255a3b7a98e320c.img
-done</code></pre>
-<p>系统内核更新成功！</p>
-]]></content>
-      <categories>
-        <category>linux系统</category>
-      </categories>
-      <tags>
-        <tag>linux内核升级</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux就该这么学-12:使用Samba或NFS实现文件共享</title>
     <url>/2021/02/11/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-12-%E4%BD%BF%E7%94%A8Samba%E6%88%96NFS%E5%AE%9E%E7%8E%B0%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB/</url>
     <content><![CDATA[<h1 id="1-SAMBA文件共享服务"><a href="#1-SAMBA文件共享服务" class="headerlink" title="1.SAMBA文件共享服务"></a>1.SAMBA文件共享服务</h1><p>Samba服务程序现在已经成为在Linux系统与Windows系统之间共享文件的最佳选择。</p>
@@ -400,6 +338,68 @@ Filesystem Size Used Avail Use% Mounted on
       </categories>
       <tags>
         <tag>第12章节：使用Samba或NFS实现文件共享</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux内核升级到rhel7.9版本</title>
+    <url>/2021/03/08/linux%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E5%88%B0rhel7.9%E7%89%88%E6%9C%AC/</url>
+    <content><![CDATA[<p>当前的系统版本为rhel7.0，内核版本为“Linux 3.10.0-123.el7.x86_64”</p>
+<a id="more"></a>
+
+<pre><code>[root@rhel7_0 ~]# hostnamectl
+    ……
+    Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
+    Kernel: Linux 3.10.0-123.el7.x86_64
+    ……
+[root@rhel0 ~]# uname -rs
+    Linux 3.10.0-123.el7.x86_64</code></pre>
+<p>1、从网上下载RHEL7.9版本的系统镜像文件，然后在 RHEL7.0 服务器上进行挂载，并配置在本地YUM源：</p>
+<pre><code>[root@rhel7_0 ~]# mount /dev/cdrom /mnt/
+[root@rhel7_0 ~]# cat /etc/yum.repos.d/rhel_local.repo 
+    [mnt]
+    name=mnt
+    baseurl=file:///mnt
+    enable=1
+    gpgcheck=0</code></pre>
+<p>2、在RHEL7.0服务器上先执行yum clean all，再使用yum list kernel命令查看当前服务器上已安装的内核以及可更新的高版本内核。</p>
+<pre><code>[root@rhel7_0 ~]# yum list kernel
+Loaded plugins: product-id, search-disabled-repos, subscription-manager
+This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
+Installed Packages
+kernel.x86_64                                                    3.10.0-123.el7                                                    @anaconda/7.2
+Available Packages
+kernel.x86_64                                                    3.10.0-1160.el7                                                    mnt          </code></pre>
+<p>3、安装新内核.</p>
+<pre><code>[root@rhel7_0 ~]# yum install -y kernel   
+[root@rhel7_0 ~]# uname -rs</code></pre>
+<p>　　    Linux 3.10.0-123.el7.x86_64</p>
+<p>安装完成之后，再查看内核，发现没有变化，还是跟之前的一样。</p>
+<p>查看/boot/grub2/grub.cfg 配置文件，可以看到新内核3.10.0-1160.el7.x86_64已经是排在最前边了，RHEL7 可以不用调整内核启动顺序，默认会从新内核启动。</p>
+<p>这是进行系统重启reboot，系统会从新内核3.10.0-1160.el7.x86_64启动，但在登录界面显示一片黑屏或其他报错，因此在系统升级完后，不要着急重启，需要在终端输入：<strong>yum update</strong>进行更新，之后再重启，一切正常！</p>
+<p>正常情况下，是不需要修改内核启动顺序的，如果发现内核启动顺序不对，可以按下面的方式来修改：</p>
+<pre><code>[root@rhel7_0 ~]# grub2-editenv list  --查看系统默认内核版本
+saved_entry=Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)
+[root@rhel7_0 ~]# grep &quot;menuentry &quot; /boot/grub2/grub.cfg  --查看配置文件里的内核顺序；这个菜单条目对应上图中的三条选项。
+menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-123.el7.x86_64) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+menuentry &#39;Red Hat Enterprise Linux Server (0-rescue-1fbd678500124daea255a3b7a98e320c) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-0-rescue-1fbd678500124daea255a3b7a98e320c-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+[root@rhel7_0 ~]# grub2-set-default &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39;   --配置默认内核
+[root@rhel7_0 ~]# grub2-mkconfig -o /boot/grub2/grub.cfg    --将修改的内容写入到grub.cfg配置文件。
+Generating grub configuration file ...
+Found linux image: /boot/vmlinuz-3.10.0-1160.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-1160.el7.x86_64.img
+Found linux image: /boot/vmlinuz-3.10.0-123.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-123.el7.x86_64.img
+Found linux image: /boot/vmlinuz-0-rescue-1fbd678500124daea255a3b7a98e320c
+Found initrd image: /boot/initramfs-0-rescue-1fbd678500124daea255a3b7a98e320c.img
+done</code></pre>
+<p>系统内核更新成功！</p>
+]]></content>
+      <categories>
+        <category>linux系统</category>
+      </categories>
+      <tags>
+        <tag>linux内核升级</tag>
       </tags>
   </entry>
   <entry>
@@ -845,7 +845,7 @@ ln -s &#39;/usr/lib/systemd/system/dovecot.service&#39; &#39;/etc/systemd/system
 </tbody></table>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png" class>
 
-<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#108;&#105;&#110;&#117;&#x78;&#x70;&#114;&#111;&#x62;&#x65;&#64;&#x6c;&#x69;&#x6e;&#117;&#120;&#x70;&#114;&#x6f;&#x62;&#x65;&#x2e;&#99;&#111;&#109;">&#108;&#105;&#110;&#117;&#x78;&#x70;&#114;&#111;&#x62;&#x65;&#64;&#x6c;&#x69;&#x6e;&#117;&#120;&#x70;&#114;&#x6f;&#x62;&#x65;&#x2e;&#99;&#111;&#109;</a>,linuxprobe是linux用户名）和用户密码：</p>
+<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#x6c;&#x69;&#x6e;&#117;&#120;&#x70;&#x72;&#x6f;&#x62;&#101;&#64;&#108;&#105;&#x6e;&#117;&#120;&#x70;&#x72;&#x6f;&#98;&#x65;&#x2e;&#x63;&#x6f;&#109;">&#x6c;&#x69;&#x6e;&#117;&#120;&#x70;&#x72;&#x6f;&#x62;&#101;&#64;&#108;&#105;&#x6e;&#117;&#120;&#x70;&#x72;&#x6f;&#98;&#x65;&#x2e;&#x63;&#x6f;&#109;</a>,linuxprobe是linux用户名）和用户密码：</p>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png" class>
 
 <p>第2步：设置接收服务器类型为POP3，输入邮件帐号和密码，设置POP服务器和SMTP服务器地址，两个为同一地址，如192.168.10.10，SSL端口处不勾选，之后创建成功！</p>
@@ -1240,104 +1240,6 @@ iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>linux就该这么学：使用RAID与LVM磁盘阵列技术</title>
-    <url>/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/</url>
-    <content><![CDATA[<p>RAID：Redundant Array of Independent Disks，独立冗余磁盘阵列；<br>LVM：Logical Volume Manager，逻辑卷管理器；</p>
-<a id="more"></a>
-
-<h1 id="1-RAID-0"><a href="#1-RAID-0" class="headerlink" title="1.RAID 0"></a>1.RAID 0</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/1.png" class>
-
-<h1 id="2-RAID-1"><a href="#2-RAID-1" class="headerlink" title="2.RAID 1"></a>2.RAID 1</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/2.jpg" class>
-
-<h1 id="3-RAID-5"><a href="#3-RAID-5" class="headerlink" title="3.RAID 5"></a>3.RAID 5</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/3.png" class>
-
-<h1 id="4-RAID-10"><a href="#4-RAID-10" class="headerlink" title="4.RAID 10"></a>4.RAID 10</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/4.png" class>
-
-<p>mdadm命令用于管理Linux系统中的软件RAID硬盘阵列，格式为“mdadm [模式] &lt;RAID设备名称&gt; [选项] [成员设备名称]”.</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-a</td>
-<td>检测设备名称</td>
-</tr>
-<tr>
-<td>-n</td>
-<td>指定设备数量</td>
-</tr>
-<tr>
-<td>-l</td>
-<td>指定RAID级别</td>
-</tr>
-<tr>
-<td>-C</td>
-<td>创建</td>
-</tr>
-<tr>
-<td>-v</td>
-<td>显示过程</td>
-</tr>
-<tr>
-<td>-D</td>
-<td>查看详细信息</td>
-</tr>
-<tr>
-<td>-r</td>
-<td>移除设备</td>
-</tr>
-<tr>
-<td>-S</td>
-<td>停止RAID磁盘阵列</td>
-</tr>
-</tbody></table>
-<p>-C参数代表创建一个RAID阵列卡；-v参数显示创建的过程，同时在后面追加一个设备名称/dev/md0，这样/dev/md0就是创建后的RAID磁盘阵列的名称；-a yes参数代表自动创建设备文件；-n 4参数代表使用4块硬盘来部署这个RAID磁盘阵列；而-l 10参数则代表RAID 10方案；最后再加上4块硬盘设备的名称就搞定了。</p>
-<pre><code>[root@linuxprobe ~]# mdadm -Cv /dev/md0 -a yes -n 4 -l 10 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
-<p>之后格式化mkfs.ext4，创建挂载点mkdir /RAID，查看详细信息mdadm -D /dev/md0，并把挂载信息写入配置文件。</p>
-<h1 id="5-磁盘阵列-备份盘"><a href="#5-磁盘阵列-备份盘" class="headerlink" title="5.磁盘阵列+备份盘"></a>5.磁盘阵列+备份盘</h1><p>在下面的命令中，参数-n 3代表创建这个RAID 5磁盘阵列所需的硬盘数，参数-l 5代表RAID的级别，而参数-x 1则代表有一块备份盘。当查看/dev/md0（即RAID 5磁盘阵列的名称）磁盘阵列的时候就能看到有一块备份盘在等待中了：</p>
-<pre><code>mdadm -Cv /dev/md0 -n 3 -l 5 -x 1 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
-<h1 id="6-部署逻辑卷"><a href="#6-部署逻辑卷" class="headerlink" title="6.部署逻辑卷"></a>6.部署逻辑卷</h1>
-
-<pre><code>[root@linuxprobe ~]# pvcreate /dev/sdb /dev/sdc
-[root@linuxprobe ~]# vgcreate storage /dev/sdb /dev/sdc
-[root@linuxprobe ~]# lvcreate -n vo -l 37 storage（在对逻辑卷进行切割时有两种计量单位。第一种是以容量为单位，所使用的参数为-L。例如，使用-L 150M生成一个大小为150MB的逻辑卷。另外一种是以基本单元的个数为单位，所使用的参数为-l。每个基本单元的大小默认为4MB。例如，使用-l 37可以生成一个大小为37×4MB=148MB的逻辑卷。）</code></pre>
-<p>之后再格式化，挂载，写入配置文件中即可！</p>
-<h1 id="7-扩容逻辑卷"><a href="#7-扩容逻辑卷" class="headerlink" title="7.扩容逻辑卷"></a>7.扩容逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
-<pre><code>[root@linuxprobe ~]# lvextend -L 290M /dev/storage/vo （逻辑卷vo扩展至290MB）
-[root@linuxprobe ~]# e2fsck -f /dev/storage/vo （检查硬盘完整性）
-[root@linuxprobe ~]# resize2fs /dev/storage/vo （重置硬盘容量）</code></pre>
-<p>之后mount -a挂载硬盘设备即可！</p>
-<h1 id="8-缩小逻辑卷"><a href="#8-缩小逻辑卷" class="headerlink" title="8.缩小逻辑卷"></a>8.缩小逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
-<pre><code>[root@linuxprobe ~]# e2fsck -f /dev/storage/vo
-[root@linuxprobe ~]# resize2fs /dev/storage/vo 120M
-[root@linuxprobe ~]# lvreduce -L 120M /dev/storage/vo</code></pre>
-<p>之后mount -a挂载硬盘设备即可！</p>
-<h1 id="9-逻辑卷快照"><a href="#9-逻辑卷快照" class="headerlink" title="9.逻辑卷快照"></a>9.逻辑卷快照</h1><p>LVM的快照卷功能有两个特点：</p>
-<pre><code>快照卷的容量必须等同于逻辑卷的容量；
-
-快照卷仅一次有效，一旦执行还原操作后则会被立即自动删除。
-
-[root@linuxprobe ~]#  lvcreate -L 120M -s -n SNAP /dev/storage/vo （使用-s参数生成一个快照卷，使用-L参数指定切割的大小。另外，还需要在命令后面写上是针对哪个逻辑卷执行的快照操作。）
-[root@linuxprobe ~]# umount /linuxprobe （记得先卸载掉逻辑卷设备与目录的挂载。）
-[root@linuxprobe ~]# lvconvert --merge /dev/storage/SNAP
-[root@linuxprobe ~]# mount -a</code></pre>
-<h1 id="10-删除逻辑卷"><a href="#10-删除逻辑卷" class="headerlink" title="10.删除逻辑卷"></a>10.删除逻辑卷</h1><pre><code>[root@linuxprobe ~]# umount /linuxprobe （取消逻辑卷与目录的挂载关联）
-[root@linuxprobe ~]# vim /etc/fstab （删除配置文件中永久生效的设备参数）
-[root@linuxprobe ~]# lvremove /dev/storage/vo （删除逻辑卷设备，需要输入y来确认操作）
-[root@linuxprobe ~]# vgremove storage （删除卷组，此处只写卷组名称即可，不需要设备的绝对路径）
-[root@linuxprobe ~]# pvremove /dev/sdb /dev/sdc （删除物理卷设备）</code></pre>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第7章节：使用RAID与LVM磁盘阵列技术</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux就该这么学：linux命令</title>
     <url>/2020/12/28/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Alinux%E5%91%BD%E4%BB%A4/</url>
     <content><![CDATA[<h1 id="1-命令格式"><a href="#1-命令格式" class="headerlink" title="1.命令格式"></a>1.命令格式</h1><p>格式要求： 命令名称 [命令参数]  [命令对象]</p>
@@ -1570,6 +1472,747 @@ iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
       </categories>
       <tags>
         <tag>第2章节：linux命令</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：使用RAID与LVM磁盘阵列技术</title>
+    <url>/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/</url>
+    <content><![CDATA[<p>RAID：Redundant Array of Independent Disks，独立冗余磁盘阵列；<br>LVM：Logical Volume Manager，逻辑卷管理器；</p>
+<a id="more"></a>
+
+<h1 id="1-RAID-0"><a href="#1-RAID-0" class="headerlink" title="1.RAID 0"></a>1.RAID 0</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/1.png" class>
+
+<h1 id="2-RAID-1"><a href="#2-RAID-1" class="headerlink" title="2.RAID 1"></a>2.RAID 1</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/2.jpg" class>
+
+<h1 id="3-RAID-5"><a href="#3-RAID-5" class="headerlink" title="3.RAID 5"></a>3.RAID 5</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/3.png" class>
+
+<h1 id="4-RAID-10"><a href="#4-RAID-10" class="headerlink" title="4.RAID 10"></a>4.RAID 10</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/4.png" class>
+
+<p>mdadm命令用于管理Linux系统中的软件RAID硬盘阵列，格式为“mdadm [模式] &lt;RAID设备名称&gt; [选项] [成员设备名称]”.</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>检测设备名称</td>
+</tr>
+<tr>
+<td>-n</td>
+<td>指定设备数量</td>
+</tr>
+<tr>
+<td>-l</td>
+<td>指定RAID级别</td>
+</tr>
+<tr>
+<td>-C</td>
+<td>创建</td>
+</tr>
+<tr>
+<td>-v</td>
+<td>显示过程</td>
+</tr>
+<tr>
+<td>-D</td>
+<td>查看详细信息</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>移除设备</td>
+</tr>
+<tr>
+<td>-S</td>
+<td>停止RAID磁盘阵列</td>
+</tr>
+</tbody></table>
+<p>-C参数代表创建一个RAID阵列卡；-v参数显示创建的过程，同时在后面追加一个设备名称/dev/md0，这样/dev/md0就是创建后的RAID磁盘阵列的名称；-a yes参数代表自动创建设备文件；-n 4参数代表使用4块硬盘来部署这个RAID磁盘阵列；而-l 10参数则代表RAID 10方案；最后再加上4块硬盘设备的名称就搞定了。</p>
+<pre><code>[root@linuxprobe ~]# mdadm -Cv /dev/md0 -a yes -n 4 -l 10 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
+<p>之后格式化mkfs.ext4，创建挂载点mkdir /RAID，查看详细信息mdadm -D /dev/md0，并把挂载信息写入配置文件。</p>
+<h1 id="5-磁盘阵列-备份盘"><a href="#5-磁盘阵列-备份盘" class="headerlink" title="5.磁盘阵列+备份盘"></a>5.磁盘阵列+备份盘</h1><p>在下面的命令中，参数-n 3代表创建这个RAID 5磁盘阵列所需的硬盘数，参数-l 5代表RAID的级别，而参数-x 1则代表有一块备份盘。当查看/dev/md0（即RAID 5磁盘阵列的名称）磁盘阵列的时候就能看到有一块备份盘在等待中了：</p>
+<pre><code>mdadm -Cv /dev/md0 -n 3 -l 5 -x 1 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
+<h1 id="6-部署逻辑卷"><a href="#6-部署逻辑卷" class="headerlink" title="6.部署逻辑卷"></a>6.部署逻辑卷</h1>
+
+<pre><code>[root@linuxprobe ~]# pvcreate /dev/sdb /dev/sdc
+[root@linuxprobe ~]# vgcreate storage /dev/sdb /dev/sdc
+[root@linuxprobe ~]# lvcreate -n vo -l 37 storage（在对逻辑卷进行切割时有两种计量单位。第一种是以容量为单位，所使用的参数为-L。例如，使用-L 150M生成一个大小为150MB的逻辑卷。另外一种是以基本单元的个数为单位，所使用的参数为-l。每个基本单元的大小默认为4MB。例如，使用-l 37可以生成一个大小为37×4MB=148MB的逻辑卷。）</code></pre>
+<p>之后再格式化，挂载，写入配置文件中即可！</p>
+<h1 id="7-扩容逻辑卷"><a href="#7-扩容逻辑卷" class="headerlink" title="7.扩容逻辑卷"></a>7.扩容逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
+<pre><code>[root@linuxprobe ~]# lvextend -L 290M /dev/storage/vo （逻辑卷vo扩展至290MB）
+[root@linuxprobe ~]# e2fsck -f /dev/storage/vo （检查硬盘完整性）
+[root@linuxprobe ~]# resize2fs /dev/storage/vo （重置硬盘容量）</code></pre>
+<p>之后mount -a挂载硬盘设备即可！</p>
+<h1 id="8-缩小逻辑卷"><a href="#8-缩小逻辑卷" class="headerlink" title="8.缩小逻辑卷"></a>8.缩小逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
+<pre><code>[root@linuxprobe ~]# e2fsck -f /dev/storage/vo
+[root@linuxprobe ~]# resize2fs /dev/storage/vo 120M
+[root@linuxprobe ~]# lvreduce -L 120M /dev/storage/vo</code></pre>
+<p>之后mount -a挂载硬盘设备即可！</p>
+<h1 id="9-逻辑卷快照"><a href="#9-逻辑卷快照" class="headerlink" title="9.逻辑卷快照"></a>9.逻辑卷快照</h1><p>LVM的快照卷功能有两个特点：</p>
+<pre><code>快照卷的容量必须等同于逻辑卷的容量；
+
+快照卷仅一次有效，一旦执行还原操作后则会被立即自动删除。
+
+[root@linuxprobe ~]#  lvcreate -L 120M -s -n SNAP /dev/storage/vo （使用-s参数生成一个快照卷，使用-L参数指定切割的大小。另外，还需要在命令后面写上是针对哪个逻辑卷执行的快照操作。）
+[root@linuxprobe ~]# umount /linuxprobe （记得先卸载掉逻辑卷设备与目录的挂载。）
+[root@linuxprobe ~]# lvconvert --merge /dev/storage/SNAP
+[root@linuxprobe ~]# mount -a</code></pre>
+<h1 id="10-删除逻辑卷"><a href="#10-删除逻辑卷" class="headerlink" title="10.删除逻辑卷"></a>10.删除逻辑卷</h1><pre><code>[root@linuxprobe ~]# umount /linuxprobe （取消逻辑卷与目录的挂载关联）
+[root@linuxprobe ~]# vim /etc/fstab （删除配置文件中永久生效的设备参数）
+[root@linuxprobe ~]# lvremove /dev/storage/vo （删除逻辑卷设备，需要输入y来确认操作）
+[root@linuxprobe ~]# vgremove storage （删除卷组，此处只写卷组名称即可，不需要设备的绝对路径）
+[root@linuxprobe ~]# pvremove /dev/sdb /dev/sdc （删除物理卷设备）</code></pre>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第7章节：使用RAID与LVM磁盘阵列技术</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：使用win10主机ping通虚拟机</title>
+    <url>/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
+    <content><![CDATA[<p>在win10系统中安装了vm12版本，Linux我选用的是redhat 7版本；成功安装redhat 7后，将linux虚拟机的IP地址固定：</p>
+<a id="more"></a>
+
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/1.png" class>
+
+<p>linux虚拟机的外部连接方式为NAT模式，在linux虚拟机中能够ping通自己的IP，但无法ping通win10系统的IP，win10系统也无法ping通linux虚拟机IP。</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/2.png" class>
+
+<p>解决方法如下：</p>
+<p>1.首先确认了本机的网络有无VMware Network Adapter VMnet8这两个网络：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/3.png" class>
+
+<p>有以上两个网络的话，跳过此步骤；没有的话，则将VM虚拟机卸载，之后清理完之后再重新安装VM虚拟机软件。</p>
+<p>2.安装好虚拟机后，打开终端，输入：vim /etc/sysconfig/network-scripts/ifcfg-eno16777728（网卡名称），编辑下网卡文件，将BOOTPROTO的值修改为static，并添加参数：IPADDR，GATEWAR，NETMASK，NM_CONTROLLED。IPADDR，GATEWAR这两个设置注意网段要与VMware Network Adapter VMnet8 的一致：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/4.png" class>
+
+<p>3.设置好之后，保存退出；之后重启系统，用linux虚拟机ping下win10系统IP地址，测试是否能够ping通，如果可以，那就ok了。</p>
+<p>linux虚拟机ping win10系统：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/5.png" class>
+
+<p>win10系统ping linux虚拟机：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/6.png" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>使用win10主机ping通虚拟机</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：存储结构与磁盘划分</title>
+    <url>/2021/02/01/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E4%B8%8E%E7%A3%81%E7%9B%98%E5%88%92%E5%88%86/</url>
+    <content><![CDATA[<h1 id="1-一切从“-”开始"><a href="#1-一切从“-”开始" class="headerlink" title="1.一切从“/”开始"></a>1.一切从“/”开始</h1><p>Linux系统中的一切文件都是从“根（/）”目录开始的，并按照文件系统层次化标准（FHS）采用树形结构来存放文件，以及定义了常见目录的用途。另外，Linux系统中的文件和目录名称是严格区分大小写的。  </p>
+<a id="more"></a>
+
+<table>
+<thead>
+<tr>
+<th>目录名称</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>/boot</td>
+<td>开机所需文件—内核、开机菜单以及所需配置文件等</td>
+</tr>
+<tr>
+<td>/dev</td>
+<td>以文件形式存放任何设备与接口</td>
+</tr>
+<tr>
+<td>/etc</td>
+<td>配置文件</td>
+</tr>
+<tr>
+<td>/home</td>
+<td>用户主目录</td>
+</tr>
+<tr>
+<td>/media</td>
+<td>用于挂载设备文件的目录</td>
+</tr>
+</tbody></table>
+<p>主分区或扩展分区的编号从1开始，到4结束；逻辑分区从编号5开始。</p>
+<p>mount命令用于挂载文件系统，格式为“mount 文件系统 挂载目录”；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>挂载所有在/etc/fstab中定义的文件系统</td>
+</tr>
+<tr>
+<td>-t</td>
+<td>指定文件系统的类型</td>
+</tr>
+</tbody></table>
+<p>如果想让硬件设备和目录永久地进行自动关联，就必须把挂载信息按照指定的填写格式“设备文件 挂载目录 格式类型 权限选项 是否备份 是否自检”（各字段的意义见表6-4）写入到/etc/fstab文件中。</p>
+<p>umount命令用于撤销已经挂载的设备文件，格式为“umount [挂载点/设备文件]”。</p>
+<h2 id="1-1添加硬盘设备"><a href="#1-1添加硬盘设备" class="headerlink" title="1.1添加硬盘设备"></a>1.1添加硬盘设备</h2><p>1.fdisk命令：用于管理磁盘分区，格式为“fdisk  [磁盘名称]”，它提供了集添加、删除、转换分区等功能于一身的“一站式分区服务”；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>m</td>
+<td>查看全部可用的参数</td>
+</tr>
+<tr>
+<td>n</td>
+<td>添加新的分区</td>
+</tr>
+<tr>
+<td>d</td>
+<td>删除某个分区</td>
+</tr>
+<tr>
+<td>p</td>
+<td>查看分区表信息</td>
+</tr>
+<tr>
+<td>w</td>
+<td>保存并退出</td>
+</tr>
+<tr>
+<td>q</td>
+<td>不保存直接退出</td>
+</tr>
+</tbody></table>
+<p>2.mkfs：存储设备进行分区后进行格式化操作；</p>
+<p>3.mount：挂载存储设备；</p>
+<p>4.du：查看文件数据占用量；du -sh /*命令来查看在Linux系统根目录下所有一级目录分别占用的空间大小。</p>
+<p>如果想让这个设备文件的挂载永久有效，则需要把挂载的信息写入到配置文件中：</p>
+<h2 id="1-2添加交换分区"><a href="#1-2添加交换分区" class="headerlink" title="1.2添加交换分区"></a>1.2添加交换分区</h2><p>SWAP（交换）分区是一种通过在硬盘中预先划分一定的空间，然后将把内存中暂时不常用的数据临时存放到硬盘中，以便腾出物理内存空间让更活跃的程序服务来使用的技术，其设计目的是为了解决真实物理内存不足的问题。但由于交换分区毕竟是通过硬盘设备读写数据的，速度肯定要比物理内存慢，所以只有当真实的物理内存耗尽后才会调用交换分区的资源。</p>
+<p>生产环境中，交换分区的大小一般为真实物理内存的1.5～2倍；</p>
+<pre><code>（1）fdisk
+（2）mkswap:SWAP分区专用的格式化命令；
+（3）free -m：用于查看交换分区的大小；
+（4）将相关信息写入配置文件（/etc/fstab），并保存！如：/dev/sdb2 swap swap defaults 0 0 </code></pre>
+<h2 id="1-3磁盘容量配额"><a href="#1-3磁盘容量配额" class="headerlink" title="1.3磁盘容量配额"></a>1.3磁盘容量配额</h2><p>使用quota命令进行磁盘容量配额管理，从而限制用户的硬盘可用容量或所能创建的最大文件个数。quota命令还有软限制和硬限制的功能。</p>
+<p>软限制：当达到软限制时会提示用户，但仍允许用户在限定的额度内继续使用。</p>
+<p>硬限制：当达到硬限制时会提示用户，且强制终止用户的操作。</p>
+<p>1.xfs_quota：-c参数用于以参数的形式设置要执行的命令；-x参数是专家模式，让运维人员能够对quota服务进行更多复杂的配置。</p>
+<pre><code>[root@linuxprobe ~]# xfs_quota -x -c &#39;limit bsoft=3m bhard=6m isoft=3 ihard=6 tom&#39; /boot
+[root@linuxprobe ~]# xfs_quota -x -c report /boot</code></pre>
+<p>2.edquota：用于编辑用户的quota配额限制，格式为“edquota [参数] [用户] ”。-u参数表示要针对哪个用户进行设置；-g参数表示要针对哪个用户组进行设置。</p>
+<h2 id="1-4软硬方式链接"><a href="#1-4软硬方式链接" class="headerlink" title="1.4软硬方式链接"></a>1.4软硬方式链接</h2><p>硬链接： 是指针，所有的硬链接都是指向同一个磁盘块； 删除一个指针不会真正删除文件，只有把所有的指针都删除才会真正删除文件。<br>软链接： 保存了其代表的文件的绝对路径，是另外一种文件，在硬盘上有独立的区块，访问时替换自身路径。</p>
+<p>1.ln：用于创建链接文件，格式为“ln [选项] 目标”；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-s</td>
+<td>创建“符号链接”（如果不带-s参数，则默认创建硬链接）</td>
+</tr>
+<tr>
+<td>-f</td>
+<td>强制创建文件或目录的链接</td>
+</tr>
+<tr>
+<td>-i</td>
+<td>覆盖前先询问</td>
+</tr>
+<tr>
+<td>-v</td>
+<td>显示创建链接的过程</td>
+</tr>
+</tbody></table>
+<pre><code>[root@linuxprobe ~]# echo &quot;Welcome to linuxprobe.com&quot; &gt; readme.txt
+[root@linuxprobe ~]# ln -s readme.txt readit.txt
+[root@linuxprobe ~]# cat readme.txt 
+ Welcome to linuxprobe.com
+[root@linuxprobe ~]# cat readit.txt 
+ Welcome to linuxprobe.com
+[root@linuxprobe ~]# ls -l readme.txt 
+ -rw-r--r-- 1 root root 26 Jan 11 00:08 readme.txt
+[root@linuxprobe ~]# rm -f readme.txt 
+[root@linuxprobe ~]# cat readit.txt 
+ cat: readit.txt: No such file or directory</code></pre>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第6章节：存储结构与磁盘划分</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：用户身份与文件权限</title>
+    <url>/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/</url>
+    <content><![CDATA[<h1 id="1-用户身份与能力"><a href="#1-用户身份与能力" class="headerlink" title="1.用户身份与能力"></a>1.用户身份与能力</h1><p>管理员UID为0：系统的管理员用户。</p>
+<p>系统用户UID为1～999： Linux系统为了避免因某个服务程序出现漏洞而被黑客提权至整台服务器，默认服务程序会有独立的系统用户负责运行，进而有效控制被破坏范围。</p>
+<p>普通用户UID从1000开始：是由管理员创建的用于日常工作的用户。</p>
+<a id="more"></a>
+<p>一个用户只有一个基本用户组，但是可以有多个扩展用户组，从而满足日常的工作需要。</p>
+<p>（1）useradd：用于创建新的用户；默认的用户家目录会被存放在/home目录中，默认的Shell解释器为/bin/bash，而且默认会创建一个与该用户同名的基本用户组。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-d</td>
+<td>指定用户的家目录</td>
+</tr>
+<tr>
+<td>-u</td>
+<td>指定该用户的默认UID</td>
+</tr>
+<tr>
+<td>-g</td>
+<td>指定一个初始的用户基本组（必须已存在）</td>
+</tr>
+<tr>
+<td>-G</td>
+<td>指定一个或多个扩展用户组</td>
+</tr>
+<tr>
+<td>-s</td>
+<td>指定该用户的默认Shell解释器</td>
+</tr>
+</tbody></table>
+<p>/sbin/nologin，它是终端解释器中的一员，与Bash解释器有着天壤之别。一旦用户的解释器被设置为nologin，则代表该用户不能登录到系统中：</p>
+<p>（2）groupadd:用于创建用户组；</p>
+<p>（3）usermod：用于修改用户属性；用户的信息保存在/etc/passwd文件中，可以直接用文本编辑器来修改其中的用户参数项目，也可以用usermod命令修改已经创建的用户信息，诸如用户的UID、基本/扩展用户组、默认终端等。  </p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-d -m</td>
+<td>参数-m与参数-d连用，可重新指定用户的家目录并自动把旧的数据转移过去</td>
+</tr>
+<tr>
+<td>-g</td>
+<td>变更所属用户组</td>
+</tr>
+<tr>
+<td>-G</td>
+<td>变更扩展用户组</td>
+</tr>
+<tr>
+<td>-L</td>
+<td>锁定用户禁止其登录系统</td>
+</tr>
+<tr>
+<td>-U</td>
+<td>解锁用户，允许其登陆系统</td>
+</tr>
+<tr>
+<td>-s</td>
+<td>变更默认终端</td>
+</tr>
+</tbody></table>
+<p>（4）passwd：用于修改用户密码、过期时间、认证信息等；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-l</td>
+<td>锁定用户禁止其登录系统</td>
+</tr>
+<tr>
+<td>-u</td>
+<td>解锁用户，允许其登陆系统</td>
+</tr>
+<tr>
+<td>–stdin</td>
+<td>允许通过标准输入修改用户密码，如echo “NewPassWord”</td>
+</tr>
+<tr>
+<td>-d</td>
+<td>使该用户可用空密码登录系统</td>
+</tr>
+<tr>
+<td>-e</td>
+<td>强制用户在下次登录时修改密码</td>
+</tr>
+<tr>
+<td>-S</td>
+<td>显示用户的密码是否被锁定，以及密码所采用的加密算法名称</td>
+</tr>
+</tbody></table>
+<p>（5）userdel：用于删除用户；</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-f</td>
+<td>强制删除用户</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>同时删除用户及用户家目录</td>
+</tr>
+</tbody></table>
+<h1 id="2-文件权限与归属"><a href="#2-文件权限与归属" class="headerlink" title="2.文件权限与归属"></a>2.文件权限与归属</h1><p> -：普通文件；d：目录文件；l：链接文件；b：块设备文件；c：字符设备文件；p：管道文件</p>
+<p>对于一般文件来说，权限比较容易理解：“可读”表示能够读取文件的实际内容；“可写”表示能够编辑、新增、修改、删除文件的实际内容；“可执行”则表示能够运行一个脚本程序。</p>
+<p>对目录文件来说，“可读”表示能够读取目录内的文件列表；“可写”表示能够在目录内新增、删除、重命名文件；而“可执行”则表示能够进入该目录。</p>
+<h2 id="2-1-文件的特殊权限"><a href="#2-1-文件的特殊权限" class="headerlink" title="2.1 文件的特殊权限"></a>2.1 文件的特殊权限</h2><p>详细内容可参考：<a href="https://www.cnblogs.com/sparkdev/p/9651622.html%EF%BC%9B">https://www.cnblogs.com/sparkdev/p/9651622.html；</a></p>
+<p>（1）SUID：让执行者临时获得命令的所有者的权限；</p>
+<p>（2）SGID：目录内新文件所有组，继承原有目录所有组的名称！</p>
+<p>1.SUID<br>在 Linux 中，所有账号的密码记录在 /etc/shadow 这个文件中，并且只有 root 可以读写入这个文件：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/1.png" class>
+
+<p>如果另一个普通账号 tester 需要修改自己的密码，就要访问 /etc/shadow 这个文件。但是明明只有 root 才能访问 /etc/shadow 这个文件，这究竟是如何做到的呢？事实上，tester 用户是可以修改 /etc/shadow 这个文件内的密码的，就是通过 SUID 的功能。让我们看看 passwd 程序文件的权限信息：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/2.png" class>
+
+<p>上图红框中的权限信息有些奇怪，owner 的信息为 rws 而不是 rwx。当 s 出现在文件拥有者的 x 权限上时，就被称为 SETUID BITS 或 SETUID ，其特点如下：</p>
+<p>-SUID 权限仅对二进制可执行文件有效<br>-如果执行者对于该二进制可执行文件具有 x 的权限，执行者将具有该文件的所有者的权限<br>-本权限仅在执行该二进制可执行文件的过程中有效</p>
+<p>下面我们来看 tester 用户是如何利用 SUID 权限完成密码修改的：</p>
+<pre><code>(1)tester 用户对于 /usr/bin/passwd 这个程序具有执行权限，因此可以执行 passwd 程序
+(2)passwd 程序的所有者为 root
+(3)tester 用户执行 passwd 程序的过程中会暂时获得 root 权限
+(4)因此 tester 用户在执行 passwd 程序的过程中可以修改 /etc/shadow 文件</code></pre>
+<p>但是如果由 tester 用户执行 cat 命令去读取 /etc/shadow 文件确是不行的：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/3.png" class>
+
+<p>原因很清楚，tester 用户没有读 /etc/shadow 文件的权限，同时 cat 程序也没有被设置 SUID。我们可以通过下图来理解这两种情况：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/4.png" class>
+
+<p>如果想让任意用户通过 cat 命令读取 /etc/shadow 文件的内容也是非常容易的，给它设置 SUID 权限就可以了：</p>
+<p>$ sudo chmod 4755 /bin/cat</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/5.png" class>
+
+<p>现在 cat 已经具有了 SUID 权限，试试看，是不是已经可以 cat 到 /etc/shadow 的内容了。因为这样做非常不安全，所以赶快通过下面的命令把 cat 的 SUID 权限移除掉：</p>
+<p>$ sudo chmod 755 /bin/cat</p>
+<p>2.SGID</p>
+<p>当 s 标志出现在用户组的 x 权限时称为 SGID。SGID 的特点与 SUID 相同，我们通过 /usr/bin/mlocate 程序来演示其用法。mlocate 程序通过查询数据库文件 /var/lib/mlocate/mlocate.db 实现快速的文件查找。 mlocate 程序的权限如下图所示：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/6.png" class>
+
+<p>很明显，它被设置了 SGID 权限。下面是数据库文件 /var/lib/mlocate/mlocate.db 的权限信息：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/7.png" class>
+
+<p>普通用户 tester 执行 mlocate 命令时，tester 就会获得用户组 mlocate 的执行权限，又由于用户组 mlocate 对 mlocate.db 具有读权限，所以 tester 就可以读取 mlocate.db 了。程序的执行过程如下图所示：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/8.png" class>
+
+<p>除二进制程序外，SGID 也可以用在目录上。当一个目录设置了 SGID 权限后，它具有如下功能：</p>
+<pre><code>(1)用户若对此目录具有 r 和 x 权限，该用户能够进入该目录
+(2)用户在此目录下的有效用户组将变成该目录的用户组
+(3)若用户在此目录下拥有 w 权限，则用户所创建的新文件的用户组与该目录的用户组相同</code></pre>
+<p>下面看个例子，创建 testdir 目录，目录的权限设置如下：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/9.png" class>
+
+<p>此时目录 testdir 的 owner 是 nick，所属的 group 为 tester。<br>先创建一个名为 nickfile 的文件：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/10.png" class>
+
+<p>这个文件的权限看起来没有什么特别的。然后给 testdir 目录设置 SGID 权限：</p>
+<p>$ sudo chmod 2775 testdir</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/11.png" class>
+
+<p>然后再创建一个文件 nickfile2：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/12.png" class>
+
+<p>新建的文件所属的组为 tester！</p>
+<p>总结一下，当 SGID 作用于普通文件时，和 SUID 类似，在执行该文件时，用户将获得该文件所属组的权限。当 SGID 作用于目录时，意义就非常重大了。当用户对某一目录有写和执行权限时，该用户就可以在该目录下建立文件，如果该目录用 SGID 修饰，则该用户在这个目录下建立的文件都是属于这个目录所属的组。</p>
+<p>SBIT<br>其实 SBIT 与 SUID 和 SGID 的关系并不大。<br>SBIT 是 the  restricted  deletion  flag  or  sticky  bit 的简称。<br>SBIT 目前只对目录有效，用来阻止非文件的所有者删除文件。比较常见的例子就是 /tmp 目录：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/13.png" class>
+
+<p>权限信息中最后一位 t 表明该目录被设置了 SBIT 权限。SBIT 对目录的作用是：当用户在该目录下创建新文件或目录时，仅有自己和 root 才有权力删除。</p>
+<p>设置 SUID、SGID、SBIT 权限<br>以数字的方式设置权限<br>SUID、SGID、SBIT 权限对应的数字如下：</p>
+<p>SUID-&gt;4<br>SGID-&gt;2<br>SBIT-&gt;1<br>所以如果要为一个文件权限为 “-rwxr-xr-x” 的文件设置 SUID 权限，需要在原先的 755 前面加上 4，也就是 4755：</p>
+<p>$ chmod 4755 filename</p>
+<p>同样，可以用 2 和 1 来设置 SGID 和 SBIT 权限。设置完成后分别会用 s, s, t 代替文件权限中的 x。</p>
+<p>其实，还可能出现 S 和 T 的情况。S 和 t 是替代 x 这个权限的，但是，如果它本身没有 x 这个权限，添加 SUID、SGID、SBIT 权限后就会显示为大写 S 或大写 T。比如我们为一个权限为 666 的文件添加 SUID、SGID、SBIT 权限：</p>
+<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/14.png" class>
+
+<p>执行 chmod 7666 nickfile，因为 666 表示 “-rw-rw-rw”，均没有 x 权限，所以最后变成了 “-rwSrwSrwT”。</p>
+<p>通过符号类型改变权限</p>
+<p>除了使用数字来修改权限，还可以使用符号：</p>
+<p>$ chmod u+s testfile # 为 testfile 文件加上 SUID 权限。<br>$ chmod g+s testdir  # 为 testdir 目录加上 SGID 权限。<br>$ chmod o+t testdir  # 为 testdir 目录加上 SBIT 权限。</p>
+<p>总结<br>SUID、SGID、SBIT 权限都是为了实现特殊功能而设计的，其目的是弥补 ugo 权限无法实现的一些使用场景。</p>
+<h2 id="2-2文件的隐藏属性"><a href="#2-2文件的隐藏属性" class="headerlink" title="2.2文件的隐藏属性"></a>2.2文件的隐藏属性</h2><p>linux文件除了具备一般权限和特殊权限外，还具有隐藏权限；  </p>
+<p>1.chattr：用于设置文件的隐藏权限，添加隐藏功能“+参数”，移除隐藏功能“-参数”。  </p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>i</td>
+<td>无法对文件进行修改；若对目录设置了该参数，则仅能修改其中的子文件内容而不能新建或删除文件</td>
+</tr>
+<tr>
+<td>a</td>
+<td>仅允许补充（追加）内容，无法覆盖/删除内容（Append Only）</td>
+</tr>
+<tr>
+<td>s</td>
+<td>彻底从硬盘中删除，不可恢复（用0填充原文件所在硬盘区域）</td>
+</tr>
+<tr>
+<td>A</td>
+<td>不再修改这个文件或目录的最后访问时间（atime）</td>
+</tr>
+<tr>
+<td>b</td>
+<td>不再修改文件或目录的存取时间</td>
+</tr>
+<tr>
+<td>u</td>
+<td>当删除该文件后依然保留其在硬盘中的数据，方便日后恢复</td>
+</tr>
+</tbody></table>
+<p>2.lsattr：用于显示文件的隐藏权限；</p>
+<h2 id="2-3-文件访问控制列表"><a href="#2-3-文件访问控制列表" class="headerlink" title="2.3 文件访问控制列表"></a>2.3 文件访问控制列表</h2><p>一般权限、特殊权限、隐藏权限其实有一个共性—权限是针对某一类用户设置的；如果需要对某个指定的用户进行单独的权限控制，就需要用到文件访问控制列表（ACL);如果针对某个目录设置了ACL，则目录中的文件会继承其ACL；若针对文件设置了ACL，则文件不再继承其所在目录的ACL。</p>
+<p>1.setfacl：可以针对单一用户或用户组、单一文件或目录来进行读/写/执行权限的控制。<br>-R：针对目录文件；    -m：针对普通文件；    -b：删除文件的ACL</p>
+<pre><code>[root@linuxprobe ~]# setfacl -Rm u:linuxprobe:rwx /root
+[root@linuxprobe ~]# su - linuxprobe
+Last login: Sat Mar 21 15:45:03 CST 2017 on pts/1
+[linuxprobe@linuxprobe ~]$ cd /root
+[linuxprobe@linuxprobe root]$ ls
+anaconda-ks.cfg Downloads Pictures Public
+[linuxprobe@linuxprobe root]$ cat anaconda-ks.cfg
+[linuxprobe@linuxprobe root]$ exit</code></pre>
+<p>当文件权限的最后一个点（.）变成（+）时，意味着文件设置了ACL。</p>
+<p>2.getfacl：用于显示文件的ACL信息；</p>
+<h2 id="2-4-su命令与sudo服务"><a href="#2-4-su命令与sudo服务" class="headerlink" title="2.4 su命令与sudo服务"></a>2.4 su命令与sudo服务</h2><p>su命令可以解决切换用户身份的需求，使得当前用户在不退出登录的情况下，顺畅地切换到其他用户；上面的su命令与用户名之间有一个减号（-），这意味着完全切换到新的用户，即把环境变量信息也变更为新用户的相应信息，而不是保留原始的信息。</p>
+<p>sudo命令用于给普通用户提供额外的权限来完成原本root管理员才能完成的任务，格式为“sudo [参数] 命令名称”。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-l</td>
+<td>列出当前用户可执行的命令</td>
+</tr>
+<tr>
+<td>-u</td>
+<td>以指定的用户身份执行命令</td>
+</tr>
+<tr>
+<td>-k</td>
+<td>清空密码的有效时间，下次执行sudo时需要再次进行密码验证</td>
+</tr>
+<tr>
+<td>-b</td>
+<td>在后台执行指定的命令</td>
+</tr>
+<tr>
+<td>-p</td>
+<td>更改询问密码的提示语</td>
+</tr>
+</tbody></table>
+<p>配置文件（/etc/sudoers）提供集中的用户管理、权限与主机等参数；只有root管理员才可以使用visudo命令编辑sudo服务的配置文件。  </p>
+<pre><code>谁可以使用  允许使用的主机=（以谁的身份）  可执行命令的列表
+99 linuxprobe ALL=(ALL) ALL
+99 linuxprobe ALL=(ALL) /usr/bin/cat（命令的绝对路径）
+99 linuxprobe ALL=NOPASSWD: /usr/sbin/poweroff</code></pre>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第5章节：用户身份与文件权限</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：安装samba服务时packagekit报错解决方法</title>
+    <url>/2021/02/12/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AE%89%E8%A3%85samba%E6%9C%8D%E5%8A%A1%E6%97%B6packagekit%E6%8A%A5%E9%94%99%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/</url>
+    <content><![CDATA[<p>在linux虚拟机Redhat7.0版本系统终端中输入命令：yum install samba，安装samba服务时，在安装过程中，出现以下报错信息：</p>
+<a id="more"></a>
+
+<pre><code>Error: initscripts conflicts with redhat-release-server-7.0-1.el7.x86_64
+ You could try using --skip-broken to work around the problem
+Found 2 pre-existing rpmdb problem(s), &#39;yum check&#39; output follows:
+PackageKit-0.8.9-11.el7.x86_64 has missing requires of PackageKit-backend
+rhn-check-2.0.2-5.el7.noarch has missing requires of yum-rhn-plugin &gt;= (&#39;0&#39;, &#39;1.6.4&#39;, &#39;1&#39;)</code></pre>
+<p>有2个problem，1个error；先解决problem：</p>
+<pre><code>（1）在http://rpm.pbone.net/网站中下载PackageKit-yum-0.8.9-11.el7.x86_64.rpm,然后将rpm文件拖入linux系统中，输入命令：rpm -Uvh PackageKit-yum-0.8.9-11.el7.x86_64.rpm，解决第1个problem。
+（2）在终端中输入命令：yum install yum-rhn-plugin，解决第2个problem。</code></pre>
+<p>再解决initscripts conflicts的error：</p>
+<pre><code>首先，先查一下本机的initscripts的版本，有没有更适合自己系统的，输入以下命令：yum list initscripts，
+
+显示以下信息：
+
+Loading mirror speeds from cached hostfile
+Installed Packages
+initscripts.x86_64                9.49.17-1.el7                @anaconda/7.0
+Available Packages
+initscripts.x86_64                9.49.53-1.el7_9.1                updates  
+
+说明当前版本是initscripts.x86_64  9.49.17-1.el7   @anaconda/7.0  
+
+可以用更适合系统的initscripts.x86_64   9.49.53-1.el7_9.1版本来替换。
+
+再输入命令：yum list centos-release，看看合适的centos-release版本：
+
+Loading mirror speeds from cached hostfile
+Available Packages
+centos-release.x86_64               7-9.2009.1.el7.centos                updates
+
+使用以上命令可以知道，最合适的版本是centos-release.x86_64  7-9.2009.1.el7.centos
+
+从http://rpm.pbone.net/网站中分别下载initscripts-9.49.53-1.el7.x86_64.rpm和centos-release-7-9.2009.1.el7.centos.x86_64.rpm，然后输入命令：rpm -e redhat-release-server-7.0-1.el7.x86_64 --nodeps，将有冲突的版本删掉，删除redhat-release以后，不重启机器，马上安装centos-release.x86_64：
+
+[root@linuxprobe Desktop]# rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:centos-release-7-9.2009.1.el7.cenwarning: /etc/yum.repos.d/CentOS-Base.repo created as /etc/yum.repos.d/CentOS-Base.repo.rpmnew
+################################# [100%]
+error: unpacking of archive failed on file /usr/share/doc/redhat-release: cpio: rename failed - Is a directory
+error: centos-release-7-9.2009.1.el7.centos.x86_64: install failed</code></pre>
+<p>安装时出错！提示“/usr/share/doc/redhat-release 失败：cpio: rename 失败 - 是一个目录”</p>
+<p>推测：安装centos-release时，这个redhat-release目录碍事了，所以我们手动把它删除掉（注意备份）。</p>
+<pre><code>[root@linuxprobe doc]# rm -r /usr/share/doc/redhat-release 
+rm：是否删除目录 &quot;/usr/share/doc/redhat-release&quot;？y
+
+如果还是报错，则再在/usr/share目录中删除redhat-release：
+
+[root@linuxprobe share]# rm -r /usr/share/redhat-release 
+rm：是否删除目录 &quot;/usr/share/redhat-release&quot;？y
+
+然后再终端中输入命令：rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm：
+
+[root@linuxprobe Desktop]# rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm
+Preparing...                          ################################# [100%]
+Updating / installing...
+  1:centos-release-7-9.2009.1.el7.cenwarning: /etc/yum.repos.d/CentOS-Base.repo created as /etc/yum.repos.d/CentOS-Base.repo.rpmnew
+################################# [100%]</code></pre>
+<p>到这一步，基本安装samba服务过程中的problem和error都已经解决，但此时如果输入yum install samba命令安装samba服务时，</p>
+<p>可能会引起SELinux的报警，因此需要将SELinux关闭；在/etc/selinux/config配置文件中查看SELinux的默认状态。如果是</p>
+<p>enforcing，建议赶紧修改为permissive或disabled；SELinux服务的主配置文件中，定义的是SELinux的默认运行状态，可以将其</p>
+<p>理解为系统重启后的状态，因此它不会在更改后立即生效。可以使用getenforce命令获得当前SELinux服务的运行模式：</p>
+<pre><code>[root@linuxprobe ~]# getenforce 
+Enforcing</code></pre>
+<p>再用setenforce [0|1]命令修改SELinux当前的运行模式（0为禁用，1为启用）。注意，这种修改只是临时的，在系统重启后就会失效：</p>
+<pre><code>[root@linuxprobe ~]# setenforce 0
+[root@linuxprobe ~]# getenforce
+Permissive</code></pre>
+<p>之后在终端中输入：yum install samba，安装samba服务，成功！</p>
+<p>具体方法可参考以下链接：</p>
+<p><a href="http://www.likecs.com/default/index/show?id=20904">http://www.likecs.com/default/index/show?id=20904</a><br><a href="https://blog.csdn.net/zz24_com/article/details/105127746">https://blog.csdn.net/zz24_com/article/details/105127746</a></p>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>安装samba服务时packagekit报错解决方法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux虚拟机外网网络访问设置指南</title>
+    <url>/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/</url>
+    <content><![CDATA[<p>要达到的效果就是在Linux虚拟机中可以上网：ping <a href="http://www.baidu.com/">http://www.baidu.com</a></p>
+<p>VMware中安装完 redhat7 后， 默认初始配置如下：</p>
+<a id="more"></a>
+
+<h1 id="1-VMware-网络配置"><a href="#1-VMware-网络配置" class="headerlink" title="1.VMware 网络配置"></a>1.VMware 网络配置</h1><p>（编辑 –&gt; 虚拟网络编辑器）查看</p>
+<p>默认配置为： (这些配置都不需要发生变更， 看看就好)</p>
+<pre><code>子网IP：192.168.154.0
+
+子网掩码 : 255.255.255.0
+
+可设置的IP网段为： 192.168.154.128 ~ 254
+
+&#123;% asset_img 1.jpg %&#125;
+
+点开 NAT设置可以看到 GATEWAY : 192.168.154.2:</code></pre>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/2.jpg" class>
+
+<p>下面介绍 redhat 本身配置m修改配置参数如下：</p>
+<p>注意各个参数与第一步 VMware 中的默认配置的联系 :</p>
+<pre><code>BOOTPROTO ： dhcp --&gt; static （静态IP）
+
+ONBOOT : no --&gt; YES (开机自动连接网络)
+
+IPADDR : 192.168.154.128 ~ 254 之间即可
+
+NETMASK : 子网， 与 VMware 默认一致
+
+GATEWAY : 网关， 与VMware 默认一致
+
+DNS1 : 首选 DNS, 不配置会出现外网不通， 只能与内网互通的问题.
+
+这里DNS要说一下的是，其他资料上有说要跟本机上网的DNS一致，还有说跟网关一致，或者改成8.8.8.8，都试过，ping www.baidu.com 都可以，不同的机器可能有不同，希望可以共同探讨。
+
+NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进行设置，而不是通过网络管理器进行管理。“ONBOOT=yes”告诉我们，系统将在启动时开启该接口。</code></pre>
+<p>编辑/etc/sysconfig/network-scipts/网卡名称：</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/3.jpg" class>
+
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/4.jpg" class>
+
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/5.jpg" class>
+
+<p>重启网络服务命令： systemctl restart network；</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/6.jpg" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>linux虚拟机外网网络访问设置指南</tag>
       </tags>
   </entry>
   <entry>
@@ -1874,291 +2517,6 @@ Red Hat Enterprise Linux Server release 7.0 (Maipo)</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>linux就该这么学：存储结构与磁盘划分</title>
-    <url>/2021/02/01/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E4%B8%8E%E7%A3%81%E7%9B%98%E5%88%92%E5%88%86/</url>
-    <content><![CDATA[<h1 id="1-一切从“-”开始"><a href="#1-一切从“-”开始" class="headerlink" title="1.一切从“/”开始"></a>1.一切从“/”开始</h1><p>Linux系统中的一切文件都是从“根（/）”目录开始的，并按照文件系统层次化标准（FHS）采用树形结构来存放文件，以及定义了常见目录的用途。另外，Linux系统中的文件和目录名称是严格区分大小写的。  </p>
-<a id="more"></a>
-
-<table>
-<thead>
-<tr>
-<th>目录名称</th>
-<th>内容</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>/boot</td>
-<td>开机所需文件—内核、开机菜单以及所需配置文件等</td>
-</tr>
-<tr>
-<td>/dev</td>
-<td>以文件形式存放任何设备与接口</td>
-</tr>
-<tr>
-<td>/etc</td>
-<td>配置文件</td>
-</tr>
-<tr>
-<td>/home</td>
-<td>用户主目录</td>
-</tr>
-<tr>
-<td>/media</td>
-<td>用于挂载设备文件的目录</td>
-</tr>
-</tbody></table>
-<p>主分区或扩展分区的编号从1开始，到4结束；逻辑分区从编号5开始。</p>
-<p>mount命令用于挂载文件系统，格式为“mount 文件系统 挂载目录”；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-a</td>
-<td>挂载所有在/etc/fstab中定义的文件系统</td>
-</tr>
-<tr>
-<td>-t</td>
-<td>指定文件系统的类型</td>
-</tr>
-</tbody></table>
-<p>如果想让硬件设备和目录永久地进行自动关联，就必须把挂载信息按照指定的填写格式“设备文件 挂载目录 格式类型 权限选项 是否备份 是否自检”（各字段的意义见表6-4）写入到/etc/fstab文件中。</p>
-<p>umount命令用于撤销已经挂载的设备文件，格式为“umount [挂载点/设备文件]”。</p>
-<h2 id="1-1添加硬盘设备"><a href="#1-1添加硬盘设备" class="headerlink" title="1.1添加硬盘设备"></a>1.1添加硬盘设备</h2><p>1.fdisk命令：用于管理磁盘分区，格式为“fdisk  [磁盘名称]”，它提供了集添加、删除、转换分区等功能于一身的“一站式分区服务”；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>m</td>
-<td>查看全部可用的参数</td>
-</tr>
-<tr>
-<td>n</td>
-<td>添加新的分区</td>
-</tr>
-<tr>
-<td>d</td>
-<td>删除某个分区</td>
-</tr>
-<tr>
-<td>p</td>
-<td>查看分区表信息</td>
-</tr>
-<tr>
-<td>w</td>
-<td>保存并退出</td>
-</tr>
-<tr>
-<td>q</td>
-<td>不保存直接退出</td>
-</tr>
-</tbody></table>
-<p>2.mkfs：存储设备进行分区后进行格式化操作；</p>
-<p>3.mount：挂载存储设备；</p>
-<p>4.du：查看文件数据占用量；du -sh /*命令来查看在Linux系统根目录下所有一级目录分别占用的空间大小。</p>
-<p>如果想让这个设备文件的挂载永久有效，则需要把挂载的信息写入到配置文件中：</p>
-<h2 id="1-2添加交换分区"><a href="#1-2添加交换分区" class="headerlink" title="1.2添加交换分区"></a>1.2添加交换分区</h2><p>SWAP（交换）分区是一种通过在硬盘中预先划分一定的空间，然后将把内存中暂时不常用的数据临时存放到硬盘中，以便腾出物理内存空间让更活跃的程序服务来使用的技术，其设计目的是为了解决真实物理内存不足的问题。但由于交换分区毕竟是通过硬盘设备读写数据的，速度肯定要比物理内存慢，所以只有当真实的物理内存耗尽后才会调用交换分区的资源。</p>
-<p>生产环境中，交换分区的大小一般为真实物理内存的1.5～2倍；</p>
-<pre><code>（1）fdisk
-（2）mkswap:SWAP分区专用的格式化命令；
-（3）free -m：用于查看交换分区的大小；
-（4）将相关信息写入配置文件（/etc/fstab），并保存！如：/dev/sdb2 swap swap defaults 0 0 </code></pre>
-<h2 id="1-3磁盘容量配额"><a href="#1-3磁盘容量配额" class="headerlink" title="1.3磁盘容量配额"></a>1.3磁盘容量配额</h2><p>使用quota命令进行磁盘容量配额管理，从而限制用户的硬盘可用容量或所能创建的最大文件个数。quota命令还有软限制和硬限制的功能。</p>
-<p>软限制：当达到软限制时会提示用户，但仍允许用户在限定的额度内继续使用。</p>
-<p>硬限制：当达到硬限制时会提示用户，且强制终止用户的操作。</p>
-<p>1.xfs_quota：-c参数用于以参数的形式设置要执行的命令；-x参数是专家模式，让运维人员能够对quota服务进行更多复杂的配置。</p>
-<pre><code>[root@linuxprobe ~]# xfs_quota -x -c &#39;limit bsoft=3m bhard=6m isoft=3 ihard=6 tom&#39; /boot
-[root@linuxprobe ~]# xfs_quota -x -c report /boot</code></pre>
-<p>2.edquota：用于编辑用户的quota配额限制，格式为“edquota [参数] [用户] ”。-u参数表示要针对哪个用户进行设置；-g参数表示要针对哪个用户组进行设置。</p>
-<h2 id="1-4软硬方式链接"><a href="#1-4软硬方式链接" class="headerlink" title="1.4软硬方式链接"></a>1.4软硬方式链接</h2><p>硬链接： 是指针，所有的硬链接都是指向同一个磁盘块； 删除一个指针不会真正删除文件，只有把所有的指针都删除才会真正删除文件。<br>软链接： 保存了其代表的文件的绝对路径，是另外一种文件，在硬盘上有独立的区块，访问时替换自身路径。</p>
-<p>1.ln：用于创建链接文件，格式为“ln [选项] 目标”；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-s</td>
-<td>创建“符号链接”（如果不带-s参数，则默认创建硬链接）</td>
-</tr>
-<tr>
-<td>-f</td>
-<td>强制创建文件或目录的链接</td>
-</tr>
-<tr>
-<td>-i</td>
-<td>覆盖前先询问</td>
-</tr>
-<tr>
-<td>-v</td>
-<td>显示创建链接的过程</td>
-</tr>
-</tbody></table>
-<pre><code>[root@linuxprobe ~]# echo &quot;Welcome to linuxprobe.com&quot; &gt; readme.txt
-[root@linuxprobe ~]# ln -s readme.txt readit.txt
-[root@linuxprobe ~]# cat readme.txt 
- Welcome to linuxprobe.com
-[root@linuxprobe ~]# cat readit.txt 
- Welcome to linuxprobe.com
-[root@linuxprobe ~]# ls -l readme.txt 
- -rw-r--r-- 1 root root 26 Jan 11 00:08 readme.txt
-[root@linuxprobe ~]# rm -f readme.txt 
-[root@linuxprobe ~]# cat readit.txt 
- cat: readit.txt: No such file or directory</code></pre>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第6章节：存储结构与磁盘划分</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学：安装samba服务时packagekit报错解决方法</title>
-    <url>/2021/02/12/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AE%89%E8%A3%85samba%E6%9C%8D%E5%8A%A1%E6%97%B6packagekit%E6%8A%A5%E9%94%99%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/</url>
-    <content><![CDATA[<p>在linux虚拟机Redhat7.0版本系统终端中输入命令：yum install samba，安装samba服务时，在安装过程中，出现以下报错信息：</p>
-<a id="more"></a>
-
-<pre><code>Error: initscripts conflicts with redhat-release-server-7.0-1.el7.x86_64
- You could try using --skip-broken to work around the problem
-Found 2 pre-existing rpmdb problem(s), &#39;yum check&#39; output follows:
-PackageKit-0.8.9-11.el7.x86_64 has missing requires of PackageKit-backend
-rhn-check-2.0.2-5.el7.noarch has missing requires of yum-rhn-plugin &gt;= (&#39;0&#39;, &#39;1.6.4&#39;, &#39;1&#39;)</code></pre>
-<p>有2个problem，1个error；先解决problem：</p>
-<pre><code>（1）在http://rpm.pbone.net/网站中下载PackageKit-yum-0.8.9-11.el7.x86_64.rpm,然后将rpm文件拖入linux系统中，输入命令：rpm -Uvh PackageKit-yum-0.8.9-11.el7.x86_64.rpm，解决第1个problem。
-（2）在终端中输入命令：yum install yum-rhn-plugin，解决第2个problem。</code></pre>
-<p>再解决initscripts conflicts的error：</p>
-<pre><code>首先，先查一下本机的initscripts的版本，有没有更适合自己系统的，输入以下命令：yum list initscripts，
-
-显示以下信息：
-
-Loading mirror speeds from cached hostfile
-Installed Packages
-initscripts.x86_64                9.49.17-1.el7                @anaconda/7.0
-Available Packages
-initscripts.x86_64                9.49.53-1.el7_9.1                updates  
-
-说明当前版本是initscripts.x86_64  9.49.17-1.el7   @anaconda/7.0  
-
-可以用更适合系统的initscripts.x86_64   9.49.53-1.el7_9.1版本来替换。
-
-再输入命令：yum list centos-release，看看合适的centos-release版本：
-
-Loading mirror speeds from cached hostfile
-Available Packages
-centos-release.x86_64               7-9.2009.1.el7.centos                updates
-
-使用以上命令可以知道，最合适的版本是centos-release.x86_64  7-9.2009.1.el7.centos
-
-从http://rpm.pbone.net/网站中分别下载initscripts-9.49.53-1.el7.x86_64.rpm和centos-release-7-9.2009.1.el7.centos.x86_64.rpm，然后输入命令：rpm -e redhat-release-server-7.0-1.el7.x86_64 --nodeps，将有冲突的版本删掉，删除redhat-release以后，不重启机器，马上安装centos-release.x86_64：
-
-[root@linuxprobe Desktop]# rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm
-Preparing...                          ################################# [100%]
-Updating / installing...
-   1:centos-release-7-9.2009.1.el7.cenwarning: /etc/yum.repos.d/CentOS-Base.repo created as /etc/yum.repos.d/CentOS-Base.repo.rpmnew
-################################# [100%]
-error: unpacking of archive failed on file /usr/share/doc/redhat-release: cpio: rename failed - Is a directory
-error: centos-release-7-9.2009.1.el7.centos.x86_64: install failed</code></pre>
-<p>安装时出错！提示“/usr/share/doc/redhat-release 失败：cpio: rename 失败 - 是一个目录”</p>
-<p>推测：安装centos-release时，这个redhat-release目录碍事了，所以我们手动把它删除掉（注意备份）。</p>
-<pre><code>[root@linuxprobe doc]# rm -r /usr/share/doc/redhat-release 
-rm：是否删除目录 &quot;/usr/share/doc/redhat-release&quot;？y
-
-如果还是报错，则再在/usr/share目录中删除redhat-release：
-
-[root@linuxprobe share]# rm -r /usr/share/redhat-release 
-rm：是否删除目录 &quot;/usr/share/redhat-release&quot;？y
-
-然后再终端中输入命令：rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm：
-
-[root@linuxprobe Desktop]# rpm -Uvh centos-release-7-9.2009.1.el7.centos.x86_64.rpm
-Preparing...                          ################################# [100%]
-Updating / installing...
-  1:centos-release-7-9.2009.1.el7.cenwarning: /etc/yum.repos.d/CentOS-Base.repo created as /etc/yum.repos.d/CentOS-Base.repo.rpmnew
-################################# [100%]</code></pre>
-<p>到这一步，基本安装samba服务过程中的problem和error都已经解决，但此时如果输入yum install samba命令安装samba服务时，</p>
-<p>可能会引起SELinux的报警，因此需要将SELinux关闭；在/etc/selinux/config配置文件中查看SELinux的默认状态。如果是</p>
-<p>enforcing，建议赶紧修改为permissive或disabled；SELinux服务的主配置文件中，定义的是SELinux的默认运行状态，可以将其</p>
-<p>理解为系统重启后的状态，因此它不会在更改后立即生效。可以使用getenforce命令获得当前SELinux服务的运行模式：</p>
-<pre><code>[root@linuxprobe ~]# getenforce 
-Enforcing</code></pre>
-<p>再用setenforce [0|1]命令修改SELinux当前的运行模式（0为禁用，1为启用）。注意，这种修改只是临时的，在系统重启后就会失效：</p>
-<pre><code>[root@linuxprobe ~]# setenforce 0
-[root@linuxprobe ~]# getenforce
-Permissive</code></pre>
-<p>之后在终端中输入：yum install samba，安装samba服务，成功！</p>
-<p>具体方法可参考以下链接：</p>
-<p><a href="http://www.likecs.com/default/index/show?id=20904">http://www.likecs.com/default/index/show?id=20904</a><br><a href="https://blog.csdn.net/zz24_com/article/details/105127746">https://blog.csdn.net/zz24_com/article/details/105127746</a></p>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>安装samba服务时packagekit报错解决方法</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学：使用win10主机ping通虚拟机</title>
-    <url>/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
-    <content><![CDATA[<p>在win10系统中安装了vm12版本，Linux我选用的是redhat 7版本；成功安装redhat 7后，将linux虚拟机的IP地址固定：</p>
-<a id="more"></a>
-
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/1.png" class>
-
-<p>linux虚拟机的外部连接方式为NAT模式，在linux虚拟机中能够ping通自己的IP，但无法ping通win10系统的IP，win10系统也无法ping通linux虚拟机IP。</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/2.png" class>
-
-<p>解决方法如下：</p>
-<p>1.首先确认了本机的网络有无VMware Network Adapter VMnet8这两个网络：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/3.png" class>
-
-<p>有以上两个网络的话，跳过此步骤；没有的话，则将VM虚拟机卸载，之后清理完之后再重新安装VM虚拟机软件。</p>
-<p>2.安装好虚拟机后，打开终端，输入：vim /etc/sysconfig/network-scripts/ifcfg-eno16777728（网卡名称），编辑下网卡文件，将BOOTPROTO的值修改为static，并添加参数：IPADDR，GATEWAR，NETMASK，NM_CONTROLLED。IPADDR，GATEWAR这两个设置注意网段要与VMware Network Adapter VMnet8 的一致：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/4.png" class>
-
-<p>3.设置好之后，保存退出；之后重启系统，用linux虚拟机ping下win10系统IP地址，测试是否能够ping通，如果可以，那就ok了。</p>
-<p>linux虚拟机ping win10系统：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/5.png" class>
-
-<p>win10系统ping linux虚拟机：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/6.png" class>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>使用win10主机ping通虚拟机</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux就该这么学：管道符、重定向与环境变量</title>
     <url>/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
     <content><![CDATA[<h1 id="1-输入输出重定向"><a href="#1-输入输出重定向" class="headerlink" title="1.输入输出重定向"></a>1.输入输出重定向</h1><p>输入重定向：是指把文件导入到命令中； 输出重定向：是指把原本要输出到屏幕的数据写入到指定文件中。输出重定向又分为标准输出重定向和错误输出重定向。<br>输入重定向中用到的符号及其作用：</p>
@@ -2273,368 +2631,35 @@ Permissive</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>linux就该这么学：用户身份与文件权限</title>
-    <url>/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/</url>
-    <content><![CDATA[<h1 id="1-用户身份与能力"><a href="#1-用户身份与能力" class="headerlink" title="1.用户身份与能力"></a>1.用户身份与能力</h1><p>管理员UID为0：系统的管理员用户。</p>
-<p>系统用户UID为1～999： Linux系统为了避免因某个服务程序出现漏洞而被黑客提权至整台服务器，默认服务程序会有独立的系统用户负责运行，进而有效控制被破坏范围。</p>
-<p>普通用户UID从1000开始：是由管理员创建的用于日常工作的用户。</p>
-<a id="more"></a>
-<p>一个用户只有一个基本用户组，但是可以有多个扩展用户组，从而满足日常的工作需要。</p>
-<p>（1）useradd：用于创建新的用户；默认的用户家目录会被存放在/home目录中，默认的Shell解释器为/bin/bash，而且默认会创建一个与该用户同名的基本用户组。</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-d</td>
-<td>指定用户的家目录</td>
-</tr>
-<tr>
-<td>-u</td>
-<td>指定该用户的默认UID</td>
-</tr>
-<tr>
-<td>-g</td>
-<td>指定一个初始的用户基本组（必须已存在）</td>
-</tr>
-<tr>
-<td>-G</td>
-<td>指定一个或多个扩展用户组</td>
-</tr>
-<tr>
-<td>-s</td>
-<td>指定该用户的默认Shell解释器</td>
-</tr>
-</tbody></table>
-<p>/sbin/nologin，它是终端解释器中的一员，与Bash解释器有着天壤之别。一旦用户的解释器被设置为nologin，则代表该用户不能登录到系统中：</p>
-<p>（2）groupadd:用于创建用户组；</p>
-<p>（3）usermod：用于修改用户属性；用户的信息保存在/etc/passwd文件中，可以直接用文本编辑器来修改其中的用户参数项目，也可以用usermod命令修改已经创建的用户信息，诸如用户的UID、基本/扩展用户组、默认终端等。  </p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-d -m</td>
-<td>参数-m与参数-d连用，可重新指定用户的家目录并自动把旧的数据转移过去</td>
-</tr>
-<tr>
-<td>-g</td>
-<td>变更所属用户组</td>
-</tr>
-<tr>
-<td>-G</td>
-<td>变更扩展用户组</td>
-</tr>
-<tr>
-<td>-L</td>
-<td>锁定用户禁止其登录系统</td>
-</tr>
-<tr>
-<td>-U</td>
-<td>解锁用户，允许其登陆系统</td>
-</tr>
-<tr>
-<td>-s</td>
-<td>变更默认终端</td>
-</tr>
-</tbody></table>
-<p>（4）passwd：用于修改用户密码、过期时间、认证信息等；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-l</td>
-<td>锁定用户禁止其登录系统</td>
-</tr>
-<tr>
-<td>-u</td>
-<td>解锁用户，允许其登陆系统</td>
-</tr>
-<tr>
-<td>–stdin</td>
-<td>允许通过标准输入修改用户密码，如echo “NewPassWord”</td>
-</tr>
-<tr>
-<td>-d</td>
-<td>使该用户可用空密码登录系统</td>
-</tr>
-<tr>
-<td>-e</td>
-<td>强制用户在下次登录时修改密码</td>
-</tr>
-<tr>
-<td>-S</td>
-<td>显示用户的密码是否被锁定，以及密码所采用的加密算法名称</td>
-</tr>
-</tbody></table>
-<p>（5）userdel：用于删除用户；</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-f</td>
-<td>强制删除用户</td>
-</tr>
-<tr>
-<td>-r</td>
-<td>同时删除用户及用户家目录</td>
-</tr>
-</tbody></table>
-<h1 id="2-文件权限与归属"><a href="#2-文件权限与归属" class="headerlink" title="2.文件权限与归属"></a>2.文件权限与归属</h1><p> -：普通文件；d：目录文件；l：链接文件；b：块设备文件；c：字符设备文件；p：管道文件</p>
-<p>对于一般文件来说，权限比较容易理解：“可读”表示能够读取文件的实际内容；“可写”表示能够编辑、新增、修改、删除文件的实际内容；“可执行”则表示能够运行一个脚本程序。</p>
-<p>对目录文件来说，“可读”表示能够读取目录内的文件列表；“可写”表示能够在目录内新增、删除、重命名文件；而“可执行”则表示能够进入该目录。</p>
-<h2 id="2-1-文件的特殊权限"><a href="#2-1-文件的特殊权限" class="headerlink" title="2.1 文件的特殊权限"></a>2.1 文件的特殊权限</h2><p>详细内容可参考：<a href="https://www.cnblogs.com/sparkdev/p/9651622.html%EF%BC%9B">https://www.cnblogs.com/sparkdev/p/9651622.html；</a></p>
-<p>（1）SUID：让执行者临时获得命令的所有者的权限；</p>
-<p>（2）SGID：目录内新文件所有组，继承原有目录所有组的名称！</p>
-<p>1.SUID<br>在 Linux 中，所有账号的密码记录在 /etc/shadow 这个文件中，并且只有 root 可以读写入这个文件：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/1.png" class>
-
-<p>如果另一个普通账号 tester 需要修改自己的密码，就要访问 /etc/shadow 这个文件。但是明明只有 root 才能访问 /etc/shadow 这个文件，这究竟是如何做到的呢？事实上，tester 用户是可以修改 /etc/shadow 这个文件内的密码的，就是通过 SUID 的功能。让我们看看 passwd 程序文件的权限信息：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/2.png" class>
-
-<p>上图红框中的权限信息有些奇怪，owner 的信息为 rws 而不是 rwx。当 s 出现在文件拥有者的 x 权限上时，就被称为 SETUID BITS 或 SETUID ，其特点如下：</p>
-<p>-SUID 权限仅对二进制可执行文件有效<br>-如果执行者对于该二进制可执行文件具有 x 的权限，执行者将具有该文件的所有者的权限<br>-本权限仅在执行该二进制可执行文件的过程中有效</p>
-<p>下面我们来看 tester 用户是如何利用 SUID 权限完成密码修改的：</p>
-<pre><code>(1)tester 用户对于 /usr/bin/passwd 这个程序具有执行权限，因此可以执行 passwd 程序
-(2)passwd 程序的所有者为 root
-(3)tester 用户执行 passwd 程序的过程中会暂时获得 root 权限
-(4)因此 tester 用户在执行 passwd 程序的过程中可以修改 /etc/shadow 文件</code></pre>
-<p>但是如果由 tester 用户执行 cat 命令去读取 /etc/shadow 文件确是不行的：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/3.png" class>
-
-<p>原因很清楚，tester 用户没有读 /etc/shadow 文件的权限，同时 cat 程序也没有被设置 SUID。我们可以通过下图来理解这两种情况：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/4.png" class>
-
-<p>如果想让任意用户通过 cat 命令读取 /etc/shadow 文件的内容也是非常容易的，给它设置 SUID 权限就可以了：</p>
-<p>$ sudo chmod 4755 /bin/cat</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/5.png" class>
-
-<p>现在 cat 已经具有了 SUID 权限，试试看，是不是已经可以 cat 到 /etc/shadow 的内容了。因为这样做非常不安全，所以赶快通过下面的命令把 cat 的 SUID 权限移除掉：</p>
-<p>$ sudo chmod 755 /bin/cat</p>
-<p>2.SGID</p>
-<p>当 s 标志出现在用户组的 x 权限时称为 SGID。SGID 的特点与 SUID 相同，我们通过 /usr/bin/mlocate 程序来演示其用法。mlocate 程序通过查询数据库文件 /var/lib/mlocate/mlocate.db 实现快速的文件查找。 mlocate 程序的权限如下图所示：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/6.png" class>
-
-<p>很明显，它被设置了 SGID 权限。下面是数据库文件 /var/lib/mlocate/mlocate.db 的权限信息：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/7.png" class>
-
-<p>普通用户 tester 执行 mlocate 命令时，tester 就会获得用户组 mlocate 的执行权限，又由于用户组 mlocate 对 mlocate.db 具有读权限，所以 tester 就可以读取 mlocate.db 了。程序的执行过程如下图所示：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/8.png" class>
-
-<p>除二进制程序外，SGID 也可以用在目录上。当一个目录设置了 SGID 权限后，它具有如下功能：</p>
-<pre><code>(1)用户若对此目录具有 r 和 x 权限，该用户能够进入该目录
-(2)用户在此目录下的有效用户组将变成该目录的用户组
-(3)若用户在此目录下拥有 w 权限，则用户所创建的新文件的用户组与该目录的用户组相同</code></pre>
-<p>下面看个例子，创建 testdir 目录，目录的权限设置如下：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/9.png" class>
-
-<p>此时目录 testdir 的 owner 是 nick，所属的 group 为 tester。<br>先创建一个名为 nickfile 的文件：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/10.png" class>
-
-<p>这个文件的权限看起来没有什么特别的。然后给 testdir 目录设置 SGID 权限：</p>
-<p>$ sudo chmod 2775 testdir</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/11.png" class>
-
-<p>然后再创建一个文件 nickfile2：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/12.png" class>
-
-<p>新建的文件所属的组为 tester！</p>
-<p>总结一下，当 SGID 作用于普通文件时，和 SUID 类似，在执行该文件时，用户将获得该文件所属组的权限。当 SGID 作用于目录时，意义就非常重大了。当用户对某一目录有写和执行权限时，该用户就可以在该目录下建立文件，如果该目录用 SGID 修饰，则该用户在这个目录下建立的文件都是属于这个目录所属的组。</p>
-<p>SBIT<br>其实 SBIT 与 SUID 和 SGID 的关系并不大。<br>SBIT 是 the  restricted  deletion  flag  or  sticky  bit 的简称。<br>SBIT 目前只对目录有效，用来阻止非文件的所有者删除文件。比较常见的例子就是 /tmp 目录：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/13.png" class>
-
-<p>权限信息中最后一位 t 表明该目录被设置了 SBIT 权限。SBIT 对目录的作用是：当用户在该目录下创建新文件或目录时，仅有自己和 root 才有权力删除。</p>
-<p>设置 SUID、SGID、SBIT 权限<br>以数字的方式设置权限<br>SUID、SGID、SBIT 权限对应的数字如下：</p>
-<p>SUID-&gt;4<br>SGID-&gt;2<br>SBIT-&gt;1<br>所以如果要为一个文件权限为 “-rwxr-xr-x” 的文件设置 SUID 权限，需要在原先的 755 前面加上 4，也就是 4755：</p>
-<p>$ chmod 4755 filename</p>
-<p>同样，可以用 2 和 1 来设置 SGID 和 SBIT 权限。设置完成后分别会用 s, s, t 代替文件权限中的 x。</p>
-<p>其实，还可能出现 S 和 T 的情况。S 和 t 是替代 x 这个权限的，但是，如果它本身没有 x 这个权限，添加 SUID、SGID、SBIT 权限后就会显示为大写 S 或大写 T。比如我们为一个权限为 666 的文件添加 SUID、SGID、SBIT 权限：</p>
-<img src="/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/14.png" class>
-
-<p>执行 chmod 7666 nickfile，因为 666 表示 “-rw-rw-rw”，均没有 x 权限，所以最后变成了 “-rwSrwSrwT”。</p>
-<p>通过符号类型改变权限</p>
-<p>除了使用数字来修改权限，还可以使用符号：</p>
-<p>$ chmod u+s testfile # 为 testfile 文件加上 SUID 权限。<br>$ chmod g+s testdir  # 为 testdir 目录加上 SGID 权限。<br>$ chmod o+t testdir  # 为 testdir 目录加上 SBIT 权限。</p>
-<p>总结<br>SUID、SGID、SBIT 权限都是为了实现特殊功能而设计的，其目的是弥补 ugo 权限无法实现的一些使用场景。</p>
-<h2 id="2-2文件的隐藏属性"><a href="#2-2文件的隐藏属性" class="headerlink" title="2.2文件的隐藏属性"></a>2.2文件的隐藏属性</h2><p>linux文件除了具备一般权限和特殊权限外，还具有隐藏权限；  </p>
-<p>1.chattr：用于设置文件的隐藏权限，添加隐藏功能“+参数”，移除隐藏功能“-参数”。  </p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>i</td>
-<td>无法对文件进行修改；若对目录设置了该参数，则仅能修改其中的子文件内容而不能新建或删除文件</td>
-</tr>
-<tr>
-<td>a</td>
-<td>仅允许补充（追加）内容，无法覆盖/删除内容（Append Only）</td>
-</tr>
-<tr>
-<td>s</td>
-<td>彻底从硬盘中删除，不可恢复（用0填充原文件所在硬盘区域）</td>
-</tr>
-<tr>
-<td>A</td>
-<td>不再修改这个文件或目录的最后访问时间（atime）</td>
-</tr>
-<tr>
-<td>b</td>
-<td>不再修改文件或目录的存取时间</td>
-</tr>
-<tr>
-<td>u</td>
-<td>当删除该文件后依然保留其在硬盘中的数据，方便日后恢复</td>
-</tr>
-</tbody></table>
-<p>2.lsattr：用于显示文件的隐藏权限；</p>
-<h2 id="2-3-文件访问控制列表"><a href="#2-3-文件访问控制列表" class="headerlink" title="2.3 文件访问控制列表"></a>2.3 文件访问控制列表</h2><p>一般权限、特殊权限、隐藏权限其实有一个共性—权限是针对某一类用户设置的；如果需要对某个指定的用户进行单独的权限控制，就需要用到文件访问控制列表（ACL);如果针对某个目录设置了ACL，则目录中的文件会继承其ACL；若针对文件设置了ACL，则文件不再继承其所在目录的ACL。</p>
-<p>1.setfacl：可以针对单一用户或用户组、单一文件或目录来进行读/写/执行权限的控制。<br>-R：针对目录文件；    -m：针对普通文件；    -b：删除文件的ACL</p>
-<pre><code>[root@linuxprobe ~]# setfacl -Rm u:linuxprobe:rwx /root
-[root@linuxprobe ~]# su - linuxprobe
-Last login: Sat Mar 21 15:45:03 CST 2017 on pts/1
-[linuxprobe@linuxprobe ~]$ cd /root
-[linuxprobe@linuxprobe root]$ ls
-anaconda-ks.cfg Downloads Pictures Public
-[linuxprobe@linuxprobe root]$ cat anaconda-ks.cfg
-[linuxprobe@linuxprobe root]$ exit</code></pre>
-<p>当文件权限的最后一个点（.）变成（+）时，意味着文件设置了ACL。</p>
-<p>2.getfacl：用于显示文件的ACL信息；</p>
-<h2 id="2-4-su命令与sudo服务"><a href="#2-4-su命令与sudo服务" class="headerlink" title="2.4 su命令与sudo服务"></a>2.4 su命令与sudo服务</h2><p>su命令可以解决切换用户身份的需求，使得当前用户在不退出登录的情况下，顺畅地切换到其他用户；上面的su命令与用户名之间有一个减号（-），这意味着完全切换到新的用户，即把环境变量信息也变更为新用户的相应信息，而不是保留原始的信息。</p>
-<p>sudo命令用于给普通用户提供额外的权限来完成原本root管理员才能完成的任务，格式为“sudo [参数] 命令名称”。</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-l</td>
-<td>列出当前用户可执行的命令</td>
-</tr>
-<tr>
-<td>-u</td>
-<td>以指定的用户身份执行命令</td>
-</tr>
-<tr>
-<td>-k</td>
-<td>清空密码的有效时间，下次执行sudo时需要再次进行密码验证</td>
-</tr>
-<tr>
-<td>-b</td>
-<td>在后台执行指定的命令</td>
-</tr>
-<tr>
-<td>-p</td>
-<td>更改询问密码的提示语</td>
-</tr>
-</tbody></table>
-<p>配置文件（/etc/sudoers）提供集中的用户管理、权限与主机等参数；只有root管理员才可以使用visudo命令编辑sudo服务的配置文件。  </p>
-<pre><code>谁可以使用  允许使用的主机=（以谁的身份）  可执行命令的列表
-99 linuxprobe ALL=(ALL) ALL
-99 linuxprobe ALL=(ALL) /usr/bin/cat（命令的绝对路径）
-99 linuxprobe ALL=NOPASSWD: /usr/sbin/poweroff</code></pre>
+    <title>图片加载命令</title>
+    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
 ]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第5章节：用户身份与文件权限</tag>
-      </tags>
   </entry>
   <entry>
-    <title>linux虚拟机外网网络访问设置指南</title>
-    <url>/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/</url>
-    <content><![CDATA[<p>要达到的效果就是在Linux虚拟机中可以上网：ping <a href="http://www.baidu.com/">http://www.baidu.com</a></p>
-<p>VMware中安装完 redhat7 后， 默认初始配置如下：</p>
+    <title>用hexo和github免费创建自己的博客</title>
+    <url>/2020/12/06/%E7%94%A8hexo%E5%92%8Cgithub%E5%85%8D%E8%B4%B9%E5%88%9B%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2/</url>
+    <content><![CDATA[<h2 id="1-安装Nodejs"><a href="#1-安装Nodejs" class="headerlink" title="1.安装Nodejs"></a>1.安装Nodejs</h2><p>官方网站: <a href="https://nodejs.org/">https://nodejs.org</a>, 安装步骤非常简单，一直next，下一步就可以了，默认安装就行。</p>
+<h2 id="2-安装Git"><a href="#2-安装Git" class="headerlink" title="2.安装Git"></a>2.安装Git</h2><p>官方网站：<a href="https://git-scm.com/downloads%EF%BC%8C">https://git-scm.com/downloads，</a> 然后我们选择windows版本的下载，安装也是一直点下一步，安装官方默认的来就行，<br>tips：这个Git Bash下载下来就相当于Linux中的终端窗口了，以后我们就用这个东东来打开终端。</p>
 <a id="more"></a>
-
-<h1 id="1-VMware-网络配置"><a href="#1-VMware-网络配置" class="headerlink" title="1.VMware 网络配置"></a>1.VMware 网络配置</h1><p>（编辑 –&gt; 虚拟网络编辑器）查看</p>
-<p>默认配置为： (这些配置都不需要发生变更， 看看就好)</p>
-<pre><code>子网IP：192.168.154.0
-
-子网掩码 : 255.255.255.0
-
-可设置的IP网段为： 192.168.154.128 ~ 254
-
-&#123;% asset_img 1.jpg %&#125;
-
-点开 NAT设置可以看到 GATEWAY : 192.168.154.2:</code></pre>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/2.jpg" class>
-
-<p>下面介绍 redhat 本身配置m修改配置参数如下：</p>
-<p>注意各个参数与第一步 VMware 中的默认配置的联系 :</p>
-<pre><code>BOOTPROTO ： dhcp --&gt; static （静态IP）
-
-ONBOOT : no --&gt; YES (开机自动连接网络)
-
-IPADDR : 192.168.154.128 ~ 254 之间即可
-
-NETMASK : 子网， 与 VMware 默认一致
-
-GATEWAY : 网关， 与VMware 默认一致
-
-DNS1 : 首选 DNS, 不配置会出现外网不通， 只能与内网互通的问题.
-
-这里DNS要说一下的是，其他资料上有说要跟本机上网的DNS一致，还有说跟网关一致，或者改成8.8.8.8，都试过，ping www.baidu.com 都可以，不同的机器可能有不同，希望可以共同探讨。
-
-NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进行设置，而不是通过网络管理器进行管理。“ONBOOT=yes”告诉我们，系统将在启动时开启该接口。</code></pre>
-<p>编辑/etc/sysconfig/network-scipts/网卡名称：</p>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/3.jpg" class>
-
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/4.jpg" class>
-
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/5.jpg" class>
-
-<p>重启网络服务命令： systemctl restart network；</p>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/6.jpg" class>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<h2 id="3-安装hexo"><a href="#3-安装hexo" class="headerlink" title="3.安装hexo"></a>3.安装hexo</h2><p>新建一个文件夹，比如我这里建了blog；打开你的文件夹，然后在空白处点鼠标的右键，选择 ==Git Bash Here==；<br>看看 node，npm是否安装成功，没有成功的就重新安装node：<br>node -v    #查看node版本<br>npm -v    #查看npm版本<br>我们需要先来安装个cnpm提高速度，以后下载什么东西都用cnpm，在上面终端继续输入：<br>npm install -g cnpm –registry=<a href="https://registry.npm.taobao.org/">https://registry.npm.taobao.org</a><br>测试cnpm-成功:<br>cnpm -v    #查看cnpm版本<br>完成之后安装hexo：<br>cnpm install -g hexo-cli    #安装hexo框架<br>验证是否安装成功：<br>hexo -v    #查看hexo版本<br>用pwd命令查看当前路径，然后新建文件夹blog1：<br>mkdir blog1    #创建blog1目录<br>cd blog1     #进入blog1目录目录<br>hexo init     #生成博客 初始化博客（用Git Bash运行）<br>hexo s    #启动本地博客服务<br><a href="http://localhost:4000/">http://localhost:4000/</a>    #本地访问地址<br>hexo n “我的第一篇文章” #创建新的文章 </p>
+<h2 id="4-返回blog目录"><a href="#4-返回blog目录" class="headerlink" title="4.返回blog目录"></a>4.返回blog目录</h2><p>hexo clean #清理<br>hexo g #生成</p>
+<h2 id="5-将博客部署到GitHub上"><a href="#5-将博客部署到GitHub上" class="headerlink" title="5.将博客部署到GitHub上"></a>5.将博客部署到GitHub上</h2><p>在Github创建一个新的仓库 YourGithubName.github.io<br>然后输入cnpm install –save hexo-deployer-git #在blog目录下安装git部署插件</p>
+<h2 id="6-配置-config-yml"><a href="#6-配置-config-yml" class="headerlink" title="6.配置_config.yml"></a>6.配置_config.yml</h2><pre><code># Deployment
+## Docs: https://hexo.io/docs/deployment.html
+deploy:
+      type: git
+     repo: https://github.com/YourGithubName/YourGithubName.github.io.git
+      branch: master</code></pre>
+<p>win10 记得在 hexo d 之前输入以下命令：<br>git config –global user.email “xxx”<br>git config –global user.name “xxx”<br>然后用hexo d命令将博客部署到Github仓库里<br><a href="https://yourgithubname.github.io/">https://YourGithubName.github.io/</a>  #访问这个地址可以查看博客<br>注：<br>如果在输入hexo d命令时，提示有以下报错：ERROR Deployer not found: git<br>则在hexo的文件目录内输入以下命令：npm install –save hexo-deployer-git，之后再次输入hexo d命令即可</p>
+<h2 id="7-安装主题"><a href="#7-安装主题" class="headerlink" title="7.安装主题"></a>7.安装主题</h2><p>下载yilia主题到本地：git clone <a href="https://github.com/litten/hexo-theme-yilia.git">https://github.com/litten/hexo-theme-yilia.git</a> themes/yilia<br>修改hexo根目录下的 _config.yml 文件 ： theme: yilia<br>hexo c    #清理一下<br>hexo g    #生成<br>hexo d    #部署到远程Github仓库<br><a href="https://yourgithubname.github.io/">https://YourGithubName.github.io/</a>  #查看博客</p>
 ]]></content>
       <categories>
-        <category>linux就该这么学</category>
+        <category>博客</category>
       </categories>
       <tags>
-        <tag>linux虚拟机外网网络访问设置指南</tag>
+        <tag>博客</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>zhangxiaolei</title>
-    <url>/2021/07/24/zhangxiaolei/</url>
-    <content><![CDATA[<p>撒酒疯立即受到法律为了和发射东风双方的和我姐夫航空技术的广发卡是山东悍匪未婚夫s</p>
-<img src="/2021/07/24/zhangxiaolei/114.jpg" class>]]></content>
   </entry>
   <entry>
     <title>liunx就该这么学：vim编辑器与Shell命令脚本</title>
@@ -2917,35 +2942,10 @@ esac</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>用hexo和github免费创建自己的博客</title>
-    <url>/2020/12/06/%E7%94%A8hexo%E5%92%8Cgithub%E5%85%8D%E8%B4%B9%E5%88%9B%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2/</url>
-    <content><![CDATA[<h2 id="1-安装Nodejs"><a href="#1-安装Nodejs" class="headerlink" title="1.安装Nodejs"></a>1.安装Nodejs</h2><p>官方网站: <a href="https://nodejs.org/">https://nodejs.org</a>, 安装步骤非常简单，一直next，下一步就可以了，默认安装就行。</p>
-<h2 id="2-安装Git"><a href="#2-安装Git" class="headerlink" title="2.安装Git"></a>2.安装Git</h2><p>官方网站：<a href="https://git-scm.com/downloads%EF%BC%8C">https://git-scm.com/downloads，</a> 然后我们选择windows版本的下载，安装也是一直点下一步，安装官方默认的来就行，<br>tips：这个Git Bash下载下来就相当于Linux中的终端窗口了，以后我们就用这个东东来打开终端。</p>
-<a id="more"></a>
-<h2 id="3-安装hexo"><a href="#3-安装hexo" class="headerlink" title="3.安装hexo"></a>3.安装hexo</h2><p>新建一个文件夹，比如我这里建了blog；打开你的文件夹，然后在空白处点鼠标的右键，选择 ==Git Bash Here==；<br>看看 node，npm是否安装成功，没有成功的就重新安装node：<br>node -v    #查看node版本<br>npm -v    #查看npm版本<br>我们需要先来安装个cnpm提高速度，以后下载什么东西都用cnpm，在上面终端继续输入：<br>npm install -g cnpm –registry=<a href="https://registry.npm.taobao.org/">https://registry.npm.taobao.org</a><br>测试cnpm-成功:<br>cnpm -v    #查看cnpm版本<br>完成之后安装hexo：<br>cnpm install -g hexo-cli    #安装hexo框架<br>验证是否安装成功：<br>hexo -v    #查看hexo版本<br>用pwd命令查看当前路径，然后新建文件夹blog1：<br>mkdir blog1    #创建blog1目录<br>cd blog1     #进入blog1目录目录<br>hexo init     #生成博客 初始化博客（用Git Bash运行）<br>hexo s    #启动本地博客服务<br><a href="http://localhost:4000/">http://localhost:4000/</a>    #本地访问地址<br>hexo n “我的第一篇文章” #创建新的文章 </p>
-<h2 id="4-返回blog目录"><a href="#4-返回blog目录" class="headerlink" title="4.返回blog目录"></a>4.返回blog目录</h2><p>hexo clean #清理<br>hexo g #生成</p>
-<h2 id="5-将博客部署到GitHub上"><a href="#5-将博客部署到GitHub上" class="headerlink" title="5.将博客部署到GitHub上"></a>5.将博客部署到GitHub上</h2><p>在Github创建一个新的仓库 YourGithubName.github.io<br>然后输入cnpm install –save hexo-deployer-git #在blog目录下安装git部署插件</p>
-<h2 id="6-配置-config-yml"><a href="#6-配置-config-yml" class="headerlink" title="6.配置_config.yml"></a>6.配置_config.yml</h2><pre><code># Deployment
-## Docs: https://hexo.io/docs/deployment.html
-deploy:
-      type: git
-     repo: https://github.com/YourGithubName/YourGithubName.github.io.git
-      branch: master</code></pre>
-<p>win10 记得在 hexo d 之前输入以下命令：<br>git config –global user.email “xxx”<br>git config –global user.name “xxx”<br>然后用hexo d命令将博客部署到Github仓库里<br><a href="https://yourgithubname.github.io/">https://YourGithubName.github.io/</a>  #访问这个地址可以查看博客<br>注：<br>如果在输入hexo d命令时，提示有以下报错：ERROR Deployer not found: git<br>则在hexo的文件目录内输入以下命令：npm install –save hexo-deployer-git，之后再次输入hexo d命令即可</p>
-<h2 id="7-安装主题"><a href="#7-安装主题" class="headerlink" title="7.安装主题"></a>7.安装主题</h2><p>下载yilia主题到本地：git clone <a href="https://github.com/litten/hexo-theme-yilia.git">https://github.com/litten/hexo-theme-yilia.git</a> themes/yilia<br>修改hexo根目录下的 _config.yml 文件 ： theme: yilia<br>hexo c    #清理一下<br>hexo g    #生成<br>hexo d    #部署到远程Github仓库<br><a href="https://yourgithubname.github.io/">https://YourGithubName.github.io/</a>  #查看博客</p>
-]]></content>
-      <categories>
-        <category>博客</category>
-      </categories>
-      <tags>
-        <tag>博客</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>图片加载命令</title>
-    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
-]]></content>
+    <title>zhangxiaolei</title>
+    <url>/2021/07/24/zhangxiaolei/</url>
+    <content><![CDATA[<p>撒酒疯立即受到法律为了和发射东风双方的和我姐夫航空技术的广发卡是山东悍匪未婚夫s</p>
+<img src="/2021/07/24/zhangxiaolei/114.jpg" class>]]></content>
   </entry>
   <entry>
     <title>linux就该这么学-13：使用Bind提供域名解析服务</title>
@@ -3340,277 +3340,6 @@ secret &quot;1XEEL3tG5DNLOw+1WHfE3Q==&quot;;
       </categories>
       <tags>
         <tag>第13章节：使用Bind提供域名解析服务</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学-17：使用ISCSI服务部署网络存储</title>
-    <url>/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/</url>
-    <content><![CDATA[<h1 id="1-ISCSI技术介绍"><a href="#1-ISCSI技术介绍" class="headerlink" title="1.ISCSI技术介绍"></a>1.ISCSI技术介绍</h1><p>为了进一步提升硬盘存储设备的读写速度和性能，人们一直在努力改进物理硬盘设备的接口协议。当前的硬盘接口类型主要有IDE、SCSI和SATA这3种。</p>
-<a id="more"></a>
-
-<pre><code>IDE是一种成熟稳定、价格便宜的并行传输接口。
-
-SATA是一种传输速度更快、数据校验更完整的串行传输接口。
-
-SCSI是一种用于计算机和硬盘、光驱等设备之间系统级接口的通用标准，具有系统资源占用率低、转速高、传输速度快等优点。</code></pre>
-<p>iSCSI：Internet Small Computer System Interface，互联网小型计算机系统接口！</p>
-<p>这是一种将SCSI接口与以太网技术相结合的新型存储技术，可以用来在网络中传输SCSI接口的命令和数据。这样，不仅克服了传统SCSI接口设备的物理局限性，实现了跨区域的存储资源共享，还可以在不停机的状态下扩展存储容量。</p>
-<h1 id="2-创建RAID磁盘阵列"><a href="#2-创建RAID磁盘阵列" class="headerlink" title="2.创建RAID磁盘阵列"></a>2.创建RAID磁盘阵列</h1><p>第1步：首先在虚拟机中添加4块新硬盘，用于创建RAID 5磁盘阵列和备份盘：</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/1.jpg" class>
-
-<p>第2步：启动虚拟机系统，使用mdadm命令创建RAID磁盘阵列。其中，-Cv参数为创建阵列并显示过程，/dev/md0为生成的阵列组名称，-n 3参数为创建RAID 5磁盘阵列所需的硬盘个数，-l 5参数为RAID磁盘阵列的级别，-x 1参数为磁盘阵列的备份盘个数。在命令后面要逐一写上使用的硬盘名称。</p>
-<pre><code>[root@linuxprobe ~]# mdadm -Cv /dev/md0 -n 3 -l 5 -x 1 /dev/sdb /dev/sdc /dev/sdd /dev/sde
-mdadm: layout defaults to left-symmetric
-mdadm: layout defaults to left-symmetric
-mdadm: chunk size defaults to 512K
-mdadm: size set to 20954624K
-mdadm: Defaulting to version 1.2 metadata
-mdadm: array /dev/md0 started.</code></pre>
-<p>在上述命令成功执行之后，得到一块名称为/dev/md0的新设备，大家可使用mdadm -D命令来查看设备的详细信息。另外，由于在使用远程设备时极有可能出现设备识别顺序发生变化的情况，因此，如果直接在fstab挂载配置文件中写入/dev/sdb、/dev/sdc等设备名称的话，就有可能在下一次挂载了错误的存储设备。而UUID值是设备的唯一标识符，可以用于精确地区分本地或远程设备。于是我们可以把这个值记录下来，一会儿准备填写到挂载配置文件中。</p>
-<pre><code>[root@linuxprobe ~]# mdadm -D /dev/md0
-/dev/md0:
-        Version : 1.2
-…………
-**UUID : 3370f643:c10efd6a:44e91f2a:20c71f3e**
-         Events : 26
-    Number   Major   Minor   RaidDevice State
-       0       8       16        0      active sync   /dev/sdb
-       1       8       32        1      active sync   /dev/sdc
-       4       8       48        2      active sync   /dev/sdd
-       3       8       64        -      spare   /dev/sde</code></pre>
-<h1 id="3-配置iSCSI服务端"><a href="#3-配置iSCSI服务端" class="headerlink" title="3.配置iSCSI服务端"></a>3.配置iSCSI服务端</h1><p>iSCSI技术在工作形式上分为服务端（target）与客户端（initiator）。iSCSI服务端即用于存放硬盘存储资源的服务器，它作为前面创建的RAID磁盘阵列的存储端，能够为用户提供可用的存储资源。iSCSI客户端则是用户使用的软件，用于访问远程服务端的存储资源。</p>
-<p> iSCSI服务端和客户端的操作系统以及IP地址：</p>
-<table>
-<thead>
-<tr>
-<th>主机名称</th>
-<th>操作系统</th>
-<th>IP地址</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>iSCSI服务端</td>
-<td>RHEL 7</td>
-<td>192.168.10.10</td>
-</tr>
-<tr>
-<td>iSCSI客户端</td>
-<td>RHEL 7</td>
-<td>192.168.10.20</td>
-</tr>
-</tbody></table>
-<p>第1步：配置好Yum软件仓库后安装iSCSI服务端程序以及配置命令工具。通过在yum命令的后面添加-y参数，在安装过程中就不需要再进行手动确认了：</p>
-<pre><code>[root@linuxprobe ~]# yum -y install targetd targetcli
-Loaded plugins: langpacks, product-id, subscription-manager
-………………省略部分输出信息………………
- python-setproctitle.x86_64 0:1.1.6-5.el7 
- python-urwid.x86_64 0:1.1.1-3.el7 
-Complete!</code></pre>
-<p>安装完成后启动iSCSI的服务端程序targetd，然后把这个服务程序加入到开机启动项中，以便下次在服务器重启后依然能够为用户提供iSCSI共享存储资源服务：</p>
-<pre><code>[root@linuxprobe ~]# systemctl start targetd
-[root@linuxprobe ~]# systemctl enable targetd
- ln -s &#39;/usr/lib/systemd/system/targetd.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/targetd.service&#39;</code></pre>
-<p>第2步：配置iSCSI服务端共享资源。在执行targetcli命令后就能看到交互式的配置界面了。在该界面中可以使用很多Linux命令，比如利用ls查看目录参数的结构，使用cd切换到不同的目录中。/backstores/block是iSCSI服务端配置共享设备的位置。我们需要把刚刚创建的RAID 5磁盘阵列md0文件加入到配置共享设备的“资源池”中，并将该文件重新命名为disk0，这样用户就不会知道是由服务器中的哪块硬盘来提供共享存储资源，而只会看到一个名为disk0的存储设备。</p>
-<pre><code>[root@linuxprobe ~]# targetcli
-Warning: Could not load preferences file /root/.targetcli/prefs.bin.
-targetcli shell version 2.1.fb34
-Copyright 2011-2013 by Datera, Inc and others.
-For help on commands, type &#39;help&#39;.
-/&gt; ls
-o- / ..................................................................... [...]
-o- backstores .......................................................... [...]
-| o- block .............................................. [Storage Objects: 0]
-| o- fileio ............................................. [Storage Objects: 0]
-| o- pscsi .............................................. [Storage Objects: 0]
-| o- ramdisk ............................................ [Storage Objects: 0]
-o- iscsi ........................................................ [Targets: 0]
-o- loopback ..................................................... [Targets: 0
-/&gt; cd /backstores/block
-/backstores/block&gt; create disk0 /dev/md0
-Created block storage object disk0 using /dev/md0.
-/backstores/block&gt; cd /
-/&gt; ls
-o- / ..................................................................... [...]
-  o- backstores .......................................................... [...]
-  | o- block .............................................. [Storage Objects: 1]
-  | | o- disk0 ..................... [/dev/md0 (40.0GiB) write-thru deactivated]
-  | o- fileio ............................................. [Storage Objects: 0]
-  | o- pscsi .............................................. [Storage Objects: 0]
-  | o- ramdisk ............................................ [Storage Objects: 0]
-  o- iscsi ........................................................ [Targets: 0]
-  o- loopback ..................................................... [Targets: 0]</code></pre>
-<p>第3步：创建iSCSI target名称及配置共享资源。iSCSI target名称是由系统自动生成的，这是一串用于描述共享资源的唯一字符串。稍后用户在扫描iSCSI服务端时即可看到这个字符串，因此我们不需要记住它。系统在生成这个target名称后，还会在/iscsi参数目录中创建一个与其字符串同名的新“目录”用来存放共享资源。我们需要把前面加入到iSCSI共享资源池中的硬盘设备添加到这个新目录中，这样用户在登录iSCSI服务端后，即可默认使用这硬盘设备提供的共享存储资源了。</p>
-<pre><code>/&gt; cd iscsi
-/iscsi&gt; 
-/iscsi&gt; create
-Created target iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80.
-Created TPG 1.
-/iscsi&gt; cd iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80/
-/iscsi/iqn.20....d497c356ad80&gt; ls
-o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 ...... [TPGs: 1]
-  o- tpg1 ............................................... [no-gen-acls, no-auth]
-    o- acls .......................................................... [ACLs: 0]
-    o- luns .......................................................... [LUNs: 0]
-    o- portals .................................................... [Portals: 0]
-/iscsi/iqn.20....d497c356ad80&gt; cd tpg1/luns
-/iscsi/iqn.20...d80/tpg1/luns&gt; create /backstores/block/disk0 
-Created LUN 0.</code></pre>
-<p>第4步：设置访问控制列表（ACL）。iSCSI协议是通过客户端名称进行验证的，也就是说，用户在访问存储共享资源时不需要输入密码，只要iSCSI客户端的名称与服务端中设置的访问控制列表中某一名称条目一致即可，因此需要在iSCSI服务端的配置文件中写入一串能够验证用户信息的名称。acls参数目录用于存放能够访问iSCSI服务端共享存储资源的客户端名称。刘遄老师推荐在刚刚系统生成的iSCSI target后面追加上类似于:client的参数，这样既能保证客户端的名称具有唯一性，又非常便于管理和阅读：</p>
-<pre><code>/iscsi/iqn.20...d80/tpg1/luns&gt; cd ..
-/iscsi/iqn.20...c356ad80/tpg1&gt; cd acls 
-/iscsi/iqn.20...d80/tpg1/acls&gt; create iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
-Created Node ACL for iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
-Created mapped LUN 0</code></pre>
-<p>第5步：设置iSCSI服务端的监听IP地址和端口号。即在portals参数目录中写上服务器的IP地址。接下来将由系统自动开启服务器192.168.10.10的3260端口将向外提供iSCSI共享存储资源服务：</p>
-<pre><code>/iscsi/iqn.20...d80/tpg1/acls&gt; cd ..
-/iscsi/iqn.20...c356ad80/tpg1&gt; cd portals 
-/iscsi/iqn.20.../tpg1/portals&gt; create 192.168.10.10
-Using default IP port 3260
-Created network portal 192.168.10.10:3260.</code></pre>
-<p>第6步：配置妥当后检查配置信息，重启iSCSI服务端程序并配置防火墙策略。在参数文件配置妥当后，可以浏览刚刚配置的信息，确保与下面的信息基本一致。在确认信息无误后输入exit命令来退出配置。注意，千万不要习惯性地按Ctrl + C组合键结束进程，这样不会保存配置文件，我们的工作也就白费了。最后重启iSCSI服务端程序，再设置firewalld防火墙策略，使其放行3260/tcp端口号的流量。</p>
-<pre><code>/iscsi/iqn.20.../tpg1/portals&gt; ls /
-o- / ........................... [...]
-  o- backstores................. [...]
-  | o- block ................... [Storage Objects: 1]
-  | | o- disk0 ................. [/dev/md0 (40.0GiB) write-thru activated]
-  | o- fileio .................. [Storage Objects: 0]
-  | o- pscsi ................... [Storage Objects: 0]
-  | o- ramdisk ................. [Storage Objects: 0]
-  o- iscsi ..................... [Targets: 1]
-  | o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 .... [TPGs: 1]
-  |   o- tpg1 .................. [no-gen-acls, no-auth]
-  |     o- acls ........................................................ [ACLs: 1]
-  |     | o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client [Mapped LUNs: 1]
-  |     |   o- mapped_lun0 ............................................. [lun0 block/disk0 (rw)]  
-    o- luns .................... [LUNs: 1]
-  |     | o- lun0 .............. [block/disk0 (/dev/md0)]
-  |     o- portals ............. [Portals: 1]
-  |       o- 192.168.10.10:3260  [OK]
-  o- loopback .................. [Targets: 0]
-/&gt; exit
-Global pref auto_save_on_exit=true
-Last 10 configs saved in /etc/target/backup.
-Configuration saved to /etc/target/saveconfig.json
-[root@linuxprobe ~]# systemctl restart targetd
-[root@linuxprobe ~]# firewall-cmd --permanent --add-port=3260/tcp 
-success 
-[root@linuxprobe ~]# firewall-cmd --reload 
-success</code></pre>
-<p>但在配置这部分时，遇到一个问题：在targetcli界面输入“exit”时，并没有显示配置已保存，反而提示有报错：’Implict and Explict’ is not in list；网上搜索查询得知是由于系统内核版本（kernel-3.10.0-123.el7.x86_64）太低导致，需要升级kernel内核：在升级内核时，也比较麻烦，一台虚拟机系统在终端中输入命令：yum update kernel，即成功升级版本（kernel 3.10.0-1160.15.2.el7.x86_64）；而另一台虚拟机则使用此种方式不成功，查询资料，采用另一种方式：</p>
-<p>1.直接运行yum update kernel，显示报错error:kernel conflicts kmod等等……；</p>
-<p>2.输入：yum clean all，可能有些效果，但无法彻底解决；</p>
-<p>3.上面报错：kernel conflicts kmod，可能是由于系统中安装有多个kmod版本导致；</p>
-<p>4.输入：rpm -qa kmod，查询系统中安装的kmod数量，然后使用 rpm -e kmod-version，卸载低版本，之后重新输入；yum update kernel，升级内核！</p>
-<p>5.升级完成后，输入：awk -F&#39; ‘$1==”menuentry “ {print $2}’ /etc/grub2.cfg ，查看下内核的默认启动顺序；</p>
-<p>6.默认启动的顺序是从0开始，新内核是从头插入，所以需要选择0，输入命令：grub2-set-default 0</p>
-<p>7.重启系统，开机后输入：uname -r，查看系统版本号！</p>
-<h1 id="4-配置linux客户端"><a href="#4-配置linux客户端" class="headerlink" title="4.配置linux客户端"></a>4.配置linux客户端</h1><p>第1步：在RHEL 7系统中，已经默认安装了iSCSI客户端服务程序initiator。如果您的系统没有安装的话，可以使用Yum软件仓库手动安装。</p>
-<pre><code>[root@linuxprobe ~]# yum install iscsi-initiator-utils 
-Loaded plugins: langpacks, product-id, subscription-manager 
-Package iscsi-initiator-utils-6.2.0.873-21.el7.x86_64 already installed and latest version 
-Nothing to do</code></pre>
-<p>第2步：编辑iSCSI客户端中的initiator名称文件，把服务端的访问控制列表名称填写进来，然后重启客户端iscsid服务程序并将其加入到开机启动项中：</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/iscsi/initiatorname.iscsi
-InitiatorName=iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
-[root@linuxprobe ~]# systemctl restart iscsid
-[root@linuxprobe ~]# systemctl enable iscsid
- ln -s &#39;/usr/lib/systemd/system/iscsid.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/iscsid.service&#39;</code></pre>
-<p>第3步：iSCSI客户端访问并使用共享存储资源的步骤很简单，只需要记住刘遄老师的一个小口诀“先发现，再登录，最后挂载并使用”。iscsiadm是用于管理、查询、插入、更新或删除iSCSI数据库配置文件的命令行工具，用户需要先使用这个工具扫描发现远程iSCSI服务端，然后查看找到的服务端上有哪些可用的共享存储资源。其中，-m discovery参数的目的是扫描并发现可用的存储资源，-t st参数为执行扫描操作的类型，-p 192.168.10.10参数为iSCSI服务端的IP地址：</p>
-<pre><code>[root@linuxprobe ~]# iscsiadm -m discovery -t st -p 192.168.10.10
-192.168.10.10:3260,1 iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80</code></pre>
-<p>第4步：在使用iscsiadm命令发现了远程服务器上可用的存储资源后，接下来准备登录iSCSI服务端。其中，-m node参数为将客户端所在主机作为一台节点服务器，-T  iqn.2003-01. org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80参数为要使用的存储资源（大家可以直接复制前面命令中扫描发现的结果，以免录入错误），-p 192.168.10.10参数依然为对方iSCSI服务端的IP地址。最后使用–login或-l参数进行登录验证。</p>
-<pre><code>[root@linuxprobe ~]# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 -p 192.168.10.10 --login
-Logging in to [iface: default, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260] (multiple)
-Login to [iface: default, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260] successful.</code></pre>
-<p>第5步：在iSCSI客户端成功登录之后，会在客户端主机上多出一块名为/dev/sdb的设备文件。</p>
-<pre><code>[root@linuxprobe ~]# file /dev/sdb 
-/dev/sdb: block special</code></pre>
-<p>第6步：格式化、挂载硬盘；</p>
-<pre><code>[root@linuxprobe ~]# mkfs.xfs /dev/sdb
-[root@linuxprobe ~]# mkdir /iscsi
-[root@linuxprobe ~]# mount /dev/sdb /iscsi
-[root@linuxprobe ~]# df -h</code></pre>
-<p>需要提醒大家的是，由于udev服务是按照系统识别硬盘设备的顺序来命名硬盘设备的，当客户端主机同时使用多个远程存储资源时，如果下一次识别远程设备的顺序发生了变化，则客户端挂载目录中的文件也将随之混乱。为了防止发生这样的问题，我们应该在/etc/fstab配置文件中使用设备的UUID唯一标识符进行挂载，这样，不论远程设备资源的识别顺序再怎么变化，系统也能正确找到设备所对应的目录。</p>
-<p>blkid命令用于查看设备的名称、文件系统及UUID。可以使用管道符（详见第3章）进行过滤，只显示与/dev/sdb设备相关的信息：</p>
-<pre><code>[root@linuxprobe ~]# blkid | grep /dev/sdb
-/dev/sdb: UUID=&quot;eb9cbf2f-fce8-413a-b770-8b0f243e8ad6&quot; TYPE=&quot;xfs&quot; </code></pre>
-<p>由于/dev/sdb是一块网络存储设备，而iSCSI协议是基于TCP/IP网络传输数据的，因此必须在/etc/fstab配置文件中添加上_netdev参数，表示当系统联网后再进行挂载操作，以免系统开机时间过长或开机失败：</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/fstab
-/dev/mapper/rhel-swap swap swap defaults 0 0
-/dev/cdrom /media/cdrom iso9660 defaults 0 0 
-**UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0**</code></pre>
-<p>如果我们不再需要使用iSCSI共享设备资源了，可以用iscsiadm命令的-u参数将其设备卸载：</p>
-<pre><code>[root@linuxprobe ~]# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 -u
-
-Logging out of session [sid: 7, target : iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260]
-
-Logout of [sid: 7, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80,portal:192.168.10.10,3260] successful.</code></pre>
-<h1 id="5-配置windows客户端"><a href="#5-配置windows客户端" class="headerlink" title="5.配置windows客户端"></a>5.配置windows客户端</h1><p>使用Windows系统的客户端也可以正常访问iSCSI服务器上的共享存储资源，而且操作原理及步骤与Linux系统的客户端基本相同。在进行下面的实验之前，请先关闭Linux系统客户端，以免这两台客户端主机同时使用iSCSI共享存储资源而产生潜在问题。</p>
-<p>iSCSI服务器和客户端的操作系统以及IP地址：</p>
-<table>
-<thead>
-<tr>
-<th>主机名称</th>
-<th>操作系统</th>
-<th>IP地址</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>iSCSI服务端</td>
-<td>RHEL 7</td>
-<td>192.168.10.10</td>
-</tr>
-<tr>
-<td>windows客户端</td>
-<td>windows 7</td>
-<td>192.168.10.30</td>
-</tr>
-</tbody></table>
-<p>第1步：运行iSCSI发起程序。在Windows 7/10操作系统中已经默认安装了iSCSI客户端程序，我们只需在控制面板中找到“系统和安全”标签，然后单击“管理工具”，进入到“管理工具”页面后即可看到“iSCSI发起程序”图标。双击该图标。在第一次运行iSCSI发起程序时，系统会提示“Microsoft iSCSI服务端未运行”，单击“是”按钮即可自动启动并运行iSCSI发起程序：</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/2.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/3.png" class>
-
-<p>第2步：扫描发现iSCSI服务端上可用的存储资源。不论是Windows系统还是Linux系统，要想使用iSCSI共享存储资源都必须先进行扫描发现操作。运行iSCSI发起程序后在“目标”选项卡的“目标”文本框中写入iSCSI服务端的IP地址，然后单击“快速连接”按钮:</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/4.png" class>
-
-<p>在弹出的“快速连接”提示框中可看到共享的硬盘存储资源，单击“完成”按钮即可:</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/5.png" class>
-
-<p>回到“目标”选项卡页面，可以看到共享存储资源的名称已经出现.</p>
-<p>第3步：准备连接iSCSI服务端的共享存储资源。由于在iSCSI服务端程序上设置了ACL，使得只有客户端名称与ACL策略中的名称保持一致时才能使用远程存储资源，因此需要在“配置”选项卡中单击“更改”按钮，把iSCSI发起程序的名称修改为服务端:</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/6.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/7.png" class>
-
-<p>在确认客户端发起程序的名称修改正确后即可返回到“目标”选项卡页面中，然后单击“连接”按钮进行连接请求，成功连接到远程共享存储资源的页面:</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/8.png" class>
-
-<p>第4步：访问iSCSI远程共享存储资源。右键单击桌面上的“计算机”图标，打开计算机管理程序:</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/9.png" class>
-
-<p>开始对磁盘进行初始化操作:</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/10.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/11.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/12.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/13.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/14.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/15.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/16.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/17.png" class>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第17章节：使用ISCSI服务部署网络存储</tag>
       </tags>
   </entry>
   <entry>
@@ -4043,6 +3772,277 @@ MariaDB [linuxprobe]&gt; DESCRIBE mybook;
       </categories>
       <tags>
         <tag>第18章节：使用MariaDB数据库管理系统</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学-17：使用ISCSI服务部署网络存储</title>
+    <url>/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/</url>
+    <content><![CDATA[<h1 id="1-ISCSI技术介绍"><a href="#1-ISCSI技术介绍" class="headerlink" title="1.ISCSI技术介绍"></a>1.ISCSI技术介绍</h1><p>为了进一步提升硬盘存储设备的读写速度和性能，人们一直在努力改进物理硬盘设备的接口协议。当前的硬盘接口类型主要有IDE、SCSI和SATA这3种。</p>
+<a id="more"></a>
+
+<pre><code>IDE是一种成熟稳定、价格便宜的并行传输接口。
+
+SATA是一种传输速度更快、数据校验更完整的串行传输接口。
+
+SCSI是一种用于计算机和硬盘、光驱等设备之间系统级接口的通用标准，具有系统资源占用率低、转速高、传输速度快等优点。</code></pre>
+<p>iSCSI：Internet Small Computer System Interface，互联网小型计算机系统接口！</p>
+<p>这是一种将SCSI接口与以太网技术相结合的新型存储技术，可以用来在网络中传输SCSI接口的命令和数据。这样，不仅克服了传统SCSI接口设备的物理局限性，实现了跨区域的存储资源共享，还可以在不停机的状态下扩展存储容量。</p>
+<h1 id="2-创建RAID磁盘阵列"><a href="#2-创建RAID磁盘阵列" class="headerlink" title="2.创建RAID磁盘阵列"></a>2.创建RAID磁盘阵列</h1><p>第1步：首先在虚拟机中添加4块新硬盘，用于创建RAID 5磁盘阵列和备份盘：</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/1.jpg" class>
+
+<p>第2步：启动虚拟机系统，使用mdadm命令创建RAID磁盘阵列。其中，-Cv参数为创建阵列并显示过程，/dev/md0为生成的阵列组名称，-n 3参数为创建RAID 5磁盘阵列所需的硬盘个数，-l 5参数为RAID磁盘阵列的级别，-x 1参数为磁盘阵列的备份盘个数。在命令后面要逐一写上使用的硬盘名称。</p>
+<pre><code>[root@linuxprobe ~]# mdadm -Cv /dev/md0 -n 3 -l 5 -x 1 /dev/sdb /dev/sdc /dev/sdd /dev/sde
+mdadm: layout defaults to left-symmetric
+mdadm: layout defaults to left-symmetric
+mdadm: chunk size defaults to 512K
+mdadm: size set to 20954624K
+mdadm: Defaulting to version 1.2 metadata
+mdadm: array /dev/md0 started.</code></pre>
+<p>在上述命令成功执行之后，得到一块名称为/dev/md0的新设备，大家可使用mdadm -D命令来查看设备的详细信息。另外，由于在使用远程设备时极有可能出现设备识别顺序发生变化的情况，因此，如果直接在fstab挂载配置文件中写入/dev/sdb、/dev/sdc等设备名称的话，就有可能在下一次挂载了错误的存储设备。而UUID值是设备的唯一标识符，可以用于精确地区分本地或远程设备。于是我们可以把这个值记录下来，一会儿准备填写到挂载配置文件中。</p>
+<pre><code>[root@linuxprobe ~]# mdadm -D /dev/md0
+/dev/md0:
+        Version : 1.2
+…………
+**UUID : 3370f643:c10efd6a:44e91f2a:20c71f3e**
+         Events : 26
+    Number   Major   Minor   RaidDevice State
+       0       8       16        0      active sync   /dev/sdb
+       1       8       32        1      active sync   /dev/sdc
+       4       8       48        2      active sync   /dev/sdd
+       3       8       64        -      spare   /dev/sde</code></pre>
+<h1 id="3-配置iSCSI服务端"><a href="#3-配置iSCSI服务端" class="headerlink" title="3.配置iSCSI服务端"></a>3.配置iSCSI服务端</h1><p>iSCSI技术在工作形式上分为服务端（target）与客户端（initiator）。iSCSI服务端即用于存放硬盘存储资源的服务器，它作为前面创建的RAID磁盘阵列的存储端，能够为用户提供可用的存储资源。iSCSI客户端则是用户使用的软件，用于访问远程服务端的存储资源。</p>
+<p> iSCSI服务端和客户端的操作系统以及IP地址：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>iSCSI服务端</td>
+<td>RHEL 7</td>
+<td>192.168.10.10</td>
+</tr>
+<tr>
+<td>iSCSI客户端</td>
+<td>RHEL 7</td>
+<td>192.168.10.20</td>
+</tr>
+</tbody></table>
+<p>第1步：配置好Yum软件仓库后安装iSCSI服务端程序以及配置命令工具。通过在yum命令的后面添加-y参数，在安装过程中就不需要再进行手动确认了：</p>
+<pre><code>[root@linuxprobe ~]# yum -y install targetd targetcli
+Loaded plugins: langpacks, product-id, subscription-manager
+………………省略部分输出信息………………
+ python-setproctitle.x86_64 0:1.1.6-5.el7 
+ python-urwid.x86_64 0:1.1.1-3.el7 
+Complete!</code></pre>
+<p>安装完成后启动iSCSI的服务端程序targetd，然后把这个服务程序加入到开机启动项中，以便下次在服务器重启后依然能够为用户提供iSCSI共享存储资源服务：</p>
+<pre><code>[root@linuxprobe ~]# systemctl start targetd
+[root@linuxprobe ~]# systemctl enable targetd
+ ln -s &#39;/usr/lib/systemd/system/targetd.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/targetd.service&#39;</code></pre>
+<p>第2步：配置iSCSI服务端共享资源。在执行targetcli命令后就能看到交互式的配置界面了。在该界面中可以使用很多Linux命令，比如利用ls查看目录参数的结构，使用cd切换到不同的目录中。/backstores/block是iSCSI服务端配置共享设备的位置。我们需要把刚刚创建的RAID 5磁盘阵列md0文件加入到配置共享设备的“资源池”中，并将该文件重新命名为disk0，这样用户就不会知道是由服务器中的哪块硬盘来提供共享存储资源，而只会看到一个名为disk0的存储设备。</p>
+<pre><code>[root@linuxprobe ~]# targetcli
+Warning: Could not load preferences file /root/.targetcli/prefs.bin.
+targetcli shell version 2.1.fb34
+Copyright 2011-2013 by Datera, Inc and others.
+For help on commands, type &#39;help&#39;.
+/&gt; ls
+o- / ..................................................................... [...]
+o- backstores .......................................................... [...]
+| o- block .............................................. [Storage Objects: 0]
+| o- fileio ............................................. [Storage Objects: 0]
+| o- pscsi .............................................. [Storage Objects: 0]
+| o- ramdisk ............................................ [Storage Objects: 0]
+o- iscsi ........................................................ [Targets: 0]
+o- loopback ..................................................... [Targets: 0
+/&gt; cd /backstores/block
+/backstores/block&gt; create disk0 /dev/md0
+Created block storage object disk0 using /dev/md0.
+/backstores/block&gt; cd /
+/&gt; ls
+o- / ..................................................................... [...]
+  o- backstores .......................................................... [...]
+  | o- block .............................................. [Storage Objects: 1]
+  | | o- disk0 ..................... [/dev/md0 (40.0GiB) write-thru deactivated]
+  | o- fileio ............................................. [Storage Objects: 0]
+  | o- pscsi .............................................. [Storage Objects: 0]
+  | o- ramdisk ............................................ [Storage Objects: 0]
+  o- iscsi ........................................................ [Targets: 0]
+  o- loopback ..................................................... [Targets: 0]</code></pre>
+<p>第3步：创建iSCSI target名称及配置共享资源。iSCSI target名称是由系统自动生成的，这是一串用于描述共享资源的唯一字符串。稍后用户在扫描iSCSI服务端时即可看到这个字符串，因此我们不需要记住它。系统在生成这个target名称后，还会在/iscsi参数目录中创建一个与其字符串同名的新“目录”用来存放共享资源。我们需要把前面加入到iSCSI共享资源池中的硬盘设备添加到这个新目录中，这样用户在登录iSCSI服务端后，即可默认使用这硬盘设备提供的共享存储资源了。</p>
+<pre><code>/&gt; cd iscsi
+/iscsi&gt; 
+/iscsi&gt; create
+Created target iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80.
+Created TPG 1.
+/iscsi&gt; cd iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80/
+/iscsi/iqn.20....d497c356ad80&gt; ls
+o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 ...... [TPGs: 1]
+  o- tpg1 ............................................... [no-gen-acls, no-auth]
+    o- acls .......................................................... [ACLs: 0]
+    o- luns .......................................................... [LUNs: 0]
+    o- portals .................................................... [Portals: 0]
+/iscsi/iqn.20....d497c356ad80&gt; cd tpg1/luns
+/iscsi/iqn.20...d80/tpg1/luns&gt; create /backstores/block/disk0 
+Created LUN 0.</code></pre>
+<p>第4步：设置访问控制列表（ACL）。iSCSI协议是通过客户端名称进行验证的，也就是说，用户在访问存储共享资源时不需要输入密码，只要iSCSI客户端的名称与服务端中设置的访问控制列表中某一名称条目一致即可，因此需要在iSCSI服务端的配置文件中写入一串能够验证用户信息的名称。acls参数目录用于存放能够访问iSCSI服务端共享存储资源的客户端名称。刘遄老师推荐在刚刚系统生成的iSCSI target后面追加上类似于:client的参数，这样既能保证客户端的名称具有唯一性，又非常便于管理和阅读：</p>
+<pre><code>/iscsi/iqn.20...d80/tpg1/luns&gt; cd ..
+/iscsi/iqn.20...c356ad80/tpg1&gt; cd acls 
+/iscsi/iqn.20...d80/tpg1/acls&gt; create iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
+Created Node ACL for iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
+Created mapped LUN 0</code></pre>
+<p>第5步：设置iSCSI服务端的监听IP地址和端口号。即在portals参数目录中写上服务器的IP地址。接下来将由系统自动开启服务器192.168.10.10的3260端口将向外提供iSCSI共享存储资源服务：</p>
+<pre><code>/iscsi/iqn.20...d80/tpg1/acls&gt; cd ..
+/iscsi/iqn.20...c356ad80/tpg1&gt; cd portals 
+/iscsi/iqn.20.../tpg1/portals&gt; create 192.168.10.10
+Using default IP port 3260
+Created network portal 192.168.10.10:3260.</code></pre>
+<p>第6步：配置妥当后检查配置信息，重启iSCSI服务端程序并配置防火墙策略。在参数文件配置妥当后，可以浏览刚刚配置的信息，确保与下面的信息基本一致。在确认信息无误后输入exit命令来退出配置。注意，千万不要习惯性地按Ctrl + C组合键结束进程，这样不会保存配置文件，我们的工作也就白费了。最后重启iSCSI服务端程序，再设置firewalld防火墙策略，使其放行3260/tcp端口号的流量。</p>
+<pre><code>/iscsi/iqn.20.../tpg1/portals&gt; ls /
+o- / ........................... [...]
+  o- backstores................. [...]
+  | o- block ................... [Storage Objects: 1]
+  | | o- disk0 ................. [/dev/md0 (40.0GiB) write-thru activated]
+  | o- fileio .................. [Storage Objects: 0]
+  | o- pscsi ................... [Storage Objects: 0]
+  | o- ramdisk ................. [Storage Objects: 0]
+  o- iscsi ..................... [Targets: 1]
+  | o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 .... [TPGs: 1]
+  |   o- tpg1 .................. [no-gen-acls, no-auth]
+  |     o- acls ........................................................ [ACLs: 1]
+  |     | o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client [Mapped LUNs: 1]
+  |     |   o- mapped_lun0 ............................................. [lun0 block/disk0 (rw)]  
+    o- luns .................... [LUNs: 1]
+  |     | o- lun0 .............. [block/disk0 (/dev/md0)]
+  |     o- portals ............. [Portals: 1]
+  |       o- 192.168.10.10:3260  [OK]
+  o- loopback .................. [Targets: 0]
+/&gt; exit
+Global pref auto_save_on_exit=true
+Last 10 configs saved in /etc/target/backup.
+Configuration saved to /etc/target/saveconfig.json
+[root@linuxprobe ~]# systemctl restart targetd
+[root@linuxprobe ~]# firewall-cmd --permanent --add-port=3260/tcp 
+success 
+[root@linuxprobe ~]# firewall-cmd --reload 
+success</code></pre>
+<p>但在配置这部分时，遇到一个问题：在targetcli界面输入“exit”时，并没有显示配置已保存，反而提示有报错：’Implict and Explict’ is not in list；网上搜索查询得知是由于系统内核版本（kernel-3.10.0-123.el7.x86_64）太低导致，需要升级kernel内核：在升级内核时，也比较麻烦，一台虚拟机系统在终端中输入命令：yum update kernel，即成功升级版本（kernel 3.10.0-1160.15.2.el7.x86_64）；而另一台虚拟机则使用此种方式不成功，查询资料，采用另一种方式：</p>
+<p>1.直接运行yum update kernel，显示报错error:kernel conflicts kmod等等……；</p>
+<p>2.输入：yum clean all，可能有些效果，但无法彻底解决；</p>
+<p>3.上面报错：kernel conflicts kmod，可能是由于系统中安装有多个kmod版本导致；</p>
+<p>4.输入：rpm -qa kmod，查询系统中安装的kmod数量，然后使用 rpm -e kmod-version，卸载低版本，之后重新输入；yum update kernel，升级内核！</p>
+<p>5.升级完成后，输入：awk -F&#39; ‘$1==”menuentry “ {print $2}’ /etc/grub2.cfg ，查看下内核的默认启动顺序；</p>
+<p>6.默认启动的顺序是从0开始，新内核是从头插入，所以需要选择0，输入命令：grub2-set-default 0</p>
+<p>7.重启系统，开机后输入：uname -r，查看系统版本号！</p>
+<h1 id="4-配置linux客户端"><a href="#4-配置linux客户端" class="headerlink" title="4.配置linux客户端"></a>4.配置linux客户端</h1><p>第1步：在RHEL 7系统中，已经默认安装了iSCSI客户端服务程序initiator。如果您的系统没有安装的话，可以使用Yum软件仓库手动安装。</p>
+<pre><code>[root@linuxprobe ~]# yum install iscsi-initiator-utils 
+Loaded plugins: langpacks, product-id, subscription-manager 
+Package iscsi-initiator-utils-6.2.0.873-21.el7.x86_64 already installed and latest version 
+Nothing to do</code></pre>
+<p>第2步：编辑iSCSI客户端中的initiator名称文件，把服务端的访问控制列表名称填写进来，然后重启客户端iscsid服务程序并将其加入到开机启动项中：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
+[root@linuxprobe ~]# systemctl restart iscsid
+[root@linuxprobe ~]# systemctl enable iscsid
+ ln -s &#39;/usr/lib/systemd/system/iscsid.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/iscsid.service&#39;</code></pre>
+<p>第3步：iSCSI客户端访问并使用共享存储资源的步骤很简单，只需要记住刘遄老师的一个小口诀“先发现，再登录，最后挂载并使用”。iscsiadm是用于管理、查询、插入、更新或删除iSCSI数据库配置文件的命令行工具，用户需要先使用这个工具扫描发现远程iSCSI服务端，然后查看找到的服务端上有哪些可用的共享存储资源。其中，-m discovery参数的目的是扫描并发现可用的存储资源，-t st参数为执行扫描操作的类型，-p 192.168.10.10参数为iSCSI服务端的IP地址：</p>
+<pre><code>[root@linuxprobe ~]# iscsiadm -m discovery -t st -p 192.168.10.10
+192.168.10.10:3260,1 iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80</code></pre>
+<p>第4步：在使用iscsiadm命令发现了远程服务器上可用的存储资源后，接下来准备登录iSCSI服务端。其中，-m node参数为将客户端所在主机作为一台节点服务器，-T  iqn.2003-01. org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80参数为要使用的存储资源（大家可以直接复制前面命令中扫描发现的结果，以免录入错误），-p 192.168.10.10参数依然为对方iSCSI服务端的IP地址。最后使用–login或-l参数进行登录验证。</p>
+<pre><code>[root@linuxprobe ~]# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 -p 192.168.10.10 --login
+Logging in to [iface: default, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260] (multiple)
+Login to [iface: default, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260] successful.</code></pre>
+<p>第5步：在iSCSI客户端成功登录之后，会在客户端主机上多出一块名为/dev/sdb的设备文件。</p>
+<pre><code>[root@linuxprobe ~]# file /dev/sdb 
+/dev/sdb: block special</code></pre>
+<p>第6步：格式化、挂载硬盘；</p>
+<pre><code>[root@linuxprobe ~]# mkfs.xfs /dev/sdb
+[root@linuxprobe ~]# mkdir /iscsi
+[root@linuxprobe ~]# mount /dev/sdb /iscsi
+[root@linuxprobe ~]# df -h</code></pre>
+<p>需要提醒大家的是，由于udev服务是按照系统识别硬盘设备的顺序来命名硬盘设备的，当客户端主机同时使用多个远程存储资源时，如果下一次识别远程设备的顺序发生了变化，则客户端挂载目录中的文件也将随之混乱。为了防止发生这样的问题，我们应该在/etc/fstab配置文件中使用设备的UUID唯一标识符进行挂载，这样，不论远程设备资源的识别顺序再怎么变化，系统也能正确找到设备所对应的目录。</p>
+<p>blkid命令用于查看设备的名称、文件系统及UUID。可以使用管道符（详见第3章）进行过滤，只显示与/dev/sdb设备相关的信息：</p>
+<pre><code>[root@linuxprobe ~]# blkid | grep /dev/sdb
+/dev/sdb: UUID=&quot;eb9cbf2f-fce8-413a-b770-8b0f243e8ad6&quot; TYPE=&quot;xfs&quot; </code></pre>
+<p>由于/dev/sdb是一块网络存储设备，而iSCSI协议是基于TCP/IP网络传输数据的，因此必须在/etc/fstab配置文件中添加上_netdev参数，表示当系统联网后再进行挂载操作，以免系统开机时间过长或开机失败：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/fstab
+/dev/mapper/rhel-swap swap swap defaults 0 0
+/dev/cdrom /media/cdrom iso9660 defaults 0 0 
+**UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0**</code></pre>
+<p>如果我们不再需要使用iSCSI共享设备资源了，可以用iscsiadm命令的-u参数将其设备卸载：</p>
+<pre><code>[root@linuxprobe ~]# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 -u
+
+Logging out of session [sid: 7, target : iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260]
+
+Logout of [sid: 7, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80,portal:192.168.10.10,3260] successful.</code></pre>
+<h1 id="5-配置windows客户端"><a href="#5-配置windows客户端" class="headerlink" title="5.配置windows客户端"></a>5.配置windows客户端</h1><p>使用Windows系统的客户端也可以正常访问iSCSI服务器上的共享存储资源，而且操作原理及步骤与Linux系统的客户端基本相同。在进行下面的实验之前，请先关闭Linux系统客户端，以免这两台客户端主机同时使用iSCSI共享存储资源而产生潜在问题。</p>
+<p>iSCSI服务器和客户端的操作系统以及IP地址：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>iSCSI服务端</td>
+<td>RHEL 7</td>
+<td>192.168.10.10</td>
+</tr>
+<tr>
+<td>windows客户端</td>
+<td>windows 7</td>
+<td>192.168.10.30</td>
+</tr>
+</tbody></table>
+<p>第1步：运行iSCSI发起程序。在Windows 7/10操作系统中已经默认安装了iSCSI客户端程序，我们只需在控制面板中找到“系统和安全”标签，然后单击“管理工具”，进入到“管理工具”页面后即可看到“iSCSI发起程序”图标。双击该图标。在第一次运行iSCSI发起程序时，系统会提示“Microsoft iSCSI服务端未运行”，单击“是”按钮即可自动启动并运行iSCSI发起程序：</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/2.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/3.png" class>
+
+<p>第2步：扫描发现iSCSI服务端上可用的存储资源。不论是Windows系统还是Linux系统，要想使用iSCSI共享存储资源都必须先进行扫描发现操作。运行iSCSI发起程序后在“目标”选项卡的“目标”文本框中写入iSCSI服务端的IP地址，然后单击“快速连接”按钮:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/4.png" class>
+
+<p>在弹出的“快速连接”提示框中可看到共享的硬盘存储资源，单击“完成”按钮即可:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/5.png" class>
+
+<p>回到“目标”选项卡页面，可以看到共享存储资源的名称已经出现.</p>
+<p>第3步：准备连接iSCSI服务端的共享存储资源。由于在iSCSI服务端程序上设置了ACL，使得只有客户端名称与ACL策略中的名称保持一致时才能使用远程存储资源，因此需要在“配置”选项卡中单击“更改”按钮，把iSCSI发起程序的名称修改为服务端:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/6.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/7.png" class>
+
+<p>在确认客户端发起程序的名称修改正确后即可返回到“目标”选项卡页面中，然后单击“连接”按钮进行连接请求，成功连接到远程共享存储资源的页面:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/8.png" class>
+
+<p>第4步：访问iSCSI远程共享存储资源。右键单击桌面上的“计算机”图标，打开计算机管理程序:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/9.png" class>
+
+<p>开始对磁盘进行初始化操作:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/10.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/11.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/12.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/13.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/14.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/15.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/16.png" class>
+
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/17.png" class>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第17章节：使用ISCSI服务部署网络存储</tag>
       </tags>
   </entry>
   <entry>
