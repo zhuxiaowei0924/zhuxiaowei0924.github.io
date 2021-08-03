@@ -1,21 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>JAVA教程</title>
-    <url>/2021/07/24/JAVA%E6%95%99%E7%A8%8B/</url>
-    <content><![CDATA[<h1 id="1-Iptables"><a href="#1-Iptables" class="headerlink" title="1.Iptables"></a>1.Iptables</h1><h2 id="（1）策略与规则链"><a href="#（1）策略与规则链" class="headerlink" title="（1）策略与规则链"></a>（1）策略与规则链</h2><p>iptables服务把用于处理或过滤流量的策略条目称之为规则，多条规则可以组成一个规则链，而规则链则依据数据包处理位置的不同进行分类，具体如下：</p>
+    <title>linux内核升级到rhel7.9版本</title>
+    <url>/2021/03/08/linux%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E5%88%B0rhel7.9%E7%89%88%E6%9C%AC/</url>
+    <content><![CDATA[<p>当前的系统版本为rhel7.0，内核版本为“Linux 3.10.0-123.el7.x86_64”</p>
 <a id="more"></a>
 
-<pre><code>在进行路由选择前处理数据包（PREROUTING）；
-
-处理流入的数据包（INPUT）；
-
-处理流出的数据包（OUTPUT）；
-
-处理转发的数据包（FORWARD）；
-
-在进行路由选择后处理数据包（POSTROUTING）。</code></pre>
+<pre><code>[root@rhel7_0 ~]# hostnamectl
+    ……
+    Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
+    Kernel: Linux 3.10.0-123.el7.x86_64
+    ……
+[root@rhel0 ~]# uname -rs
+    Linux 3.10.0-123.el7.x86_64</code></pre>
+<p>1、从网上下载RHEL7.9版本的系统镜像文件，然后在 RHEL7.0 服务器上进行挂载，并配置在本地YUM源：</p>
+<pre><code>[root@rhel7_0 ~]# mount /dev/cdrom /mnt/
+[root@rhel7_0 ~]# cat /etc/yum.repos.d/rhel_local.repo 
+    [mnt]
+    name=mnt
+    baseurl=file:///mnt
+    enable=1
+    gpgcheck=0</code></pre>
+<p>2、在RHEL7.0服务器上先执行yum clean all，再使用yum list kernel命令查看当前服务器上已安装的内核以及可更新的高版本内核。</p>
+<pre><code>[root@rhel7_0 ~]# yum list kernel
+Loaded plugins: product-id, search-disabled-repos, subscription-manager
+This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
+Installed Packages
+kernel.x86_64                                                    3.10.0-123.el7                                                    @anaconda/7.2
+Available Packages
+kernel.x86_64                                                    3.10.0-1160.el7                                                    mnt          </code></pre>
+<p>3、安装新内核.</p>
+<pre><code>[root@rhel7_0 ~]# yum install -y kernel   
+[root@rhel7_0 ~]# uname -rs</code></pre>
+<p>　　    Linux 3.10.0-123.el7.x86_64</p>
+<p>安装完成之后，再查看内核，发现没有变化，还是跟之前的一样。</p>
+<p>查看/boot/grub2/grub.cfg 配置文件，可以看到新内核3.10.0-1160.el7.x86_64已经是排在最前边了，RHEL7 可以不用调整内核启动顺序，默认会从新内核启动。</p>
+<p>这是进行系统重启reboot，系统会从新内核3.10.0-1160.el7.x86_64启动，但在登录界面显示一片黑屏或其他报错，因此在系统升级完后，不要着急重启，需要在终端输入：<strong>yum update</strong>进行更新，之后再重启，一切正常！</p>
+<p>正常情况下，是不需要修改内核启动顺序的，如果发现内核启动顺序不对，可以按下面的方式来修改：</p>
+<pre><code>[root@rhel7_0 ~]# grub2-editenv list  --查看系统默认内核版本
+saved_entry=Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)
+[root@rhel7_0 ~]# grep &quot;menuentry &quot; /boot/grub2/grub.cfg  --查看配置文件里的内核顺序；这个菜单条目对应上图中的三条选项。
+menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-123.el7.x86_64) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+menuentry &#39;Red Hat Enterprise Linux Server (0-rescue-1fbd678500124daea255a3b7a98e320c) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-0-rescue-1fbd678500124daea255a3b7a98e320c-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+[root@rhel7_0 ~]# grub2-set-default &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39;   --配置默认内核
+[root@rhel7_0 ~]# grub2-mkconfig -o /boot/grub2/grub.cfg    --将修改的内容写入到grub.cfg配置文件。
+Generating grub configuration file ...
+Found linux image: /boot/vmlinuz-3.10.0-1160.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-1160.el7.x86_64.img
+Found linux image: /boot/vmlinuz-3.10.0-123.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-123.el7.x86_64.img
+Found linux image: /boot/vmlinuz-0-rescue-1fbd678500124daea255a3b7a98e320c
+Found initrd image: /boot/initramfs-0-rescue-1fbd678500124daea255a3b7a98e320c.img
+done</code></pre>
+<p>系统内核更新成功！</p>
 ]]></content>
+      <categories>
+        <category>linux系统</category>
+      </categories>
+      <tags>
+        <tag>linux内核升级</tag>
+      </tags>
   </entry>
   <entry>
     <title>linux就该这么学-12:使用Samba或NFS实现文件共享</title>
@@ -355,68 +400,6 @@ Filesystem Size Used Avail Use% Mounted on
       </categories>
       <tags>
         <tag>第12章节：使用Samba或NFS实现文件共享</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux内核升级到rhel7.9版本</title>
-    <url>/2021/03/08/linux%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E5%88%B0rhel7.9%E7%89%88%E6%9C%AC/</url>
-    <content><![CDATA[<p>当前的系统版本为rhel7.0，内核版本为“Linux 3.10.0-123.el7.x86_64”</p>
-<a id="more"></a>
-
-<pre><code>[root@rhel7_0 ~]# hostnamectl
-    ……
-    Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
-    Kernel: Linux 3.10.0-123.el7.x86_64
-    ……
-[root@rhel0 ~]# uname -rs
-    Linux 3.10.0-123.el7.x86_64</code></pre>
-<p>1、从网上下载RHEL7.9版本的系统镜像文件，然后在 RHEL7.0 服务器上进行挂载，并配置在本地YUM源：</p>
-<pre><code>[root@rhel7_0 ~]# mount /dev/cdrom /mnt/
-[root@rhel7_0 ~]# cat /etc/yum.repos.d/rhel_local.repo 
-    [mnt]
-    name=mnt
-    baseurl=file:///mnt
-    enable=1
-    gpgcheck=0</code></pre>
-<p>2、在RHEL7.0服务器上先执行yum clean all，再使用yum list kernel命令查看当前服务器上已安装的内核以及可更新的高版本内核。</p>
-<pre><code>[root@rhel7_0 ~]# yum list kernel
-Loaded plugins: product-id, search-disabled-repos, subscription-manager
-This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
-Installed Packages
-kernel.x86_64                                                    3.10.0-123.el7                                                    @anaconda/7.2
-Available Packages
-kernel.x86_64                                                    3.10.0-1160.el7                                                    mnt          </code></pre>
-<p>3、安装新内核.</p>
-<pre><code>[root@rhel7_0 ~]# yum install -y kernel   
-[root@rhel7_0 ~]# uname -rs</code></pre>
-<p>　　    Linux 3.10.0-123.el7.x86_64</p>
-<p>安装完成之后，再查看内核，发现没有变化，还是跟之前的一样。</p>
-<p>查看/boot/grub2/grub.cfg 配置文件，可以看到新内核3.10.0-1160.el7.x86_64已经是排在最前边了，RHEL7 可以不用调整内核启动顺序，默认会从新内核启动。</p>
-<p>这是进行系统重启reboot，系统会从新内核3.10.0-1160.el7.x86_64启动，但在登录界面显示一片黑屏或其他报错，因此在系统升级完后，不要着急重启，需要在终端输入：<strong>yum update</strong>进行更新，之后再重启，一切正常！</p>
-<p>正常情况下，是不需要修改内核启动顺序的，如果发现内核启动顺序不对，可以按下面的方式来修改：</p>
-<pre><code>[root@rhel7_0 ~]# grub2-editenv list  --查看系统默认内核版本
-saved_entry=Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)
-[root@rhel7_0 ~]# grep &quot;menuentry &quot; /boot/grub2/grub.cfg  --查看配置文件里的内核顺序；这个菜单条目对应上图中的三条选项。
-menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-123.el7.x86_64) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-menuentry &#39;Red Hat Enterprise Linux Server (0-rescue-1fbd678500124daea255a3b7a98e320c) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-0-rescue-1fbd678500124daea255a3b7a98e320c-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-[root@rhel7_0 ~]# grub2-set-default &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39;   --配置默认内核
-[root@rhel7_0 ~]# grub2-mkconfig -o /boot/grub2/grub.cfg    --将修改的内容写入到grub.cfg配置文件。
-Generating grub configuration file ...
-Found linux image: /boot/vmlinuz-3.10.0-1160.el7.x86_64
-Found initrd image: /boot/initramfs-3.10.0-1160.el7.x86_64.img
-Found linux image: /boot/vmlinuz-3.10.0-123.el7.x86_64
-Found initrd image: /boot/initramfs-3.10.0-123.el7.x86_64.img
-Found linux image: /boot/vmlinuz-0-rescue-1fbd678500124daea255a3b7a98e320c
-Found initrd image: /boot/initramfs-0-rescue-1fbd678500124daea255a3b7a98e320c.img
-done</code></pre>
-<p>系统内核更新成功！</p>
-]]></content>
-      <categories>
-        <category>linux系统</category>
-      </categories>
-      <tags>
-        <tag>linux内核升级</tag>
       </tags>
   </entry>
   <entry>
@@ -862,7 +845,7 @@ ln -s &#39;/usr/lib/systemd/system/dovecot.service&#39; &#39;/etc/systemd/system
 </tbody></table>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png" class>
 
-<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#108;&#105;&#110;&#117;&#120;&#x70;&#114;&#x6f;&#x62;&#101;&#64;&#x6c;&#105;&#110;&#117;&#x78;&#x70;&#x72;&#111;&#x62;&#101;&#46;&#99;&#x6f;&#109;">&#108;&#105;&#110;&#117;&#120;&#x70;&#114;&#x6f;&#x62;&#101;&#64;&#x6c;&#105;&#110;&#117;&#x78;&#x70;&#x72;&#111;&#x62;&#101;&#46;&#99;&#x6f;&#109;</a>,linuxprobe是linux用户名）和用户密码：</p>
+<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#x6c;&#105;&#x6e;&#117;&#120;&#x70;&#114;&#111;&#x62;&#x65;&#x40;&#x6c;&#105;&#x6e;&#x75;&#x78;&#112;&#x72;&#111;&#98;&#101;&#46;&#99;&#x6f;&#x6d;">&#x6c;&#105;&#x6e;&#117;&#120;&#x70;&#114;&#111;&#x62;&#x65;&#x40;&#x6c;&#105;&#x6e;&#x75;&#x78;&#112;&#x72;&#111;&#98;&#101;&#46;&#99;&#x6f;&#x6d;</a>,linuxprobe是linux用户名）和用户密码：</p>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png" class>
 
 <p>第2步：设置接收服务器类型为POP3，输入邮件帐号和密码，设置POP服务器和SMTP服务器地址，两个为同一地址，如192.168.10.10，SSL端口处不勾选，之后创建成功！</p>
@@ -2926,12 +2909,6 @@ esac</code></pre>
       <tags>
         <tag>第4章节：vim编辑器与Shell命令脚本</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>test</title>
-    <url>/2021/08/03/test/</url>
-    <content><![CDATA[<p>床前明月光，疑是地上霜，举头望明月，低头思故乡！</p>
-]]></content>
   </entry>
   <entry>
     <title>图片加载命令</title>
