@@ -1,68 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>linux内核升级到rhel7.9版本</title>
-    <url>/2021/03/08/linux%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E5%88%B0rhel7.9%E7%89%88%E6%9C%AC/</url>
-    <content><![CDATA[<p>当前的系统版本为rhel7.0，内核版本为“Linux 3.10.0-123.el7.x86_64”</p>
-<a id="more"></a>
-
-<pre><code>[root@rhel7_0 ~]# hostnamectl
-    ……
-    Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
-    Kernel: Linux 3.10.0-123.el7.x86_64
-    ……
-[root@rhel0 ~]# uname -rs
-    Linux 3.10.0-123.el7.x86_64</code></pre>
-<p>1、从网上下载RHEL7.9版本的系统镜像文件，然后在 RHEL7.0 服务器上进行挂载，并配置在本地YUM源：</p>
-<pre><code>[root@rhel7_0 ~]# mount /dev/cdrom /mnt/
-[root@rhel7_0 ~]# cat /etc/yum.repos.d/rhel_local.repo 
-    [mnt]
-    name=mnt
-    baseurl=file:///mnt
-    enable=1
-    gpgcheck=0</code></pre>
-<p>2、在RHEL7.0服务器上先执行yum clean all，再使用yum list kernel命令查看当前服务器上已安装的内核以及可更新的高版本内核。</p>
-<pre><code>[root@rhel7_0 ~]# yum list kernel
-Loaded plugins: product-id, search-disabled-repos, subscription-manager
-This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
-Installed Packages
-kernel.x86_64                                                    3.10.0-123.el7                                                    @anaconda/7.2
-Available Packages
-kernel.x86_64                                                    3.10.0-1160.el7                                                    mnt          </code></pre>
-<p>3、安装新内核.</p>
-<pre><code>[root@rhel7_0 ~]# yum install -y kernel   
-[root@rhel7_0 ~]# uname -rs</code></pre>
-<p>　　    Linux 3.10.0-123.el7.x86_64</p>
-<p>安装完成之后，再查看内核，发现没有变化，还是跟之前的一样。</p>
-<p>查看/boot/grub2/grub.cfg 配置文件，可以看到新内核3.10.0-1160.el7.x86_64已经是排在最前边了，RHEL7 可以不用调整内核启动顺序，默认会从新内核启动。</p>
-<p>这是进行系统重启reboot，系统会从新内核3.10.0-1160.el7.x86_64启动，但在登录界面显示一片黑屏或其他报错，因此在系统升级完后，不要着急重启，需要在终端输入：<strong>yum update</strong>进行更新，之后再重启，一切正常！</p>
-<p>正常情况下，是不需要修改内核启动顺序的，如果发现内核启动顺序不对，可以按下面的方式来修改：</p>
-<pre><code>[root@rhel7_0 ~]# grub2-editenv list  --查看系统默认内核版本
-saved_entry=Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)
-[root@rhel7_0 ~]# grep &quot;menuentry &quot; /boot/grub2/grub.cfg  --查看配置文件里的内核顺序；这个菜单条目对应上图中的三条选项。
-menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-123.el7.x86_64) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-menuentry &#39;Red Hat Enterprise Linux Server (0-rescue-1fbd678500124daea255a3b7a98e320c) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-0-rescue-1fbd678500124daea255a3b7a98e320c-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-[root@rhel7_0 ~]# grub2-set-default &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39;   --配置默认内核
-[root@rhel7_0 ~]# grub2-mkconfig -o /boot/grub2/grub.cfg    --将修改的内容写入到grub.cfg配置文件。
-Generating grub configuration file ...
-Found linux image: /boot/vmlinuz-3.10.0-1160.el7.x86_64
-Found initrd image: /boot/initramfs-3.10.0-1160.el7.x86_64.img
-Found linux image: /boot/vmlinuz-3.10.0-123.el7.x86_64
-Found initrd image: /boot/initramfs-3.10.0-123.el7.x86_64.img
-Found linux image: /boot/vmlinuz-0-rescue-1fbd678500124daea255a3b7a98e320c
-Found initrd image: /boot/initramfs-0-rescue-1fbd678500124daea255a3b7a98e320c.img
-done</code></pre>
-<p>系统内核更新成功！</p>
-]]></content>
-      <categories>
-        <category>linux系统</category>
-      </categories>
-      <tags>
-        <tag>linux内核升级</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux就该这么学-12:使用Samba或NFS实现文件共享</title>
     <url>/2021/02/11/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-12-%E4%BD%BF%E7%94%A8Samba%E6%88%96NFS%E5%AE%9E%E7%8E%B0%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB/</url>
     <content><![CDATA[<h1 id="1-SAMBA文件共享服务"><a href="#1-SAMBA文件共享服务" class="headerlink" title="1.SAMBA文件共享服务"></a>1.SAMBA文件共享服务</h1><p>Samba服务程序现在已经成为在Linux系统与Windows系统之间共享文件的最佳选择。</p>
@@ -403,6 +341,333 @@ Filesystem Size Used Avail Use% Mounted on
       </tags>
   </entry>
   <entry>
+    <title>linux内核升级到rhel7.9版本</title>
+    <url>/2021/03/08/linux%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E5%88%B0rhel7.9%E7%89%88%E6%9C%AC/</url>
+    <content><![CDATA[<p>当前的系统版本为rhel7.0，内核版本为“Linux 3.10.0-123.el7.x86_64”</p>
+<a id="more"></a>
+
+<pre><code>[root@rhel7_0 ~]# hostnamectl
+    ……
+    Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
+    Kernel: Linux 3.10.0-123.el7.x86_64
+    ……
+[root@rhel0 ~]# uname -rs
+    Linux 3.10.0-123.el7.x86_64</code></pre>
+<p>1、从网上下载RHEL7.9版本的系统镜像文件，然后在 RHEL7.0 服务器上进行挂载，并配置在本地YUM源：</p>
+<pre><code>[root@rhel7_0 ~]# mount /dev/cdrom /mnt/
+[root@rhel7_0 ~]# cat /etc/yum.repos.d/rhel_local.repo 
+    [mnt]
+    name=mnt
+    baseurl=file:///mnt
+    enable=1
+    gpgcheck=0</code></pre>
+<p>2、在RHEL7.0服务器上先执行yum clean all，再使用yum list kernel命令查看当前服务器上已安装的内核以及可更新的高版本内核。</p>
+<pre><code>[root@rhel7_0 ~]# yum list kernel
+Loaded plugins: product-id, search-disabled-repos, subscription-manager
+This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
+Installed Packages
+kernel.x86_64                                                    3.10.0-123.el7                                                    @anaconda/7.2
+Available Packages
+kernel.x86_64                                                    3.10.0-1160.el7                                                    mnt          </code></pre>
+<p>3、安装新内核.</p>
+<pre><code>[root@rhel7_0 ~]# yum install -y kernel   
+[root@rhel7_0 ~]# uname -rs</code></pre>
+<p>　　    Linux 3.10.0-123.el7.x86_64</p>
+<p>安装完成之后，再查看内核，发现没有变化，还是跟之前的一样。</p>
+<p>查看/boot/grub2/grub.cfg 配置文件，可以看到新内核3.10.0-1160.el7.x86_64已经是排在最前边了，RHEL7 可以不用调整内核启动顺序，默认会从新内核启动。</p>
+<p>这是进行系统重启reboot，系统会从新内核3.10.0-1160.el7.x86_64启动，但在登录界面显示一片黑屏或其他报错，因此在系统升级完后，不要着急重启，需要在终端输入：<strong>yum update</strong>进行更新，之后再重启，一切正常！</p>
+<p>正常情况下，是不需要修改内核启动顺序的，如果发现内核启动顺序不对，可以按下面的方式来修改：</p>
+<pre><code>[root@rhel7_0 ~]# grub2-editenv list  --查看系统默认内核版本
+saved_entry=Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)
+[root@rhel7_0 ~]# grep &quot;menuentry &quot; /boot/grub2/grub.cfg  --查看配置文件里的内核顺序；这个菜单条目对应上图中的三条选项。
+menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-123.el7.x86_64) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+menuentry &#39;Red Hat Enterprise Linux Server (0-rescue-1fbd678500124daea255a3b7a98e320c) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-0-rescue-1fbd678500124daea255a3b7a98e320c-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+[root@rhel7_0 ~]# grub2-set-default &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39;   --配置默认内核
+[root@rhel7_0 ~]# grub2-mkconfig -o /boot/grub2/grub.cfg    --将修改的内容写入到grub.cfg配置文件。
+Generating grub configuration file ...
+Found linux image: /boot/vmlinuz-3.10.0-1160.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-1160.el7.x86_64.img
+Found linux image: /boot/vmlinuz-3.10.0-123.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-123.el7.x86_64.img
+Found linux image: /boot/vmlinuz-0-rescue-1fbd678500124daea255a3b7a98e320c
+Found initrd image: /boot/initramfs-0-rescue-1fbd678500124daea255a3b7a98e320c.img
+done</code></pre>
+<p>系统内核更新成功！</p>
+]]></content>
+      <categories>
+        <category>linux系统</category>
+      </categories>
+      <tags>
+        <tag>linux内核升级</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学-15:使用Postfix与Dovecot部署邮件系统</title>
+    <url>/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/</url>
+    <content><![CDATA[<h1 id="1-电子邮件系统"><a href="#1-电子邮件系统" class="headerlink" title="1.电子邮件系统"></a>1.电子邮件系统</h1><p>电子邮件系统基于邮件协议来完成电子邮件的传输，常见的邮件协议有下面这些：</p>
+<a id="more"></a>
+
+<pre><code>简单邮件传输协议（Simple Mail Transfer Protocol，SMTP）：用于发送和中转发出的电子邮件，占用服务器的25/TCP端口。
+
+邮局协议版本3（Post Office Protocol 3）：用于将电子邮件存储到本地主机，占用服务器的110/TCP端口。
+
+Internet消息访问协议版本4（Internet Message Access Protocol 4）：用于在本地主机上访问邮件，占用服务器的143/TCP端口。</code></pre>
+<p>MUA：Mail User Agent，邮件用户代理；    MDA：Mail Delivery Agent，邮件投递代理；    </p>
+<p>MTA：Mail Transfer Agent，邮件传输代理。</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/1.png" class>
+
+<p>在生产环境中部署企业级的电子邮件系统时，有4个注意事项请留意。</p>
+<pre><code>1.添加反垃圾与反病毒模块：它能够很有效地阻止垃圾邮件或病毒邮件对企业信箱的干扰。
+2.对邮件加密：可有效保护邮件内容不被黑客盗取和篡改。
+3.添加邮件监控审核模块：可有效地监控企业全体员工的邮件中是否有敏感词、是否有透露企业资料等违规行为。
+4.保障稳定性：电子邮件系统的稳定性至关重要，运维人员应做到保证电子邮件系统的稳定运行，并及时做好防范分布式拒绝服务（Distributed Denial of Service，DDoS）攻击的准备。</code></pre>
+<h1 id="2-部署基础的电子邮件系统"><a href="#2-部署基础的电子邮件系统" class="headerlink" title="2.部署基础的电子邮件系统"></a>2.部署基础的电子邮件系统</h1><p>一个最基础的电子邮件系统肯定要能提供发件服务和收件服务，为此需要使用基于SMTP协议的Postfix服务程序提供发件服务功能，并使用基于POP3协议的Dovecot服务程序提供收件服务功能。</p>
+<p>要想更好地检验电子邮件系统的配置效果，需要先部署bind服务程序，为电子邮件服务器和客户端提供DNS域名解析服务。</p>
+<p>第1步：部署bind服务程序。</p>
+<pre><code>[root@linuxprobe ~]# yum install bind-chroot</code></pre>
+<p>第2步：配置服务器主机名称，需要保证服务器主机名称与发信域名保持一致：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/hostname
+mail.linuxprobe.com
+[root@linuxprobe ~]# hostname
+mail.linuxprobe.com
+[root@linuxprobe ~]# vim /etc/hosts
+192.168.10.10 mail.linuxprobe.com</code></pre>
+<p>第3步：清空iptables防火墙默认策略，并保存策略状态，避免因防火墙中默认存在的策略阻止了客户端DNS解析域名及收发邮件：</p>
+<pre><code>[root@localhost ~]# iptables -F
+[root@localhost ~]# service iptables save
+iptables: Saving firewall rules to /etc/sysconfig/iptables:[  OK  ]</code></pre>
+<p>第4步：为电子邮件系统提供域名解析。</p>
+<pre><code>[root@linuxprobe ~]# cat /etc/named.conf
+ 10 options &#123;
+ 11 listen-on port 53 &#123; any; &#125;;
+ 12 listen-on-v6 port 53 &#123; ::1; &#125;;
+ 13 directory &quot;/var/named&quot;;
+ 14 dump-file &quot;/var/named/data/cache_dump.db&quot;;
+ 15 statistics-file &quot;/var/named/data/named_stats.txt&quot;;
+ 16 memstatistics-file &quot;/var/named/data/named_mem_stats.txt&quot;;
+ 17 allow-query &#123; any; &#125;;
+ 18 
+ ………………省略部分输出信息………………
+
+[root@linuxprobe ~]# cat /etc/named.rfc1912.zones
+zone &quot;linuxprobe.com&quot; IN &#123;
+type master;
+file &quot;linuxprobe.com.zone&quot;;
+allow-update &#123;none;&#125;;
+&#125;;
+
+[root@linuxprobe ~]# cat /var/named/linuxprobe.com.zone</code></pre>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/2.png" class>
+
+<pre><code>[root@linuxprobe ~]# systemctl restart named
+[root@linuxprobe ~]# systemctl enable named
+ln -s &#39;/usr/lib/systemd/system/named.service&#39; 
+&#39;/etc/systemd/system/multi-user.target.wants/named.service&#39;</code></pre>
+<p>测试时重启named服务时，显示报错：Job for named.service failed because the control process exited with error code. See “systemctl status named.service” and “journalctl -xe” for details.用named-checkconf -z /etc/named.conf（纠错命令）查看发现是由于配置文件内容写错导致！</p>
+<p>这样电子邮件系统所对应的服务器主机名即为mail.linuxprobe.com，而邮件域为@linuxprobe.com。把服务器的DNS地址修改成本地IP地址：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/3.jpg" class>
+
+<p>修改完IP地址后，需要重启网卡，之后可用ping mail.linuxprobe.com或nslookup命令测试下配置是否成功：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/4.png" class>
+
+<p>用nslookup命令测试时，出现以下报错：server can’t find mail.linuxprobe.com:NXDOMAIN，并提示当前的server 192.168.10.2 不能使用；此时可编辑/etc/resolv.conf文件，将报错的nameserver 192.168.10.2删除，保留nameserver 192.168.10.10即可！之后再重启网卡，测试一下！</p>
+<h2 id="2-1配置Postfix服务程序"><a href="#2-1配置Postfix服务程序" class="headerlink" title="2.1配置Postfix服务程序"></a>2.1配置Postfix服务程序</h2><p>第1步：安装Postfix服务程序；在安装完Postfix服务程序后，需要禁用iptables防火墙，否则外部用户无法访问电子邮件系统。</p>
+<pre><code>[root@linuxprobe ~]# yum install postfix
+Loaded plugins: langpacks, product-id, subscription-manager
+rhel7 | 4.1 kB 00:00
+(1/2): rhel7/group_gz | 134 kB 00:00
+(2/2): rhel7/primary_db | 3.4 MB 00:00
+Package 2:postfix-2.10.1-6.el7.x86_64 already installed and latest version
+Nothing to do
+[root@linuxprobe ~]# systemctl disable iptables</code></pre>
+<p>第2步：配置Postfix服务程序，Postfix服务程序主配置文件（/etc/ postfix/main.cf）。</p>
+<p>Postfix服务程序主配置文件中的重要参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>myhostname</td>
+<td>邮局系统的主机名</td>
+</tr>
+<tr>
+<td>mydomain</td>
+<td>邮局系统的域名</td>
+</tr>
+<tr>
+<td>myorigin</td>
+<td>从本机发出邮件的域名名称</td>
+</tr>
+<tr>
+<td>inet_interfaces</td>
+<td>监听的网卡接口</td>
+</tr>
+<tr>
+<td>mydestination</td>
+<td>可接收邮件的主机名或域名</td>
+</tr>
+<tr>
+<td>mynetworks</td>
+<td>设置可转发哪些主机的邮件</td>
+</tr>
+<tr>
+<td>relay_domains</td>
+<td>设置可转发哪些网域的邮件</td>
+</tr>
+</tbody></table>
+<p>在Postfix服务程序的主配置文件中，总计需要修改5处。首先是在第76行定义一个名为myhostname的变量，用来保存服务器的主机名称。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/postfix/main.cf
+………………省略部分输出信息………………
+68 # INTERNET HOST AND DOMAIN NAMES
+69 # 
+70 # The myhostname parameter specifies the internet hostname of this
+71 # mail system. The default is to use the fully-qualified domain name
+72 # from gethostname(). $myhostname is used as a default value for many
+73 # other configuration parameters.
+74 #
+75 #myhostname = host.domain.tld
+76 myhostname = mail.linuxprobe.com
+………………省略部分输出信息………………</code></pre>
+<p>然后在第83行定义一个名为mydomain的变量，用来保存邮件域的名称。大家也要记住这个变量名称，下面将调用它：</p>
+<pre><code>78 # The mydomain parameter specifies the local internet domain name.
+79 # The default is to use $myhostname minus the first component.
+80 # $mydomain is used as a default value for many other configuration
+81 # parameters.
+82 #
+83 mydomain = linuxprobe.com</code></pre>
+<p>在第99行调用前面的mydomain变量，用来定义发出邮件的域。调用变量的好处是避免重复写入信息，以及便于日后统一修改：</p>
+<pre><code>94 # For the sake of consistency between sender and recipient addresses,
+95 # myorigin also specifies the default domain name that is appended
+96 # to recipient addresses that have no @domain part.
+97 #
+98 #myorigin = $myhostname
+99 myorigin = $mydomain</code></pre>
+<p>第4处修改是在第116行定义网卡监听地址。可以指定要使用服务器的哪些IP地址对外提供电子邮件服务；也可以干脆写成all，代表所有IP地址都能提供电子邮件服务：</p>
+<pre><code>111 # Note: you need to stop/start Postfix when this parameter changes.
+112 #
+113 #inet_interfaces = all
+114 #inet_interfaces = $myhostname
+115 #inet_interfaces = $myhostname, localhost
+116 inet_interfaces = all</code></pre>
+<p>最后一处修改是在第164行定义可接收邮件的主机名或域名列表。这里可以直接调用前面定义好的myhostname和mydomain变量（如果不想调用变量，也可以直接调用变量中的值）：</p>
+<pre><code>162 # See also below, section &quot;REJECTING MAIL FOR UNKNOWN LOCAL USERS&quot;.
+163 #
+164 mydestination = $myhostname , $mydomain
+165 #mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
+166 #mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain,</code></pre>
+<p>第3步：创建电子邮件系统的登录账户。Postfix与vsftpd服务程序一样，都可以调用本地系统的账户和密码，因此在本地系统创建常规账户即可。最后重启配置妥当的postfix服务程序，并将其添加到开机启动项中。大功告成！</p>
+<pre><code>[root@linuxprobe ~]# useradd boss
+[root@linuxprobe ~]# echo &quot;linuxprobe&quot; | passwd --stdin boss
+Changing password for user boss. passwd: all authentication tokens updated successfully.
+[root@linuxprobe ~]# systemctl restart postfix
+[root@linuxprobe ~]# systemctl enable postfix
+ln -s &#39;/usr/lib/systemd/system/postfix.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/postfix.service&#39;</code></pre>
+<h2 id="2-2配置Dovecot服务程序"><a href="#2-2配置Dovecot服务程序" class="headerlink" title="2.2配置Dovecot服务程序"></a>2.2配置Dovecot服务程序</h2><p>第1步：安装Dovecot服务程序软件包。大家可自行配置Yum软件仓库、挂载光盘镜像到指定目录，然后输入要安装的dovecot软件包名称即可：</p>
+<pre><code>[root@linuxprobe ~]# yum install dovecot</code></pre>
+<p>第2步：配置部署Dovecot服务程序。在Dovecot服务程序的主配置文件中进行如下修改。首先是第24行，把Dovecot服务程序支持的电子邮件协议修改为imap、pop3和lmtp。然后在这一行下面添加一行参数，允许用户使用明文进行密码验证。之所以这样操作，是因为Dovecot服务程序为了保证电子邮件系统的安全而默认强制用户使用加密方式进行登录，而由于当前还没有加密系统，因此需要添加该参数来允许用户的明文登录。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/dovecot/dovecot.conf
+………………省略部分输出信息………………
+23 # Protocols we want to be serving.
+24 protocols = imap pop3 lmtp
+25 disable_plaintext_auth = no
+………………省略部分输出信息………………</code></pre>
+<p>在主配置文件中的第48行，设置允许登录的网段地址，也就是说我们可以在这里限制只有来自于某个网段的用户才能使用电子邮件系统。如果想允许所有人都能使用，则不用修改本参数：</p>
+<pre><code>44 # Space separated list of trusted network ranges. Connections from these
+45 # IPs are allowed to override their IP addresses and ports (for logging and
+46 # for authentication checks). disable_plaintext_auth is also ignored for
+47 # these networks. Typically you&#39;d specify your IMAP proxy servers here.
+48 login_trusted_networks = 192.168.10.0/24</code></pre>
+<p>第3步：配置邮件格式与存储路径。在Dovecot服务程序单独的子配置文件中，定义一个路径，用于指定要将收到的邮件存放到服务器本地的哪个位置。这个路径默认已经定义好了，我们只需要将该配置文件中第24行前面的井号（#）删除即可。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/dovecot/conf.d/10-mail.conf
+21 # See doc/wiki/Variables.txt for full list. Some examples:
+22 #
+23 # mail_location = maildir:~/Maildir
+24 mail_location = mbox:~/mail:INBOX=/var/mail/%u
+25 # mail_location = mbox:/var/mail/%d/%1n/%n:INDEX=/var/indexes/%d/%1n/%n
+………………省略部分输出信息………………</code></pre>
+<p>然后切换到配置Postfix服务程序时创建的boss账户，并在家目录中建立用于保存邮件的目录。记得要重启Dovecot服务并将其添加到开机启动项中。</p>
+<pre><code>[root@linuxprobe ~]# su - linuxprobe
+Last login: Sat Aug 15 16:15:58 CST 2017 on pts/1
+[linuxprobe@mail ~]$ mkdir -p mail/.imap/INBOX
+[linuxprobe@mail ~]$ exit
+[root@linuxprobe ~]# systemctl restart dovecot 
+[root@linuxprobe ~]# systemctl enable dovecot 
+ln -s &#39;/usr/lib/systemd/system/dovecot.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/dovecot.service&#39;</code></pre>
+<h2 id="2-3使用电子邮件系统"><a href="#2-3使用电子邮件系统" class="headerlink" title="2.3使用电子邮件系统"></a>2.3使用电子邮件系统</h2><p> 服务器与客户端的操作系统与IP地址：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>电子邮件系统及DNS服务器</td>
+<td>RHEL 7</td>
+<td>192.168.10.10</td>
+</tr>
+<tr>
+<td>客户端主机</td>
+<td>Windows 10</td>
+<td>192.168.10.30</td>
+</tr>
+</tbody></table>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png" class>
+
+<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#x6c;&#105;&#110;&#117;&#120;&#112;&#114;&#x6f;&#x62;&#x65;&#64;&#x6c;&#105;&#x6e;&#117;&#x78;&#112;&#x72;&#x6f;&#98;&#x65;&#46;&#x63;&#x6f;&#x6d;">&#x6c;&#105;&#110;&#117;&#120;&#112;&#114;&#x6f;&#x62;&#x65;&#64;&#x6c;&#105;&#x6e;&#117;&#x78;&#112;&#x72;&#x6f;&#98;&#x65;&#46;&#x63;&#x6f;&#x6d;</a>,linuxprobe是linux用户名）和用户密码：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png" class>
+
+<p>第2步：设置接收服务器类型为POP3，输入邮件帐号和密码，设置POP服务器和SMTP服务器地址，两个为同一地址，如192.168.10.10，SSL端口处不勾选，之后创建成功！</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/7.png" class>
+
+<p>第3步：账号建立后，即可从win 10系统向linux发送邮件：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/8.png" class>
+
+<p>第4步：发送邮件后，可在linux系统内部输入mail命令，并输入对应邮件数值编号查看邮件：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/9.png" class>
+
+<p>第5步：从linux系统向win10电脑发送邮件，只需输入mail 邮件地址，然后输入subject和正文；最后输入点（.)结束：</p>
+<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/10.png" class>
+
+<h1 id="3-设置用户别名邮箱"><a href="#3-设置用户别名邮箱" class="headerlink" title="3.设置用户别名邮箱"></a>3.设置用户别名邮箱</h1><p>用户别名功能是一项简单实用的邮件账户伪装技术，可以用来设置多个虚拟信箱的账户以接受发送的邮件，从而保证自身的邮件地址不被泄露，还可以用来接收自己的多个信箱中的邮件。</p>
+<pre><code>[root@linuxprobe ~]# cat /etc/aliases
+#
+# Aliases in this file will NOT be expanded in the header from
+# Mail, but WILL be visible over networks or from /bin/mail.
+#
+# &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; The program &quot;newaliases&quot; must be run after
+# &gt;&gt; NOTE &gt;&gt; this file is updated for any changes to
+# &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; show through to sendmail.
+#
+# Basic system aliases -- these MUST be present.
+mailer-daemon: postmaster
+postmaster: root
+# General redirections for pseudo accounts.
+bin: root
+daemon: root
+adm: root
+lp: root
+sync: root
+shutdown: root
+halt: root
+mail: root
+news: root
+……</code></pre>
+<p>保存并退出aliases邮件别名服务的配置文件后，需要再执行一下newaliases命令，其目的是让新的用户别名配置文件立即生效。</p>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第15章节：使用Postfix与Dovecot部署邮件系统</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux就该这么学-14：使用DHCP动态管理主机地址</title>
     <url>/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/</url>
     <content><![CDATA[<h1 id="1-动态主机地址管理协议"><a href="#1-动态主机地址管理协议" class="headerlink" title="1.动态主机地址管理协议"></a>1.动态主机地址管理协议</h1><p>DHCP：Dynamic Host Configuration Protocol，动态主机配置协议；该协议用于自动管理局域网内主机的IP地址、子网掩码、网关地址及DNS地址等参数，可以有效地提升IP地址的利用率，提高配置效率，并降低管理与维护成本。</p>
@@ -626,271 +891,6 @@ Mar 30 05:33:26 localhost dhcpd: DHCPDISCOVER from **00:0c:29:27:c6:12** via eno
       </categories>
       <tags>
         <tag>第14章节：使用DHCP动态管理主机地址</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学-15:使用Postfix与Dovecot部署邮件系统</title>
-    <url>/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/</url>
-    <content><![CDATA[<h1 id="1-电子邮件系统"><a href="#1-电子邮件系统" class="headerlink" title="1.电子邮件系统"></a>1.电子邮件系统</h1><p>电子邮件系统基于邮件协议来完成电子邮件的传输，常见的邮件协议有下面这些：</p>
-<a id="more"></a>
-
-<pre><code>简单邮件传输协议（Simple Mail Transfer Protocol，SMTP）：用于发送和中转发出的电子邮件，占用服务器的25/TCP端口。
-
-邮局协议版本3（Post Office Protocol 3）：用于将电子邮件存储到本地主机，占用服务器的110/TCP端口。
-
-Internet消息访问协议版本4（Internet Message Access Protocol 4）：用于在本地主机上访问邮件，占用服务器的143/TCP端口。</code></pre>
-<p>MUA：Mail User Agent，邮件用户代理；    MDA：Mail Delivery Agent，邮件投递代理；    </p>
-<p>MTA：Mail Transfer Agent，邮件传输代理。</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/1.png" class>
-
-<p>在生产环境中部署企业级的电子邮件系统时，有4个注意事项请留意。</p>
-<pre><code>1.添加反垃圾与反病毒模块：它能够很有效地阻止垃圾邮件或病毒邮件对企业信箱的干扰。
-2.对邮件加密：可有效保护邮件内容不被黑客盗取和篡改。
-3.添加邮件监控审核模块：可有效地监控企业全体员工的邮件中是否有敏感词、是否有透露企业资料等违规行为。
-4.保障稳定性：电子邮件系统的稳定性至关重要，运维人员应做到保证电子邮件系统的稳定运行，并及时做好防范分布式拒绝服务（Distributed Denial of Service，DDoS）攻击的准备。</code></pre>
-<h1 id="2-部署基础的电子邮件系统"><a href="#2-部署基础的电子邮件系统" class="headerlink" title="2.部署基础的电子邮件系统"></a>2.部署基础的电子邮件系统</h1><p>一个最基础的电子邮件系统肯定要能提供发件服务和收件服务，为此需要使用基于SMTP协议的Postfix服务程序提供发件服务功能，并使用基于POP3协议的Dovecot服务程序提供收件服务功能。</p>
-<p>要想更好地检验电子邮件系统的配置效果，需要先部署bind服务程序，为电子邮件服务器和客户端提供DNS域名解析服务。</p>
-<p>第1步：部署bind服务程序。</p>
-<pre><code>[root@linuxprobe ~]# yum install bind-chroot</code></pre>
-<p>第2步：配置服务器主机名称，需要保证服务器主机名称与发信域名保持一致：</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/hostname
-mail.linuxprobe.com
-[root@linuxprobe ~]# hostname
-mail.linuxprobe.com
-[root@linuxprobe ~]# vim /etc/hosts
-192.168.10.10 mail.linuxprobe.com</code></pre>
-<p>第3步：清空iptables防火墙默认策略，并保存策略状态，避免因防火墙中默认存在的策略阻止了客户端DNS解析域名及收发邮件：</p>
-<pre><code>[root@localhost ~]# iptables -F
-[root@localhost ~]# service iptables save
-iptables: Saving firewall rules to /etc/sysconfig/iptables:[  OK  ]</code></pre>
-<p>第4步：为电子邮件系统提供域名解析。</p>
-<pre><code>[root@linuxprobe ~]# cat /etc/named.conf
- 10 options &#123;
- 11 listen-on port 53 &#123; any; &#125;;
- 12 listen-on-v6 port 53 &#123; ::1; &#125;;
- 13 directory &quot;/var/named&quot;;
- 14 dump-file &quot;/var/named/data/cache_dump.db&quot;;
- 15 statistics-file &quot;/var/named/data/named_stats.txt&quot;;
- 16 memstatistics-file &quot;/var/named/data/named_mem_stats.txt&quot;;
- 17 allow-query &#123; any; &#125;;
- 18 
- ………………省略部分输出信息………………
-
-[root@linuxprobe ~]# cat /etc/named.rfc1912.zones
-zone &quot;linuxprobe.com&quot; IN &#123;
-type master;
-file &quot;linuxprobe.com.zone&quot;;
-allow-update &#123;none;&#125;;
-&#125;;
-
-[root@linuxprobe ~]# cat /var/named/linuxprobe.com.zone</code></pre>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/2.png" class>
-
-<pre><code>[root@linuxprobe ~]# systemctl restart named
-[root@linuxprobe ~]# systemctl enable named
-ln -s &#39;/usr/lib/systemd/system/named.service&#39; 
-&#39;/etc/systemd/system/multi-user.target.wants/named.service&#39;</code></pre>
-<p>测试时重启named服务时，显示报错：Job for named.service failed because the control process exited with error code. See “systemctl status named.service” and “journalctl -xe” for details.用named-checkconf -z /etc/named.conf（纠错命令）查看发现是由于配置文件内容写错导致！</p>
-<p>这样电子邮件系统所对应的服务器主机名即为mail.linuxprobe.com，而邮件域为@linuxprobe.com。把服务器的DNS地址修改成本地IP地址：</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/3.jpg" class>
-
-<p>修改完IP地址后，需要重启网卡，之后可用ping mail.linuxprobe.com或nslookup命令测试下配置是否成功：</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/4.png" class>
-
-<p>用nslookup命令测试时，出现以下报错：server can’t find mail.linuxprobe.com:NXDOMAIN，并提示当前的server 192.168.10.2 不能使用；此时可编辑/etc/resolv.conf文件，将报错的nameserver 192.168.10.2删除，保留nameserver 192.168.10.10即可！之后再重启网卡，测试一下！</p>
-<h2 id="2-1配置Postfix服务程序"><a href="#2-1配置Postfix服务程序" class="headerlink" title="2.1配置Postfix服务程序"></a>2.1配置Postfix服务程序</h2><p>第1步：安装Postfix服务程序；在安装完Postfix服务程序后，需要禁用iptables防火墙，否则外部用户无法访问电子邮件系统。</p>
-<pre><code>[root@linuxprobe ~]# yum install postfix
-Loaded plugins: langpacks, product-id, subscription-manager
-rhel7 | 4.1 kB 00:00
-(1/2): rhel7/group_gz | 134 kB 00:00
-(2/2): rhel7/primary_db | 3.4 MB 00:00
-Package 2:postfix-2.10.1-6.el7.x86_64 already installed and latest version
-Nothing to do
-[root@linuxprobe ~]# systemctl disable iptables</code></pre>
-<p>第2步：配置Postfix服务程序，Postfix服务程序主配置文件（/etc/ postfix/main.cf）。</p>
-<p>Postfix服务程序主配置文件中的重要参数：</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>myhostname</td>
-<td>邮局系统的主机名</td>
-</tr>
-<tr>
-<td>mydomain</td>
-<td>邮局系统的域名</td>
-</tr>
-<tr>
-<td>myorigin</td>
-<td>从本机发出邮件的域名名称</td>
-</tr>
-<tr>
-<td>inet_interfaces</td>
-<td>监听的网卡接口</td>
-</tr>
-<tr>
-<td>mydestination</td>
-<td>可接收邮件的主机名或域名</td>
-</tr>
-<tr>
-<td>mynetworks</td>
-<td>设置可转发哪些主机的邮件</td>
-</tr>
-<tr>
-<td>relay_domains</td>
-<td>设置可转发哪些网域的邮件</td>
-</tr>
-</tbody></table>
-<p>在Postfix服务程序的主配置文件中，总计需要修改5处。首先是在第76行定义一个名为myhostname的变量，用来保存服务器的主机名称。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/postfix/main.cf
-………………省略部分输出信息………………
-68 # INTERNET HOST AND DOMAIN NAMES
-69 # 
-70 # The myhostname parameter specifies the internet hostname of this
-71 # mail system. The default is to use the fully-qualified domain name
-72 # from gethostname(). $myhostname is used as a default value for many
-73 # other configuration parameters.
-74 #
-75 #myhostname = host.domain.tld
-76 myhostname = mail.linuxprobe.com
-………………省略部分输出信息………………</code></pre>
-<p>然后在第83行定义一个名为mydomain的变量，用来保存邮件域的名称。大家也要记住这个变量名称，下面将调用它：</p>
-<pre><code>78 # The mydomain parameter specifies the local internet domain name.
-79 # The default is to use $myhostname minus the first component.
-80 # $mydomain is used as a default value for many other configuration
-81 # parameters.
-82 #
-83 mydomain = linuxprobe.com</code></pre>
-<p>在第99行调用前面的mydomain变量，用来定义发出邮件的域。调用变量的好处是避免重复写入信息，以及便于日后统一修改：</p>
-<pre><code>94 # For the sake of consistency between sender and recipient addresses,
-95 # myorigin also specifies the default domain name that is appended
-96 # to recipient addresses that have no @domain part.
-97 #
-98 #myorigin = $myhostname
-99 myorigin = $mydomain</code></pre>
-<p>第4处修改是在第116行定义网卡监听地址。可以指定要使用服务器的哪些IP地址对外提供电子邮件服务；也可以干脆写成all，代表所有IP地址都能提供电子邮件服务：</p>
-<pre><code>111 # Note: you need to stop/start Postfix when this parameter changes.
-112 #
-113 #inet_interfaces = all
-114 #inet_interfaces = $myhostname
-115 #inet_interfaces = $myhostname, localhost
-116 inet_interfaces = all</code></pre>
-<p>最后一处修改是在第164行定义可接收邮件的主机名或域名列表。这里可以直接调用前面定义好的myhostname和mydomain变量（如果不想调用变量，也可以直接调用变量中的值）：</p>
-<pre><code>162 # See also below, section &quot;REJECTING MAIL FOR UNKNOWN LOCAL USERS&quot;.
-163 #
-164 mydestination = $myhostname , $mydomain
-165 #mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain
-166 #mydestination = $myhostname, localhost.$mydomain, localhost, $mydomain,</code></pre>
-<p>第3步：创建电子邮件系统的登录账户。Postfix与vsftpd服务程序一样，都可以调用本地系统的账户和密码，因此在本地系统创建常规账户即可。最后重启配置妥当的postfix服务程序，并将其添加到开机启动项中。大功告成！</p>
-<pre><code>[root@linuxprobe ~]# useradd boss
-[root@linuxprobe ~]# echo &quot;linuxprobe&quot; | passwd --stdin boss
-Changing password for user boss. passwd: all authentication tokens updated successfully.
-[root@linuxprobe ~]# systemctl restart postfix
-[root@linuxprobe ~]# systemctl enable postfix
-ln -s &#39;/usr/lib/systemd/system/postfix.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/postfix.service&#39;</code></pre>
-<h2 id="2-2配置Dovecot服务程序"><a href="#2-2配置Dovecot服务程序" class="headerlink" title="2.2配置Dovecot服务程序"></a>2.2配置Dovecot服务程序</h2><p>第1步：安装Dovecot服务程序软件包。大家可自行配置Yum软件仓库、挂载光盘镜像到指定目录，然后输入要安装的dovecot软件包名称即可：</p>
-<pre><code>[root@linuxprobe ~]# yum install dovecot</code></pre>
-<p>第2步：配置部署Dovecot服务程序。在Dovecot服务程序的主配置文件中进行如下修改。首先是第24行，把Dovecot服务程序支持的电子邮件协议修改为imap、pop3和lmtp。然后在这一行下面添加一行参数，允许用户使用明文进行密码验证。之所以这样操作，是因为Dovecot服务程序为了保证电子邮件系统的安全而默认强制用户使用加密方式进行登录，而由于当前还没有加密系统，因此需要添加该参数来允许用户的明文登录。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/dovecot/dovecot.conf
-………………省略部分输出信息………………
-23 # Protocols we want to be serving.
-24 protocols = imap pop3 lmtp
-25 disable_plaintext_auth = no
-………………省略部分输出信息………………</code></pre>
-<p>在主配置文件中的第48行，设置允许登录的网段地址，也就是说我们可以在这里限制只有来自于某个网段的用户才能使用电子邮件系统。如果想允许所有人都能使用，则不用修改本参数：</p>
-<pre><code>44 # Space separated list of trusted network ranges. Connections from these
-45 # IPs are allowed to override their IP addresses and ports (for logging and
-46 # for authentication checks). disable_plaintext_auth is also ignored for
-47 # these networks. Typically you&#39;d specify your IMAP proxy servers here.
-48 login_trusted_networks = 192.168.10.0/24</code></pre>
-<p>第3步：配置邮件格式与存储路径。在Dovecot服务程序单独的子配置文件中，定义一个路径，用于指定要将收到的邮件存放到服务器本地的哪个位置。这个路径默认已经定义好了，我们只需要将该配置文件中第24行前面的井号（#）删除即可。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/dovecot/conf.d/10-mail.conf
-21 # See doc/wiki/Variables.txt for full list. Some examples:
-22 #
-23 # mail_location = maildir:~/Maildir
-24 mail_location = mbox:~/mail:INBOX=/var/mail/%u
-25 # mail_location = mbox:/var/mail/%d/%1n/%n:INDEX=/var/indexes/%d/%1n/%n
-………………省略部分输出信息………………</code></pre>
-<p>然后切换到配置Postfix服务程序时创建的boss账户，并在家目录中建立用于保存邮件的目录。记得要重启Dovecot服务并将其添加到开机启动项中。</p>
-<pre><code>[root@linuxprobe ~]# su - linuxprobe
-Last login: Sat Aug 15 16:15:58 CST 2017 on pts/1
-[linuxprobe@mail ~]$ mkdir -p mail/.imap/INBOX
-[linuxprobe@mail ~]$ exit
-[root@linuxprobe ~]# systemctl restart dovecot 
-[root@linuxprobe ~]# systemctl enable dovecot 
-ln -s &#39;/usr/lib/systemd/system/dovecot.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/dovecot.service&#39;</code></pre>
-<h2 id="2-3使用电子邮件系统"><a href="#2-3使用电子邮件系统" class="headerlink" title="2.3使用电子邮件系统"></a>2.3使用电子邮件系统</h2><p> 服务器与客户端的操作系统与IP地址：</p>
-<table>
-<thead>
-<tr>
-<th>主机名称</th>
-<th>操作系统</th>
-<th>IP地址</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>电子邮件系统及DNS服务器</td>
-<td>RHEL 7</td>
-<td>192.168.10.10</td>
-</tr>
-<tr>
-<td>客户端主机</td>
-<td>Windows 10</td>
-<td>192.168.10.30</td>
-</tr>
-</tbody></table>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png" class>
-
-<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#108;&#x69;&#110;&#x75;&#x78;&#x70;&#114;&#111;&#98;&#101;&#64;&#108;&#x69;&#110;&#117;&#120;&#112;&#x72;&#x6f;&#98;&#101;&#x2e;&#99;&#x6f;&#109;">&#108;&#x69;&#110;&#x75;&#x78;&#x70;&#114;&#111;&#98;&#101;&#64;&#108;&#x69;&#110;&#117;&#120;&#112;&#x72;&#x6f;&#98;&#101;&#x2e;&#99;&#x6f;&#109;</a>,linuxprobe是linux用户名）和用户密码：</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png" class>
-
-<p>第2步：设置接收服务器类型为POP3，输入邮件帐号和密码，设置POP服务器和SMTP服务器地址，两个为同一地址，如192.168.10.10，SSL端口处不勾选，之后创建成功！</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/7.png" class>
-
-<p>第3步：账号建立后，即可从win 10系统向linux发送邮件：</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/8.png" class>
-
-<p>第4步：发送邮件后，可在linux系统内部输入mail命令，并输入对应邮件数值编号查看邮件：</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/9.png" class>
-
-<p>第5步：从linux系统向win10电脑发送邮件，只需输入mail 邮件地址，然后输入subject和正文；最后输入点（.)结束：</p>
-<img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/10.png" class>
-
-<h1 id="3-设置用户别名邮箱"><a href="#3-设置用户别名邮箱" class="headerlink" title="3.设置用户别名邮箱"></a>3.设置用户别名邮箱</h1><p>用户别名功能是一项简单实用的邮件账户伪装技术，可以用来设置多个虚拟信箱的账户以接受发送的邮件，从而保证自身的邮件地址不被泄露，还可以用来接收自己的多个信箱中的邮件。</p>
-<pre><code>[root@linuxprobe ~]# cat /etc/aliases
-#
-# Aliases in this file will NOT be expanded in the header from
-# Mail, but WILL be visible over networks or from /bin/mail.
-#
-# &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; The program &quot;newaliases&quot; must be run after
-# &gt;&gt; NOTE &gt;&gt; this file is updated for any changes to
-# &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; show through to sendmail.
-#
-# Basic system aliases -- these MUST be present.
-mailer-daemon: postmaster
-postmaster: root
-# General redirections for pseudo accounts.
-bin: root
-daemon: root
-adm: root
-lp: root
-sync: root
-shutdown: root
-halt: root
-mail: root
-news: root
-……</code></pre>
-<p>保存并退出aliases邮件别名服务的配置文件后，需要再执行一下newaliases命令，其目的是让新的用户别名配置文件立即生效。</p>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第15章节：使用Postfix与Dovecot部署邮件系统</tag>
       </tags>
   </entry>
   <entry>
@@ -2159,120 +2159,6 @@ Permissive</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>linux就该这么学：管道符、重定向与环境变量</title>
-    <url>/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
-    <content><![CDATA[<h1 id="1-输入输出重定向"><a href="#1-输入输出重定向" class="headerlink" title="1.输入输出重定向"></a>1.输入输出重定向</h1><p>输入重定向：是指把文件导入到命令中； 输出重定向：是指把原本要输出到屏幕的数据写入到指定文件中。输出重定向又分为标准输出重定向和错误输出重定向。<br>输入重定向中用到的符号及其作用：</p>
-<a id="more"></a>
-
-
-<table>
-<thead>
-<tr>
-<th>符号</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>命令 &lt; 文件</td>
-<td>将文件作为命令的标准输入</td>
-</tr>
-<tr>
-<td>命令 &lt;&lt; 分界符（tag）</td>
-<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
-</tr>
-</tbody></table>
-<p>输入重定向中用到的符号及其作用：</p>
-<table>
-<thead>
-<tr>
-<th>符号</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>命令 &gt; 文件</td>
-<td>将输出重定向到文件（会清空原有数据）</td>
-</tr>
-<tr>
-<td>命令 &gt;&gt; 文件</td>
-<td>将输出以追加的方式重定向到文件</td>
-</tr>
-<tr>
-<td>n &gt; 文件</td>
-<td>将文件描述符为 n 的文件重定向到文件</td>
-</tr>
-<tr>
-<td>n &gt;&gt; 文件</td>
-<td>将文件描述符为 n 的文件以追加的方式重定向到文件</td>
-</tr>
-<tr>
-<td>n &gt;&amp; m</td>
-<td>将输出文件 m 和 n 合并</td>
-</tr>
-<tr>
-<td>n &lt;&amp; m</td>
-<td>将输入文件 m 和 n 合并</td>
-</tr>
-<tr>
-<td>&lt;&lt; tag</td>
-<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
-</tr>
-</tbody></table>
-<p>注意：文件描述符 0 通常是标准输入（STDIN），1 是标准输出（STDOUT），2 是标准错误输出（STDERR）。</p>
-<h1 id="2-管道命令符"><a href="#2-管道命令符" class="headerlink" title="2. 管道命令符"></a>2. 管道命令符</h1><p>命令符：可以把前一个命令原本要输出到屏幕的数据当作是后一个命令的标准输入；</p>
-<h1 id="3-命令行的通配符"><a href="#3-命令行的通配符" class="headerlink" title="3.命令行的通配符"></a>3.命令行的通配符</h1><p>星号（*）：代表匹配零个或多个字符； 问号（？）：代表匹配单个字符； [0-9]:代表匹配0-9之间的单个数字； [abc]:代表匹配a、b、c三个字符中的任意一个；<br>[^…]和[!…]表示匹配不在方括号里面的字符（不包括空字符）；这两种写法是等价的。</p>
-<h1 id="4-转义字符"><a href="#4-转义字符" class="headerlink" title="4.转义字符"></a>4.转义字符</h1><p>反斜杠（\）：使反斜杠后面变量称为单纯的字符串；<br>单引号（’’）：转义其中所有的变量为单纯的字符串；<br>双引号（””）:保留其中的变量属性，不尽兴转义处理；<br>反引号（``）:把其中的命令执行后返回结果。</p>
-<h1 id="5-环境变量"><a href="#5-环境变量" class="headerlink" title="5.环境变量"></a>5.环境变量</h1><p>变量是计算机系统用于保存可变值得数据类型，变量名称一般都是大写的；环境变量是用来定义系统运行环境的一些参数，比如每个用户不同的家目录、邮件存放位置等。</p>
-<p>前面讲过，在 Linux 系统中“一切皆文件”，Linux 命令也不例外。那么，当编辑完成 Linux 命令并回车后，系统底层到底发生了什么事情呢？</p>
-<p>简单来说，Linux 命令的执行过程分为如下 4 个步骤。</p>
-<pre><code>1) 判断路径
-    判断用户是否以绝对路径或相对路径的方式输入命令（如 /bin/ls），如果是的话直接执行。
-
-2) 检查别名
-    Linux 系统会检查用户输入的命令是否为“别名命令”。要知道，通过 alias 命令是可以给现有命令自定义别名的，即用一个自定义的命令名称来替换原本的命令名称。
-
-    例如，我们经常使用的 rm 命令，其实就是 rm -i 这个整体的别名：
-    [root@localhost ~]# alias rm
-    alias rm=&#39;rm -i&#39;
-
-    这使得当使用 rm 命令删除指定文件时，Linux 系统会要求我们再次确认是否执行删除操作。例如：
-    [root@localhost ~]# rm a.txt &lt;-- 假定当前目录中已经存在 a.txt 文件
-    rm: remove regular file &#39;a.txt&#39;? y  &lt;-- 手动输入 y，即确定删除
-    [root@localhost ~]#
-
-    这里可以使用 unalias 命令，将 Linux 系统设置的 rm 别名删除掉，执行命令如下：
-    [root@localhost ~]# alias rm
-    alias rm=&#39;rm -i&#39;
-    [root@localhost ~]# unalias rm
-    [root@localhost ~]# rm a.txt
-    [root@localhost ~]#  &lt;--直接删除，不再询问
-
-
-    注意，这里仅是为了演示 unalisa 的用法，建议读者删除 rm 别名之后，再手动添加到系统中，执行如下命令即可再次成功添加：
-    [root@localhost ~]# alias rm=&#39;rm -i&#39;
-
-3) 判断是内部命令还是外部命令
-    Linux命令行解释器（又称为 Shell）会判断用户输入的命令是内部命令还是外部命令。其中，内部命令指的是解释器内部的命令，会被直接执行；而用户通常输入的命令都是外部命令，这些命令交给步骤四继续处理。
-    内部命令由 Shell 自带，会随着系统启动，可以直接从内存中读取；而外部命令仅是在系统中有对应的可执行文件，执行时需要读取该文件。
-
-    判断一个命令属于内部命令还是外部命令，可以使用 type 命令实现。例如：
-    [root@localhost ~]# type pwd
-    pwd is a shell builtin  &lt;-- pwd是内部命令
-    [root@localhost ~]# type top
-    top is /usr/bin/top  &lt;-- top是外部命令
-
-4) 查找外部命令对应的可执行文件
-    当用户执行的是外部命令时，系统会在指定的多个路径中查找该命令的可执行文件，而定义这些路径的变量，就称为 PATH 环境变量，其作用就是告诉 Shell 待执行命令的可执行文件可能存放的位置，也就是说，Shell 会在 PATH 变量包含的多个路径中逐个查找，直到找到为止（如果找不到，Shell 会提供用户“找不到此命令”）</code></pre>
-<p>自己创建的变量不具有全局性，作用范围有限，默认情况下不能被其他用户使用，因此，可通过export命令（如：export WORKDIR）将其提升为全局变量，这样其他用户也可以使用了！</p>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第3章节：管道符、重定向与环境变量</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux就该这么学：用户身份与文件权限</title>
     <url>/2021/01/25/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%94%A8%E6%88%B7%E8%BA%AB%E4%BB%BD%E4%B8%8E%E6%96%87%E4%BB%B6%E6%9D%83%E9%99%90/</url>
     <content><![CDATA[<h1 id="1-用户身份与能力"><a href="#1-用户身份与能力" class="headerlink" title="1.用户身份与能力"></a>1.用户身份与能力</h1><p>管理员UID为0：系统的管理员用户。</p>
@@ -2558,6 +2444,120 @@ anaconda-ks.cfg Downloads Pictures Public
       </categories>
       <tags>
         <tag>第5章节：用户身份与文件权限</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：管道符、重定向与环境变量</title>
+    <url>/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
+    <content><![CDATA[<h1 id="1-输入输出重定向"><a href="#1-输入输出重定向" class="headerlink" title="1.输入输出重定向"></a>1.输入输出重定向</h1><p>输入重定向：是指把文件导入到命令中； 输出重定向：是指把原本要输出到屏幕的数据写入到指定文件中。输出重定向又分为标准输出重定向和错误输出重定向。<br>输入重定向中用到的符号及其作用：</p>
+<a id="more"></a>
+
+
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>命令 &lt; 文件</td>
+<td>将文件作为命令的标准输入</td>
+</tr>
+<tr>
+<td>命令 &lt;&lt; 分界符（tag）</td>
+<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
+</tr>
+</tbody></table>
+<p>输入重定向中用到的符号及其作用：</p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>命令 &gt; 文件</td>
+<td>将输出重定向到文件（会清空原有数据）</td>
+</tr>
+<tr>
+<td>命令 &gt;&gt; 文件</td>
+<td>将输出以追加的方式重定向到文件</td>
+</tr>
+<tr>
+<td>n &gt; 文件</td>
+<td>将文件描述符为 n 的文件重定向到文件</td>
+</tr>
+<tr>
+<td>n &gt;&gt; 文件</td>
+<td>将文件描述符为 n 的文件以追加的方式重定向到文件</td>
+</tr>
+<tr>
+<td>n &gt;&amp; m</td>
+<td>将输出文件 m 和 n 合并</td>
+</tr>
+<tr>
+<td>n &lt;&amp; m</td>
+<td>将输入文件 m 和 n 合并</td>
+</tr>
+<tr>
+<td>&lt;&lt; tag</td>
+<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
+</tr>
+</tbody></table>
+<p>注意：文件描述符 0 通常是标准输入（STDIN），1 是标准输出（STDOUT），2 是标准错误输出（STDERR）。</p>
+<h1 id="2-管道命令符"><a href="#2-管道命令符" class="headerlink" title="2. 管道命令符"></a>2. 管道命令符</h1><p>命令符：可以把前一个命令原本要输出到屏幕的数据当作是后一个命令的标准输入；</p>
+<h1 id="3-命令行的通配符"><a href="#3-命令行的通配符" class="headerlink" title="3.命令行的通配符"></a>3.命令行的通配符</h1><p>星号（*）：代表匹配零个或多个字符； 问号（？）：代表匹配单个字符； [0-9]:代表匹配0-9之间的单个数字； [abc]:代表匹配a、b、c三个字符中的任意一个；<br>[^…]和[!…]表示匹配不在方括号里面的字符（不包括空字符）；这两种写法是等价的。</p>
+<h1 id="4-转义字符"><a href="#4-转义字符" class="headerlink" title="4.转义字符"></a>4.转义字符</h1><p>反斜杠（\）：使反斜杠后面变量称为单纯的字符串；<br>单引号（’’）：转义其中所有的变量为单纯的字符串；<br>双引号（””）:保留其中的变量属性，不尽兴转义处理；<br>反引号（``）:把其中的命令执行后返回结果。</p>
+<h1 id="5-环境变量"><a href="#5-环境变量" class="headerlink" title="5.环境变量"></a>5.环境变量</h1><p>变量是计算机系统用于保存可变值得数据类型，变量名称一般都是大写的；环境变量是用来定义系统运行环境的一些参数，比如每个用户不同的家目录、邮件存放位置等。</p>
+<p>前面讲过，在 Linux 系统中“一切皆文件”，Linux 命令也不例外。那么，当编辑完成 Linux 命令并回车后，系统底层到底发生了什么事情呢？</p>
+<p>简单来说，Linux 命令的执行过程分为如下 4 个步骤。</p>
+<pre><code>1) 判断路径
+    判断用户是否以绝对路径或相对路径的方式输入命令（如 /bin/ls），如果是的话直接执行。
+
+2) 检查别名
+    Linux 系统会检查用户输入的命令是否为“别名命令”。要知道，通过 alias 命令是可以给现有命令自定义别名的，即用一个自定义的命令名称来替换原本的命令名称。
+
+    例如，我们经常使用的 rm 命令，其实就是 rm -i 这个整体的别名：
+    [root@localhost ~]# alias rm
+    alias rm=&#39;rm -i&#39;
+
+    这使得当使用 rm 命令删除指定文件时，Linux 系统会要求我们再次确认是否执行删除操作。例如：
+    [root@localhost ~]# rm a.txt &lt;-- 假定当前目录中已经存在 a.txt 文件
+    rm: remove regular file &#39;a.txt&#39;? y  &lt;-- 手动输入 y，即确定删除
+    [root@localhost ~]#
+
+    这里可以使用 unalias 命令，将 Linux 系统设置的 rm 别名删除掉，执行命令如下：
+    [root@localhost ~]# alias rm
+    alias rm=&#39;rm -i&#39;
+    [root@localhost ~]# unalias rm
+    [root@localhost ~]# rm a.txt
+    [root@localhost ~]#  &lt;--直接删除，不再询问
+
+
+    注意，这里仅是为了演示 unalisa 的用法，建议读者删除 rm 别名之后，再手动添加到系统中，执行如下命令即可再次成功添加：
+    [root@localhost ~]# alias rm=&#39;rm -i&#39;
+
+3) 判断是内部命令还是外部命令
+    Linux命令行解释器（又称为 Shell）会判断用户输入的命令是内部命令还是外部命令。其中，内部命令指的是解释器内部的命令，会被直接执行；而用户通常输入的命令都是外部命令，这些命令交给步骤四继续处理。
+    内部命令由 Shell 自带，会随着系统启动，可以直接从内存中读取；而外部命令仅是在系统中有对应的可执行文件，执行时需要读取该文件。
+
+    判断一个命令属于内部命令还是外部命令，可以使用 type 命令实现。例如：
+    [root@localhost ~]# type pwd
+    pwd is a shell builtin  &lt;-- pwd是内部命令
+    [root@localhost ~]# type top
+    top is /usr/bin/top  &lt;-- top是外部命令
+
+4) 查找外部命令对应的可执行文件
+    当用户执行的是外部命令时，系统会在指定的多个路径中查找该命令的可执行文件，而定义这些路径的变量，就称为 PATH 环境变量，其作用就是告诉 Shell 待执行命令的可执行文件可能存放的位置，也就是说，Shell 会在 PATH 变量包含的多个路径中逐个查找，直到找到为止（如果找不到，Shell 会提供用户“找不到此命令”）</code></pre>
+<p>自己创建的变量不具有全局性，作用范围有限，默认情况下不能被其他用户使用，因此，可通过export命令（如：export WORKDIR）将其提升为全局变量，这样其他用户也可以使用了！</p>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第3章节：管道符、重定向与环境变量</tag>
       </tags>
   </entry>
   <entry>
@@ -2911,12 +2911,6 @@ esac</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>图片加载命令</title>
-    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
-]]></content>
-  </entry>
-  <entry>
     <title>用hexo和github免费创建自己的博客</title>
     <url>/2020/12/06/%E7%94%A8hexo%E5%92%8Cgithub%E5%85%8D%E8%B4%B9%E5%88%9B%E5%BB%BA%E8%87%AA%E5%B7%B1%E7%9A%84%E5%8D%9A%E5%AE%A2/</url>
     <content><![CDATA[<h2 id="1-安装Nodejs"><a href="#1-安装Nodejs" class="headerlink" title="1.安装Nodejs"></a>1.安装Nodejs</h2><p>官方网站: <a href="https://nodejs.org/">https://nodejs.org</a>, 安装步骤非常简单，一直next，下一步就可以了，默认安装就行。</p>
@@ -2940,6 +2934,12 @@ deploy:
       <tags>
         <tag>博客</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>图片加载命令</title>
+    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
+]]></content>
   </entry>
   <entry>
     <title>linux就该这么学-13：使用Bind提供域名解析服务</title>
@@ -3334,277 +3334,6 @@ secret &quot;1XEEL3tG5DNLOw+1WHfE3Q==&quot;;
       </categories>
       <tags>
         <tag>第13章节：使用Bind提供域名解析服务</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学-17：使用ISCSI服务部署网络存储</title>
-    <url>/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/</url>
-    <content><![CDATA[<h1 id="1-ISCSI技术介绍"><a href="#1-ISCSI技术介绍" class="headerlink" title="1.ISCSI技术介绍"></a>1.ISCSI技术介绍</h1><p>为了进一步提升硬盘存储设备的读写速度和性能，人们一直在努力改进物理硬盘设备的接口协议。当前的硬盘接口类型主要有IDE、SCSI和SATA这3种。</p>
-<a id="more"></a>
-
-<pre><code>IDE是一种成熟稳定、价格便宜的并行传输接口。
-
-SATA是一种传输速度更快、数据校验更完整的串行传输接口。
-
-SCSI是一种用于计算机和硬盘、光驱等设备之间系统级接口的通用标准，具有系统资源占用率低、转速高、传输速度快等优点。</code></pre>
-<p>iSCSI：Internet Small Computer System Interface，互联网小型计算机系统接口！</p>
-<p>这是一种将SCSI接口与以太网技术相结合的新型存储技术，可以用来在网络中传输SCSI接口的命令和数据。这样，不仅克服了传统SCSI接口设备的物理局限性，实现了跨区域的存储资源共享，还可以在不停机的状态下扩展存储容量。</p>
-<h1 id="2-创建RAID磁盘阵列"><a href="#2-创建RAID磁盘阵列" class="headerlink" title="2.创建RAID磁盘阵列"></a>2.创建RAID磁盘阵列</h1><p>第1步：首先在虚拟机中添加4块新硬盘，用于创建RAID 5磁盘阵列和备份盘：</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/1.jpg" class>
-
-<p>第2步：启动虚拟机系统，使用mdadm命令创建RAID磁盘阵列。其中，-Cv参数为创建阵列并显示过程，/dev/md0为生成的阵列组名称，-n 3参数为创建RAID 5磁盘阵列所需的硬盘个数，-l 5参数为RAID磁盘阵列的级别，-x 1参数为磁盘阵列的备份盘个数。在命令后面要逐一写上使用的硬盘名称。</p>
-<pre><code>[root@linuxprobe ~]# mdadm -Cv /dev/md0 -n 3 -l 5 -x 1 /dev/sdb /dev/sdc /dev/sdd /dev/sde
-mdadm: layout defaults to left-symmetric
-mdadm: layout defaults to left-symmetric
-mdadm: chunk size defaults to 512K
-mdadm: size set to 20954624K
-mdadm: Defaulting to version 1.2 metadata
-mdadm: array /dev/md0 started.</code></pre>
-<p>在上述命令成功执行之后，得到一块名称为/dev/md0的新设备，大家可使用mdadm -D命令来查看设备的详细信息。另外，由于在使用远程设备时极有可能出现设备识别顺序发生变化的情况，因此，如果直接在fstab挂载配置文件中写入/dev/sdb、/dev/sdc等设备名称的话，就有可能在下一次挂载了错误的存储设备。而UUID值是设备的唯一标识符，可以用于精确地区分本地或远程设备。于是我们可以把这个值记录下来，一会儿准备填写到挂载配置文件中。</p>
-<pre><code>[root@linuxprobe ~]# mdadm -D /dev/md0
-/dev/md0:
-        Version : 1.2
-…………
-**UUID : 3370f643:c10efd6a:44e91f2a:20c71f3e**
-         Events : 26
-    Number   Major   Minor   RaidDevice State
-       0       8       16        0      active sync   /dev/sdb
-       1       8       32        1      active sync   /dev/sdc
-       4       8       48        2      active sync   /dev/sdd
-       3       8       64        -      spare   /dev/sde</code></pre>
-<h1 id="3-配置iSCSI服务端"><a href="#3-配置iSCSI服务端" class="headerlink" title="3.配置iSCSI服务端"></a>3.配置iSCSI服务端</h1><p>iSCSI技术在工作形式上分为服务端（target）与客户端（initiator）。iSCSI服务端即用于存放硬盘存储资源的服务器，它作为前面创建的RAID磁盘阵列的存储端，能够为用户提供可用的存储资源。iSCSI客户端则是用户使用的软件，用于访问远程服务端的存储资源。</p>
-<p> iSCSI服务端和客户端的操作系统以及IP地址：</p>
-<table>
-<thead>
-<tr>
-<th>主机名称</th>
-<th>操作系统</th>
-<th>IP地址</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>iSCSI服务端</td>
-<td>RHEL 7</td>
-<td>192.168.10.10</td>
-</tr>
-<tr>
-<td>iSCSI客户端</td>
-<td>RHEL 7</td>
-<td>192.168.10.20</td>
-</tr>
-</tbody></table>
-<p>第1步：配置好Yum软件仓库后安装iSCSI服务端程序以及配置命令工具。通过在yum命令的后面添加-y参数，在安装过程中就不需要再进行手动确认了：</p>
-<pre><code>[root@linuxprobe ~]# yum -y install targetd targetcli
-Loaded plugins: langpacks, product-id, subscription-manager
-………………省略部分输出信息………………
- python-setproctitle.x86_64 0:1.1.6-5.el7 
- python-urwid.x86_64 0:1.1.1-3.el7 
-Complete!</code></pre>
-<p>安装完成后启动iSCSI的服务端程序targetd，然后把这个服务程序加入到开机启动项中，以便下次在服务器重启后依然能够为用户提供iSCSI共享存储资源服务：</p>
-<pre><code>[root@linuxprobe ~]# systemctl start targetd
-[root@linuxprobe ~]# systemctl enable targetd
- ln -s &#39;/usr/lib/systemd/system/targetd.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/targetd.service&#39;</code></pre>
-<p>第2步：配置iSCSI服务端共享资源。在执行targetcli命令后就能看到交互式的配置界面了。在该界面中可以使用很多Linux命令，比如利用ls查看目录参数的结构，使用cd切换到不同的目录中。/backstores/block是iSCSI服务端配置共享设备的位置。我们需要把刚刚创建的RAID 5磁盘阵列md0文件加入到配置共享设备的“资源池”中，并将该文件重新命名为disk0，这样用户就不会知道是由服务器中的哪块硬盘来提供共享存储资源，而只会看到一个名为disk0的存储设备。</p>
-<pre><code>[root@linuxprobe ~]# targetcli
-Warning: Could not load preferences file /root/.targetcli/prefs.bin.
-targetcli shell version 2.1.fb34
-Copyright 2011-2013 by Datera, Inc and others.
-For help on commands, type &#39;help&#39;.
-/&gt; ls
-o- / ..................................................................... [...]
-o- backstores .......................................................... [...]
-| o- block .............................................. [Storage Objects: 0]
-| o- fileio ............................................. [Storage Objects: 0]
-| o- pscsi .............................................. [Storage Objects: 0]
-| o- ramdisk ............................................ [Storage Objects: 0]
-o- iscsi ........................................................ [Targets: 0]
-o- loopback ..................................................... [Targets: 0
-/&gt; cd /backstores/block
-/backstores/block&gt; create disk0 /dev/md0
-Created block storage object disk0 using /dev/md0.
-/backstores/block&gt; cd /
-/&gt; ls
-o- / ..................................................................... [...]
-  o- backstores .......................................................... [...]
-  | o- block .............................................. [Storage Objects: 1]
-  | | o- disk0 ..................... [/dev/md0 (40.0GiB) write-thru deactivated]
-  | o- fileio ............................................. [Storage Objects: 0]
-  | o- pscsi .............................................. [Storage Objects: 0]
-  | o- ramdisk ............................................ [Storage Objects: 0]
-  o- iscsi ........................................................ [Targets: 0]
-  o- loopback ..................................................... [Targets: 0]</code></pre>
-<p>第3步：创建iSCSI target名称及配置共享资源。iSCSI target名称是由系统自动生成的，这是一串用于描述共享资源的唯一字符串。稍后用户在扫描iSCSI服务端时即可看到这个字符串，因此我们不需要记住它。系统在生成这个target名称后，还会在/iscsi参数目录中创建一个与其字符串同名的新“目录”用来存放共享资源。我们需要把前面加入到iSCSI共享资源池中的硬盘设备添加到这个新目录中，这样用户在登录iSCSI服务端后，即可默认使用这硬盘设备提供的共享存储资源了。</p>
-<pre><code>/&gt; cd iscsi
-/iscsi&gt; 
-/iscsi&gt; create
-Created target iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80.
-Created TPG 1.
-/iscsi&gt; cd iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80/
-/iscsi/iqn.20....d497c356ad80&gt; ls
-o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 ...... [TPGs: 1]
-  o- tpg1 ............................................... [no-gen-acls, no-auth]
-    o- acls .......................................................... [ACLs: 0]
-    o- luns .......................................................... [LUNs: 0]
-    o- portals .................................................... [Portals: 0]
-/iscsi/iqn.20....d497c356ad80&gt; cd tpg1/luns
-/iscsi/iqn.20...d80/tpg1/luns&gt; create /backstores/block/disk0 
-Created LUN 0.</code></pre>
-<p>第4步：设置访问控制列表（ACL）。iSCSI协议是通过客户端名称进行验证的，也就是说，用户在访问存储共享资源时不需要输入密码，只要iSCSI客户端的名称与服务端中设置的访问控制列表中某一名称条目一致即可，因此需要在iSCSI服务端的配置文件中写入一串能够验证用户信息的名称。acls参数目录用于存放能够访问iSCSI服务端共享存储资源的客户端名称。刘遄老师推荐在刚刚系统生成的iSCSI target后面追加上类似于:client的参数，这样既能保证客户端的名称具有唯一性，又非常便于管理和阅读：</p>
-<pre><code>/iscsi/iqn.20...d80/tpg1/luns&gt; cd ..
-/iscsi/iqn.20...c356ad80/tpg1&gt; cd acls 
-/iscsi/iqn.20...d80/tpg1/acls&gt; create iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
-Created Node ACL for iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
-Created mapped LUN 0</code></pre>
-<p>第5步：设置iSCSI服务端的监听IP地址和端口号。即在portals参数目录中写上服务器的IP地址。接下来将由系统自动开启服务器192.168.10.10的3260端口将向外提供iSCSI共享存储资源服务：</p>
-<pre><code>/iscsi/iqn.20...d80/tpg1/acls&gt; cd ..
-/iscsi/iqn.20...c356ad80/tpg1&gt; cd portals 
-/iscsi/iqn.20.../tpg1/portals&gt; create 192.168.10.10
-Using default IP port 3260
-Created network portal 192.168.10.10:3260.</code></pre>
-<p>第6步：配置妥当后检查配置信息，重启iSCSI服务端程序并配置防火墙策略。在参数文件配置妥当后，可以浏览刚刚配置的信息，确保与下面的信息基本一致。在确认信息无误后输入exit命令来退出配置。注意，千万不要习惯性地按Ctrl + C组合键结束进程，这样不会保存配置文件，我们的工作也就白费了。最后重启iSCSI服务端程序，再设置firewalld防火墙策略，使其放行3260/tcp端口号的流量。</p>
-<pre><code>/iscsi/iqn.20.../tpg1/portals&gt; ls /
-o- / ........................... [...]
-  o- backstores................. [...]
-  | o- block ................... [Storage Objects: 1]
-  | | o- disk0 ................. [/dev/md0 (40.0GiB) write-thru activated]
-  | o- fileio .................. [Storage Objects: 0]
-  | o- pscsi ................... [Storage Objects: 0]
-  | o- ramdisk ................. [Storage Objects: 0]
-  o- iscsi ..................... [Targets: 1]
-  | o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 .... [TPGs: 1]
-  |   o- tpg1 .................. [no-gen-acls, no-auth]
-  |     o- acls ........................................................ [ACLs: 1]
-  |     | o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client [Mapped LUNs: 1]
-  |     |   o- mapped_lun0 ............................................. [lun0 block/disk0 (rw)]  
-    o- luns .................... [LUNs: 1]
-  |     | o- lun0 .............. [block/disk0 (/dev/md0)]
-  |     o- portals ............. [Portals: 1]
-  |       o- 192.168.10.10:3260  [OK]
-  o- loopback .................. [Targets: 0]
-/&gt; exit
-Global pref auto_save_on_exit=true
-Last 10 configs saved in /etc/target/backup.
-Configuration saved to /etc/target/saveconfig.json
-[root@linuxprobe ~]# systemctl restart targetd
-[root@linuxprobe ~]# firewall-cmd --permanent --add-port=3260/tcp 
-success 
-[root@linuxprobe ~]# firewall-cmd --reload 
-success</code></pre>
-<p>但在配置这部分时，遇到一个问题：在targetcli界面输入“exit”时，并没有显示配置已保存，反而提示有报错：’Implict and Explict’ is not in list；网上搜索查询得知是由于系统内核版本（kernel-3.10.0-123.el7.x86_64）太低导致，需要升级kernel内核：在升级内核时，也比较麻烦，一台虚拟机系统在终端中输入命令：yum update kernel，即成功升级版本（kernel 3.10.0-1160.15.2.el7.x86_64）；而另一台虚拟机则使用此种方式不成功，查询资料，采用另一种方式：</p>
-<p>1.直接运行yum update kernel，显示报错error:kernel conflicts kmod等等……；</p>
-<p>2.输入：yum clean all，可能有些效果，但无法彻底解决；</p>
-<p>3.上面报错：kernel conflicts kmod，可能是由于系统中安装有多个kmod版本导致；</p>
-<p>4.输入：rpm -qa kmod，查询系统中安装的kmod数量，然后使用 rpm -e kmod-version，卸载低版本，之后重新输入；yum update kernel，升级内核！</p>
-<p>5.升级完成后，输入：awk -F&#39; ‘$1==”menuentry “ {print $2}’ /etc/grub2.cfg ，查看下内核的默认启动顺序；</p>
-<p>6.默认启动的顺序是从0开始，新内核是从头插入，所以需要选择0，输入命令：grub2-set-default 0</p>
-<p>7.重启系统，开机后输入：uname -r，查看系统版本号！</p>
-<h1 id="4-配置linux客户端"><a href="#4-配置linux客户端" class="headerlink" title="4.配置linux客户端"></a>4.配置linux客户端</h1><p>第1步：在RHEL 7系统中，已经默认安装了iSCSI客户端服务程序initiator。如果您的系统没有安装的话，可以使用Yum软件仓库手动安装。</p>
-<pre><code>[root@linuxprobe ~]# yum install iscsi-initiator-utils 
-Loaded plugins: langpacks, product-id, subscription-manager 
-Package iscsi-initiator-utils-6.2.0.873-21.el7.x86_64 already installed and latest version 
-Nothing to do</code></pre>
-<p>第2步：编辑iSCSI客户端中的initiator名称文件，把服务端的访问控制列表名称填写进来，然后重启客户端iscsid服务程序并将其加入到开机启动项中：</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/iscsi/initiatorname.iscsi
-InitiatorName=iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
-[root@linuxprobe ~]# systemctl restart iscsid
-[root@linuxprobe ~]# systemctl enable iscsid
- ln -s &#39;/usr/lib/systemd/system/iscsid.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/iscsid.service&#39;</code></pre>
-<p>第3步：iSCSI客户端访问并使用共享存储资源的步骤很简单，只需要记住刘遄老师的一个小口诀“先发现，再登录，最后挂载并使用”。iscsiadm是用于管理、查询、插入、更新或删除iSCSI数据库配置文件的命令行工具，用户需要先使用这个工具扫描发现远程iSCSI服务端，然后查看找到的服务端上有哪些可用的共享存储资源。其中，-m discovery参数的目的是扫描并发现可用的存储资源，-t st参数为执行扫描操作的类型，-p 192.168.10.10参数为iSCSI服务端的IP地址：</p>
-<pre><code>[root@linuxprobe ~]# iscsiadm -m discovery -t st -p 192.168.10.10
-192.168.10.10:3260,1 iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80</code></pre>
-<p>第4步：在使用iscsiadm命令发现了远程服务器上可用的存储资源后，接下来准备登录iSCSI服务端。其中，-m node参数为将客户端所在主机作为一台节点服务器，-T  iqn.2003-01. org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80参数为要使用的存储资源（大家可以直接复制前面命令中扫描发现的结果，以免录入错误），-p 192.168.10.10参数依然为对方iSCSI服务端的IP地址。最后使用–login或-l参数进行登录验证。</p>
-<pre><code>[root@linuxprobe ~]# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 -p 192.168.10.10 --login
-Logging in to [iface: default, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260] (multiple)
-Login to [iface: default, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260] successful.</code></pre>
-<p>第5步：在iSCSI客户端成功登录之后，会在客户端主机上多出一块名为/dev/sdb的设备文件。</p>
-<pre><code>[root@linuxprobe ~]# file /dev/sdb 
-/dev/sdb: block special</code></pre>
-<p>第6步：格式化、挂载硬盘；</p>
-<pre><code>[root@linuxprobe ~]# mkfs.xfs /dev/sdb
-[root@linuxprobe ~]# mkdir /iscsi
-[root@linuxprobe ~]# mount /dev/sdb /iscsi
-[root@linuxprobe ~]# df -h</code></pre>
-<p>需要提醒大家的是，由于udev服务是按照系统识别硬盘设备的顺序来命名硬盘设备的，当客户端主机同时使用多个远程存储资源时，如果下一次识别远程设备的顺序发生了变化，则客户端挂载目录中的文件也将随之混乱。为了防止发生这样的问题，我们应该在/etc/fstab配置文件中使用设备的UUID唯一标识符进行挂载，这样，不论远程设备资源的识别顺序再怎么变化，系统也能正确找到设备所对应的目录。</p>
-<p>blkid命令用于查看设备的名称、文件系统及UUID。可以使用管道符（详见第3章）进行过滤，只显示与/dev/sdb设备相关的信息：</p>
-<pre><code>[root@linuxprobe ~]# blkid | grep /dev/sdb
-/dev/sdb: UUID=&quot;eb9cbf2f-fce8-413a-b770-8b0f243e8ad6&quot; TYPE=&quot;xfs&quot; </code></pre>
-<p>由于/dev/sdb是一块网络存储设备，而iSCSI协议是基于TCP/IP网络传输数据的，因此必须在/etc/fstab配置文件中添加上_netdev参数，表示当系统联网后再进行挂载操作，以免系统开机时间过长或开机失败：</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/fstab
-/dev/mapper/rhel-swap swap swap defaults 0 0
-/dev/cdrom /media/cdrom iso9660 defaults 0 0 
-**UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0**</code></pre>
-<p>如果我们不再需要使用iSCSI共享设备资源了，可以用iscsiadm命令的-u参数将其设备卸载：</p>
-<pre><code>[root@linuxprobe ~]# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 -u
-
-Logging out of session [sid: 7, target : iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260]
-
-Logout of [sid: 7, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80,portal:192.168.10.10,3260] successful.</code></pre>
-<h1 id="5-配置windows客户端"><a href="#5-配置windows客户端" class="headerlink" title="5.配置windows客户端"></a>5.配置windows客户端</h1><p>使用Windows系统的客户端也可以正常访问iSCSI服务器上的共享存储资源，而且操作原理及步骤与Linux系统的客户端基本相同。在进行下面的实验之前，请先关闭Linux系统客户端，以免这两台客户端主机同时使用iSCSI共享存储资源而产生潜在问题。</p>
-<p>iSCSI服务器和客户端的操作系统以及IP地址：</p>
-<table>
-<thead>
-<tr>
-<th>主机名称</th>
-<th>操作系统</th>
-<th>IP地址</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>iSCSI服务端</td>
-<td>RHEL 7</td>
-<td>192.168.10.10</td>
-</tr>
-<tr>
-<td>windows客户端</td>
-<td>windows 7</td>
-<td>192.168.10.30</td>
-</tr>
-</tbody></table>
-<p>第1步：运行iSCSI发起程序。在Windows 7/10操作系统中已经默认安装了iSCSI客户端程序，我们只需在控制面板中找到“系统和安全”标签，然后单击“管理工具”，进入到“管理工具”页面后即可看到“iSCSI发起程序”图标。双击该图标。在第一次运行iSCSI发起程序时，系统会提示“Microsoft iSCSI服务端未运行”，单击“是”按钮即可自动启动并运行iSCSI发起程序：</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/2.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/3.png" class>
-
-<p>第2步：扫描发现iSCSI服务端上可用的存储资源。不论是Windows系统还是Linux系统，要想使用iSCSI共享存储资源都必须先进行扫描发现操作。运行iSCSI发起程序后在“目标”选项卡的“目标”文本框中写入iSCSI服务端的IP地址，然后单击“快速连接”按钮:</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/4.png" class>
-
-<p>在弹出的“快速连接”提示框中可看到共享的硬盘存储资源，单击“完成”按钮即可:</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/5.png" class>
-
-<p>回到“目标”选项卡页面，可以看到共享存储资源的名称已经出现.</p>
-<p>第3步：准备连接iSCSI服务端的共享存储资源。由于在iSCSI服务端程序上设置了ACL，使得只有客户端名称与ACL策略中的名称保持一致时才能使用远程存储资源，因此需要在“配置”选项卡中单击“更改”按钮，把iSCSI发起程序的名称修改为服务端:</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/6.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/7.png" class>
-
-<p>在确认客户端发起程序的名称修改正确后即可返回到“目标”选项卡页面中，然后单击“连接”按钮进行连接请求，成功连接到远程共享存储资源的页面:</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/8.png" class>
-
-<p>第4步：访问iSCSI远程共享存储资源。右键单击桌面上的“计算机”图标，打开计算机管理程序:</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/9.png" class>
-
-<p>开始对磁盘进行初始化操作:</p>
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/10.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/11.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/12.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/13.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/14.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/15.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/16.png" class>
-
-<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/17.png" class>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第17章节：使用ISCSI服务部署网络存储</tag>
       </tags>
   </entry>
   <entry>
@@ -4040,429 +3769,274 @@ MariaDB [linuxprobe]&gt; DESCRIBE mybook;
       </tags>
   </entry>
   <entry>
-    <title>linux就该这么学：使用Apache服务部署静态网站</title>
-    <url>/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/</url>
-    <content><![CDATA[<h1 id="1-网站服务程序"><a href="#1-网站服务程序" class="headerlink" title="1.网站服务程序"></a>1.网站服务程序</h1><a id="more"></a>
+    <title>linux就该这么学-17：使用ISCSI服务部署网络存储</title>
+    <url>/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/</url>
+    <content><![CDATA[<h1 id="1-ISCSI技术介绍"><a href="#1-ISCSI技术介绍" class="headerlink" title="1.ISCSI技术介绍"></a>1.ISCSI技术介绍</h1><p>为了进一步提升硬盘存储设备的读写速度和性能，人们一直在努力改进物理硬盘设备的接口协议。当前的硬盘接口类型主要有IDE、SCSI和SATA这3种。</p>
+<a id="more"></a>
 
-<p>第1步：把光盘设备中的系统镜像挂载到/media/cdrom目录。</p>
-<pre><code>[root@linuxprobe ~]# mkdir -p /media/cdrom
-[root@linuxprobe ~]# mount /dev/cdrom /media/cdrom
-mount: /dev/sr0 is write-protected, mounting read-only</code></pre>
-<p>第2步：使用Vim文本编辑器创建Yum仓库的配置文件。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/yum.repos.d/rhel7.repo
-[rhel7]
-name=rhel7
-baseurl=file:///media/cdrom
-enabled=1
-gpgcheck=0</code></pre>
-<p>第3步：动手安装Apache服务程序。注意，使用yum命令进行安装时，跟在命令后面的Apache服务的软件包名称为httpd。如果直接执行yum install apache命令，则系统会报错。</p>
-<pre><code>[root@linuxprobe ~]# yum install httpd
-Loaded plugins: langpacks, product-id, subscription-manager
-………………省略部分输出信息………………
-Complete!</code></pre>
-<p>第4步：启用httpd服务程序并将其加入到开机启动项中，使其能够随系统开机而运行，从而持续为用户提供Web服务：</p>
-<pre><code>[root@linuxprobe ~]# systemctl start httpd
-[root@linuxprobe ~]# systemctl enable httpd
-ln -s &#39;/usr/lib/systemd/system/httpd.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/httpd.service&#39;
+<pre><code>IDE是一种成熟稳定、价格便宜的并行传输接口。
 
-[root@linuxprobe ~]# firefox</code></pre>
-<h1 id="2-配置服务文件参数"><a href="#2-配置服务文件参数" class="headerlink" title="2.配置服务文件参数"></a>2.配置服务文件参数</h1><table>
-<thead>
-<tr>
-<th>作用</th>
-<th>文件名称</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>服务目录</td>
-<td>/etc/httpd</td>
-</tr>
-<tr>
-<td>主配置文件</td>
-<td>/etc/httpd/conf/httpd.conf</td>
-</tr>
-<tr>
-<td>网站数据目录</td>
-<td>/var/www/html</td>
-</tr>
-<tr>
-<td>访问日志</td>
-<td>/var/log/httpd/access_log</td>
-</tr>
-<tr>
-<td>错误日志</td>
-<td>/var/log/httpd/error_log</td>
-</tr>
-</tbody></table>
-<p>在httpd服务程序的主配置文件中，存在三种类型的信息：注释行信息、全局配置、区域配置；</p>
-<p> 配置httpd服务程序时最常用的参数以及用途描述：</p>
+SATA是一种传输速度更快、数据校验更完整的串行传输接口。
+
+SCSI是一种用于计算机和硬盘、光驱等设备之间系统级接口的通用标准，具有系统资源占用率低、转速高、传输速度快等优点。</code></pre>
+<p>iSCSI：Internet Small Computer System Interface，互联网小型计算机系统接口！</p>
+<p>这是一种将SCSI接口与以太网技术相结合的新型存储技术，可以用来在网络中传输SCSI接口的命令和数据。这样，不仅克服了传统SCSI接口设备的物理局限性，实现了跨区域的存储资源共享，还可以在不停机的状态下扩展存储容量。</p>
+<h1 id="2-创建RAID磁盘阵列"><a href="#2-创建RAID磁盘阵列" class="headerlink" title="2.创建RAID磁盘阵列"></a>2.创建RAID磁盘阵列</h1><p>第1步：首先在虚拟机中添加4块新硬盘，用于创建RAID 5磁盘阵列和备份盘：</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/1.jpg" class>
+
+<p>第2步：启动虚拟机系统，使用mdadm命令创建RAID磁盘阵列。其中，-Cv参数为创建阵列并显示过程，/dev/md0为生成的阵列组名称，-n 3参数为创建RAID 5磁盘阵列所需的硬盘个数，-l 5参数为RAID磁盘阵列的级别，-x 1参数为磁盘阵列的备份盘个数。在命令后面要逐一写上使用的硬盘名称。</p>
+<pre><code>[root@linuxprobe ~]# mdadm -Cv /dev/md0 -n 3 -l 5 -x 1 /dev/sdb /dev/sdc /dev/sdd /dev/sde
+mdadm: layout defaults to left-symmetric
+mdadm: layout defaults to left-symmetric
+mdadm: chunk size defaults to 512K
+mdadm: size set to 20954624K
+mdadm: Defaulting to version 1.2 metadata
+mdadm: array /dev/md0 started.</code></pre>
+<p>在上述命令成功执行之后，得到一块名称为/dev/md0的新设备，大家可使用mdadm -D命令来查看设备的详细信息。另外，由于在使用远程设备时极有可能出现设备识别顺序发生变化的情况，因此，如果直接在fstab挂载配置文件中写入/dev/sdb、/dev/sdc等设备名称的话，就有可能在下一次挂载了错误的存储设备。而UUID值是设备的唯一标识符，可以用于精确地区分本地或远程设备。于是我们可以把这个值记录下来，一会儿准备填写到挂载配置文件中。</p>
+<pre><code>[root@linuxprobe ~]# mdadm -D /dev/md0
+/dev/md0:
+        Version : 1.2
+…………
+**UUID : 3370f643:c10efd6a:44e91f2a:20c71f3e**
+         Events : 26
+    Number   Major   Minor   RaidDevice State
+       0       8       16        0      active sync   /dev/sdb
+       1       8       32        1      active sync   /dev/sdc
+       4       8       48        2      active sync   /dev/sdd
+       3       8       64        -      spare   /dev/sde</code></pre>
+<h1 id="3-配置iSCSI服务端"><a href="#3-配置iSCSI服务端" class="headerlink" title="3.配置iSCSI服务端"></a>3.配置iSCSI服务端</h1><p>iSCSI技术在工作形式上分为服务端（target）与客户端（initiator）。iSCSI服务端即用于存放硬盘存储资源的服务器，它作为前面创建的RAID磁盘阵列的存储端，能够为用户提供可用的存储资源。iSCSI客户端则是用户使用的软件，用于访问远程服务端的存储资源。</p>
+<p> iSCSI服务端和客户端的操作系统以及IP地址：</p>
 <table>
 <thead>
 <tr>
-<th>参数</th>
-<th>作用</th>
+<th>主机名称</th>
+<th>操作系统</th>
+<th>IP地址</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>ServerRoot</td>
-<td>服务目录</td>
+<td>iSCSI服务端</td>
+<td>RHEL 7</td>
+<td>192.168.10.10</td>
 </tr>
 <tr>
-<td>ServerAdmin</td>
-<td>管理员邮箱</td>
-</tr>
-<tr>
-<td>User</td>
-<td>运行服务的用户</td>
-</tr>
-<tr>
-<td>Group</td>
-<td>运行服务的用户组</td>
-</tr>
-<tr>
-<td>ServerName</td>
-<td>网站服务器的域名</td>
-</tr>
-<tr>
-<td>DocumentRoot</td>
-<td>网站数据目录</td>
-</tr>
-<tr>
-<td>Listen</td>
-<td>监听的IP地址与端口号</td>
-</tr>
-<tr>
-<td>DirectoryIndex</td>
-<td>默认的索引页页面</td>
-</tr>
-<tr>
-<td>ErrorLog</td>
-<td>错误日志文件</td>
-</tr>
-<tr>
-<td>CustomLog</td>
-<td>访问日志文件</td>
-</tr>
-<tr>
-<td>Timeout</td>
-<td>网页超时时间，默认为300秒</td>
+<td>iSCSI客户端</td>
+<td>RHEL 7</td>
+<td>192.168.10.20</td>
 </tr>
 </tbody></table>
-<p>在默认情况下，网站数据是保存在/var/www/html目录中，打开httpd服务程序的主配置文件，将约第119行用于定义网站数据保存路径的参数DocumentRoot修改为/home/wwwroot，同时还需要将约第124行用于定义目录权限的参数Directory后面的路径也修改为/home/wwwroot。配置文件修改完毕后即可保存并退出。</p>
-<h1 id="3-SELinux安全子系统"><a href="#3-SELinux安全子系统" class="headerlink" title="3.SELinux安全子系统"></a>3.SELinux安全子系统</h1><p>“SELinux域”和“SELinux安全上下文”称为是Linux系统中的双保险</p>
-<p>SELinux服务有三种配置模式，具体如下：</p>
-<pre><code>enforcing：强制启用安全策略模式，将拦截服务的不合法请求。
-
-permissive：遇到服务越权访问时，只发出警告而不强制拦截。
-
-disabled：对于越权的行为不警告也不拦截。</code></pre>
-<p>SELinux服务主配置文件目录：/etc/selinux/config；</p>
-<p>getenforce：获取当前SELinux服务的运行模式； setenforce[0|1]：修改SELinux当前的运行模式（0为禁用，1为启用）；修改是暂时的，系统重启后失效。</p>
-<p>查看网站数据保存目录的SELinux安全上下文值：</p>
-<pre><code>[root@linuxprobe ~]# setenforce 1
-[root@linuxprobe ~]# ls -Zd /var/www/html
-drwxr-xr-x. root root system_u:object_r:httpd_sys_content_t:s0 /var/www/html
-[root@linuxprobe ~]# ls -Zd /home/wwwroot
-drwxrwxrwx. root root unconfined_u:object_r:home_root_t:s0 /home/wwwroot</code></pre>
-<p>在文件上设置的SELinux安全上下文是由用户段、角色段以及类型段等多个信息项共同组成的。其中，用户段system_u代表系统进程的身份，角色段object_r代表文件目录的角色，类型段httpd_sys_content_t代表网站服务的系统文件。</p>
-<h2 id="3-1-semanage命令"><a href="#3-1-semanage命令" class="headerlink" title="3.1 semanage命令"></a>3.1 semanage命令</h2><p>emanage命令用于管理SELinux的策略，格式为“semanage [选项] [文件]”，经常用到的几个参数及其功能如下所示：</p>
-<pre><code>    -l参数用于查询；    -a参数用于添加；    -m参数用于修改；    -d参数用于删除。</code></pre>
-<p>可以向新的网站数据目录中新添加一条SELinux安全上下文，让这个目录以及里面的所有文件能够被httpd服务程序所访问到：</p>
-<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/*</code></pre>
-<p>注意，执行上述设置之后，还无法立即访问网站，还需要使用restorecon命令将设置好的SELinux安全上下文立即生效。在使用restorecon命令时，可以加上-Rv参数对指定的目录进行递归操作，以及显示SELinux安全上下文的修改过程。最后，再次刷新页面，就可以正常看到网页内容了：</p>
-<pre><code>[root@linuxprobe ~]# restorecon -Rv /home/wwwroot/
-restorecon reset /home/wwwroot context unconfined_u:object_r:home_root_t:s0-&gt;unconfined_u:object_r:httpd_sys_content_t:s0</code></pre>
-<p>再添加systemctl enable httpd命令，将所需服务添加到开机启动项中。</p>
-<h1 id="4-个人用户主页功能"><a href="#4-个人用户主页功能" class="headerlink" title="4.个人用户主页功能"></a>4.个人用户主页功能</h1><p>第1步：在httpd服务程序中，默认没有开启个人用户主页功能。为此，我们需要编辑下面的配置文件，然后在第17行的UserDir disabled参数前面加上井号（#），表示让httpd服务程序开启个人用户主页功能；同时再把第24行的UserDir public_html参数前面的井号（#）去掉（UserDir参数表示网站数据在用户家目录中的保存目录名称，即public_html目录）。最后，在修改完毕后记得保存。</p>
-<pre><code> 15 # permissions).
- 16 #
- 17 # UserDir disabled
- 18 
- 19 #
- 20 # To enable requests to /~user/ to serve the user&#39;s public_html
- 21 # directory, remove the &quot;UserDir disabled&quot; line above, and uncomment
- 22 # the following line instead:
- 23 # 
- 24   UserDir public_html
- 25 &lt;/IfModule&gt;
- …… …… …… ……</code></pre>
-<p>第2步：在用户家目录中建立用于保存网站数据的目录及首页面文件。另外，还需要把家目录的权限修改为755，保证其他人也有权限读取里面的内容。</p>
-<pre><code>[root@linuxprobe home]# su - linuxprobe
-Last login: Fri May 22 13:17:37 CST 2017 on :0
-[linuxprobe@linuxprobe ~]$ mkdir public_html
-[linuxprobe@linuxprobe ~]$ echo &quot;This is linuxprobe&#39;s website&quot; &gt; public_html/index.html
-[linuxprobe@linuxprobe ~]$ chmod -Rf 755 /home/linuxprobe</code></pre>
-<p>第3步：使用getsebool命令查询并过滤出所有与HTTP协议相关的安全策略。其中，off为禁止状态，on为允许状态。</p>
-<pre><code>[root@linuxprobe ~]# getsebool -a | grep http
-httpd_anon_write --&gt; off
-httpd_builtin_scripting --&gt; on
-……
-**httpd_enable_homedirs --&gt; off**
-……</code></pre>
-<p>第4步：用setsebool命令来修改SELinux策略中规则的布尔值，在setsebool命令后面加上-P参数，让修改后的SELinux策略规则永久生效且立即生效，并重新启动httpd服务程序：</p>
-<pre><code>[root@linuxprobe ~]# setsebool -P httpd_enable_homedirs=on
-[root@linuxprobe ~]# systemctl restart httpd</code></pre>
-<p>第5步：在浏览器的地址栏中输入网址，其格式为“网址/<del>用户名”（其中的波浪号是必需的，而且网址、波浪号、用户名之间没有空格）如：127.0.0.1/</del>linuxprobe，就可以看到用户的个人网站了。</p>
-<h2 id="4-1在网页中添加口令功能"><a href="#4-1在网页中添加口令功能" class="headerlink" title="4.1在网页中添加口令功能"></a>4.1在网页中添加口令功能</h2><p>第1步：先使用htpasswd命令生成密码数据库。-c参数表示第一次生成；后面再分别添加密码数据库的存放文件，以及验证要用到的用户名称（该用户不必是系统中已有的本地账户）。</p>
-<pre><code>[root@linuxprobe ~]# htpasswd -c /etc/httpd/passwd linuxprobe
-New password:此处输入用于网页验证的密码
-Re-type new password:再输入一遍进行确认
-Adding password for user linuxprobe</code></pre>
-<p>第2步：编辑个人用户主页功能的配置文件。把第31～35行的参数信息修改成下列内容，其中井号（#）开头的内容为刘遄老师添加的注释信息，可将其忽略。随后保存并退出配置文件，重启httpd服务程序即可生效。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf.d/userdir.conf
-31 &lt;Directory &quot;/home/*/public_html&quot;&gt;
-32 AllowOverride all
-#刚刚生成出来的密码验证文件保存路径
-33 authuserfile &quot;/etc/httpd/passwd&quot;
-#当用户尝试访问个人用户网站时的提示信息
-34 authname &quot;My privately website&quot;
-35 authtype basic
-#用户进行账户密码登录时需要验证的用户名称
-36 require user linuxprobe
-37 &lt;/Directory&gt;
-[root@linuxprobe ~]# systemctl restart httpd</code></pre>
-<p>此后，当用户再想访问某个用户的个人网站时，就必须要输入账户和密码才能正常访问了。另外，验证时使用的账户和密码是用htpasswd命令生成的专门用于网站登录的口令密码，而不是系统中的用户密码，请不要搞错了。</p>
-<h2 id="4-3虚拟网站主机功能"><a href="#4-3虚拟网站主机功能" class="headerlink" title="4.3虚拟网站主机功能"></a>4.3虚拟网站主机功能</h2><p>利用虚拟主机功能，可以把一台处于运行状态的物理服务器分割成多个“虚拟的服务器”。但是，该技术无法实现目前云主机技术的硬件资源隔离，让这些虚拟的服务器共同使用物理服务器的硬件资源，供应商只能限制硬盘的使用空间大小。</p>
-<p>Apache的虚拟主机功能是服务器基于用户请求的不同IP地址、主机域名或端口号，实现提供多个网站同时为外部提供访问服务的技术，用户请求的资源不同，最终获取到的网页内容也各不相同。</p>
-<h3 id="4-3-1基于IP地址"><a href="#4-3-1基于IP地址" class="headerlink" title="4.3.1基于IP地址"></a>4.3.1基于IP地址</h3><p>第1步：使用nmtui命令，创建三个IP地址，如：192.168.10.10、192.168.10.20、192.168.10.30；</p>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/1.png" class>
-
-<p>第2步：分别在/home/wwwroot中创建用于保存不同网站数据的3个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/2.png" class>
-
-<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/10
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/20
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/30
-[root@linuxprobe ~]# echo &quot;IP:192.168.10.10&quot; &gt; /home/wwwroot/10/index.html
-[root@linuxprobe ~]# echo &quot;IP:192.168.10.20&quot; &gt; /home/wwwroot/20/index.html
-[root@linuxprobe ~]# echo &quot;IP:192.168.10.30&quot; &gt; /home/wwwroot/30/index.html</code></pre>
-<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入三个基于IP地址的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+<p>第1步：配置好Yum软件仓库后安装iSCSI服务端程序以及配置命令工具。通过在yum命令的后面添加-y参数，在安装过程中就不需要再进行手动确认了：</p>
+<pre><code>[root@linuxprobe ~]# yum -y install targetd targetcli
+Loaded plugins: langpacks, product-id, subscription-manager
 ………………省略部分输出信息………………
-113 &lt;VirtualHost 192.168.10.10&gt;
-114 DocumentRoot /home/wwwroot/10
-115 ServerName www.linuxprobe.com
-116 &lt;Directory /home/wwwroot/10 &gt;
-117 AllowOverride None
-118 Require all granted
-119 &lt;/Directory&gt;
-120 &lt;/VirtualHost&gt;
-121 &lt;VirtualHost 192.168.10.20&gt;
-122 DocumentRoot /home/wwwroot/20
-123 ServerName bbs.linuxprobe.com
-124 &lt;Directory /home/wwwroot/20 &gt;
-125 AllowOverride None
-126 Require all granted
-127 &lt;/Directory&gt;
-128 &lt;/VirtualHost&gt;
-129 &lt;VirtualHost 192.168.10.30&gt;
-130 DocumentRoot /home/wwwroot/30
-131 ServerName tech.linuxprobe.com
-132 &lt;Directory /home/wwwroot/30 &gt;
-133 AllowOverride None
-134 Require all granted
-135 &lt;/Directory&gt;
-136 &lt;/VirtualHost&gt;
-………………省略部分输出信息………………
-[root@linuxprobe ~]# systemctl restart httpd</code></pre>
-<p>第3步：手动把新的网站数据目录的SELinux安全上下文设置正确，并使用restorecon命令让新设置的SELinux安全上下文立即生效;</p>
-<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/10
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/10/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/20
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/20/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/30
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/30/*
-[root@linuxprobe ~]# restorecon -Rv /home/wwwroot</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/3.png" class>
+ python-setproctitle.x86_64 0:1.1.6-5.el7 
+ python-urwid.x86_64 0:1.1.1-3.el7 
+Complete!</code></pre>
+<p>安装完成后启动iSCSI的服务端程序targetd，然后把这个服务程序加入到开机启动项中，以便下次在服务器重启后依然能够为用户提供iSCSI共享存储资源服务：</p>
+<pre><code>[root@linuxprobe ~]# systemctl start targetd
+[root@linuxprobe ~]# systemctl enable targetd
+ ln -s &#39;/usr/lib/systemd/system/targetd.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/targetd.service&#39;</code></pre>
+<p>第2步：配置iSCSI服务端共享资源。在执行targetcli命令后就能看到交互式的配置界面了。在该界面中可以使用很多Linux命令，比如利用ls查看目录参数的结构，使用cd切换到不同的目录中。/backstores/block是iSCSI服务端配置共享设备的位置。我们需要把刚刚创建的RAID 5磁盘阵列md0文件加入到配置共享设备的“资源池”中，并将该文件重新命名为disk0，这样用户就不会知道是由服务器中的哪块硬盘来提供共享存储资源，而只会看到一个名为disk0的存储设备。</p>
+<pre><code>[root@linuxprobe ~]# targetcli
+Warning: Could not load preferences file /root/.targetcli/prefs.bin.
+targetcli shell version 2.1.fb34
+Copyright 2011-2013 by Datera, Inc and others.
+For help on commands, type &#39;help&#39;.
+/&gt; ls
+o- / ..................................................................... [...]
+o- backstores .......................................................... [...]
+| o- block .............................................. [Storage Objects: 0]
+| o- fileio ............................................. [Storage Objects: 0]
+| o- pscsi .............................................. [Storage Objects: 0]
+| o- ramdisk ............................................ [Storage Objects: 0]
+o- iscsi ........................................................ [Targets: 0]
+o- loopback ..................................................... [Targets: 0
+/&gt; cd /backstores/block
+/backstores/block&gt; create disk0 /dev/md0
+Created block storage object disk0 using /dev/md0.
+/backstores/block&gt; cd /
+/&gt; ls
+o- / ..................................................................... [...]
+  o- backstores .......................................................... [...]
+  | o- block .............................................. [Storage Objects: 1]
+  | | o- disk0 ..................... [/dev/md0 (40.0GiB) write-thru deactivated]
+  | o- fileio ............................................. [Storage Objects: 0]
+  | o- pscsi .............................................. [Storage Objects: 0]
+  | o- ramdisk ............................................ [Storage Objects: 0]
+  o- iscsi ........................................................ [Targets: 0]
+  o- loopback ..................................................... [Targets: 0]</code></pre>
+<p>第3步：创建iSCSI target名称及配置共享资源。iSCSI target名称是由系统自动生成的，这是一串用于描述共享资源的唯一字符串。稍后用户在扫描iSCSI服务端时即可看到这个字符串，因此我们不需要记住它。系统在生成这个target名称后，还会在/iscsi参数目录中创建一个与其字符串同名的新“目录”用来存放共享资源。我们需要把前面加入到iSCSI共享资源池中的硬盘设备添加到这个新目录中，这样用户在登录iSCSI服务端后，即可默认使用这硬盘设备提供的共享存储资源了。</p>
+<pre><code>/&gt; cd iscsi
+/iscsi&gt; 
+/iscsi&gt; create
+Created target iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80.
+Created TPG 1.
+/iscsi&gt; cd iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80/
+/iscsi/iqn.20....d497c356ad80&gt; ls
+o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 ...... [TPGs: 1]
+  o- tpg1 ............................................... [no-gen-acls, no-auth]
+    o- acls .......................................................... [ACLs: 0]
+    o- luns .......................................................... [LUNs: 0]
+    o- portals .................................................... [Portals: 0]
+/iscsi/iqn.20....d497c356ad80&gt; cd tpg1/luns
+/iscsi/iqn.20...d80/tpg1/luns&gt; create /backstores/block/disk0 
+Created LUN 0.</code></pre>
+<p>第4步：设置访问控制列表（ACL）。iSCSI协议是通过客户端名称进行验证的，也就是说，用户在访问存储共享资源时不需要输入密码，只要iSCSI客户端的名称与服务端中设置的访问控制列表中某一名称条目一致即可，因此需要在iSCSI服务端的配置文件中写入一串能够验证用户信息的名称。acls参数目录用于存放能够访问iSCSI服务端共享存储资源的客户端名称。刘遄老师推荐在刚刚系统生成的iSCSI target后面追加上类似于:client的参数，这样既能保证客户端的名称具有唯一性，又非常便于管理和阅读：</p>
+<pre><code>/iscsi/iqn.20...d80/tpg1/luns&gt; cd ..
+/iscsi/iqn.20...c356ad80/tpg1&gt; cd acls 
+/iscsi/iqn.20...d80/tpg1/acls&gt; create iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
+Created Node ACL for iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
+Created mapped LUN 0</code></pre>
+<p>第5步：设置iSCSI服务端的监听IP地址和端口号。即在portals参数目录中写上服务器的IP地址。接下来将由系统自动开启服务器192.168.10.10的3260端口将向外提供iSCSI共享存储资源服务：</p>
+<pre><code>/iscsi/iqn.20...d80/tpg1/acls&gt; cd ..
+/iscsi/iqn.20...c356ad80/tpg1&gt; cd portals 
+/iscsi/iqn.20.../tpg1/portals&gt; create 192.168.10.10
+Using default IP port 3260
+Created network portal 192.168.10.10:3260.</code></pre>
+<p>第6步：配置妥当后检查配置信息，重启iSCSI服务端程序并配置防火墙策略。在参数文件配置妥当后，可以浏览刚刚配置的信息，确保与下面的信息基本一致。在确认信息无误后输入exit命令来退出配置。注意，千万不要习惯性地按Ctrl + C组合键结束进程，这样不会保存配置文件，我们的工作也就白费了。最后重启iSCSI服务端程序，再设置firewalld防火墙策略，使其放行3260/tcp端口号的流量。</p>
+<pre><code>/iscsi/iqn.20.../tpg1/portals&gt; ls /
+o- / ........................... [...]
+  o- backstores................. [...]
+  | o- block ................... [Storage Objects: 1]
+  | | o- disk0 ................. [/dev/md0 (40.0GiB) write-thru activated]
+  | o- fileio .................. [Storage Objects: 0]
+  | o- pscsi ................... [Storage Objects: 0]
+  | o- ramdisk ................. [Storage Objects: 0]
+  o- iscsi ..................... [Targets: 1]
+  | o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 .... [TPGs: 1]
+  |   o- tpg1 .................. [no-gen-acls, no-auth]
+  |     o- acls ........................................................ [ACLs: 1]
+  |     | o- iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client [Mapped LUNs: 1]
+  |     |   o- mapped_lun0 ............................................. [lun0 block/disk0 (rw)]  
+    o- luns .................... [LUNs: 1]
+  |     | o- lun0 .............. [block/disk0 (/dev/md0)]
+  |     o- portals ............. [Portals: 1]
+  |       o- 192.168.10.10:3260  [OK]
+  o- loopback .................. [Targets: 0]
+/&gt; exit
+Global pref auto_save_on_exit=true
+Last 10 configs saved in /etc/target/backup.
+Configuration saved to /etc/target/saveconfig.json
+[root@linuxprobe ~]# systemctl restart targetd
+[root@linuxprobe ~]# firewall-cmd --permanent --add-port=3260/tcp 
+success 
+[root@linuxprobe ~]# firewall-cmd --reload 
+success</code></pre>
+<p>但在配置这部分时，遇到一个问题：在targetcli界面输入“exit”时，并没有显示配置已保存，反而提示有报错：’Implict and Explict’ is not in list；网上搜索查询得知是由于系统内核版本（kernel-3.10.0-123.el7.x86_64）太低导致，需要升级kernel内核：在升级内核时，也比较麻烦，一台虚拟机系统在终端中输入命令：yum update kernel，即成功升级版本（kernel 3.10.0-1160.15.2.el7.x86_64）；而另一台虚拟机则使用此种方式不成功，查询资料，采用另一种方式：</p>
+<p>1.直接运行yum update kernel，显示报错error:kernel conflicts kmod等等……；</p>
+<p>2.输入：yum clean all，可能有些效果，但无法彻底解决；</p>
+<p>3.上面报错：kernel conflicts kmod，可能是由于系统中安装有多个kmod版本导致；</p>
+<p>4.输入：rpm -qa kmod，查询系统中安装的kmod数量，然后使用 rpm -e kmod-version，卸载低版本，之后重新输入；yum update kernel，升级内核！</p>
+<p>5.升级完成后，输入：awk -F&#39; ‘$1==”menuentry “ {print $2}’ /etc/grub2.cfg ，查看下内核的默认启动顺序；</p>
+<p>6.默认启动的顺序是从0开始，新内核是从头插入，所以需要选择0，输入命令：grub2-set-default 0</p>
+<p>7.重启系统，开机后输入：uname -r，查看系统版本号！</p>
+<h1 id="4-配置linux客户端"><a href="#4-配置linux客户端" class="headerlink" title="4.配置linux客户端"></a>4.配置linux客户端</h1><p>第1步：在RHEL 7系统中，已经默认安装了iSCSI客户端服务程序initiator。如果您的系统没有安装的话，可以使用Yum软件仓库手动安装。</p>
+<pre><code>[root@linuxprobe ~]# yum install iscsi-initiator-utils 
+Loaded plugins: langpacks, product-id, subscription-manager 
+Package iscsi-initiator-utils-6.2.0.873-21.el7.x86_64 already installed and latest version 
+Nothing to do</code></pre>
+<p>第2步：编辑iSCSI客户端中的initiator名称文件，把服务端的访问控制列表名称填写进来，然后重启客户端iscsid服务程序并将其加入到开机启动项中：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/iscsi/initiatorname.iscsi
+InitiatorName=iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80:client
+[root@linuxprobe ~]# systemctl restart iscsid
+[root@linuxprobe ~]# systemctl enable iscsid
+ ln -s &#39;/usr/lib/systemd/system/iscsid.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/iscsid.service&#39;</code></pre>
+<p>第3步：iSCSI客户端访问并使用共享存储资源的步骤很简单，只需要记住刘遄老师的一个小口诀“先发现，再登录，最后挂载并使用”。iscsiadm是用于管理、查询、插入、更新或删除iSCSI数据库配置文件的命令行工具，用户需要先使用这个工具扫描发现远程iSCSI服务端，然后查看找到的服务端上有哪些可用的共享存储资源。其中，-m discovery参数的目的是扫描并发现可用的存储资源，-t st参数为执行扫描操作的类型，-p 192.168.10.10参数为iSCSI服务端的IP地址：</p>
+<pre><code>[root@linuxprobe ~]# iscsiadm -m discovery -t st -p 192.168.10.10
+192.168.10.10:3260,1 iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80</code></pre>
+<p>第4步：在使用iscsiadm命令发现了远程服务器上可用的存储资源后，接下来准备登录iSCSI服务端。其中，-m node参数为将客户端所在主机作为一台节点服务器，-T  iqn.2003-01. org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80参数为要使用的存储资源（大家可以直接复制前面命令中扫描发现的结果，以免录入错误），-p 192.168.10.10参数依然为对方iSCSI服务端的IP地址。最后使用–login或-l参数进行登录验证。</p>
+<pre><code>[root@linuxprobe ~]# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 -p 192.168.10.10 --login
+Logging in to [iface: default, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260] (multiple)
+Login to [iface: default, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260] successful.</code></pre>
+<p>第5步：在iSCSI客户端成功登录之后，会在客户端主机上多出一块名为/dev/sdb的设备文件。</p>
+<pre><code>[root@linuxprobe ~]# file /dev/sdb 
+/dev/sdb: block special</code></pre>
+<p>第6步：格式化、挂载硬盘；</p>
+<pre><code>[root@linuxprobe ~]# mkfs.xfs /dev/sdb
+[root@linuxprobe ~]# mkdir /iscsi
+[root@linuxprobe ~]# mount /dev/sdb /iscsi
+[root@linuxprobe ~]# df -h</code></pre>
+<p>需要提醒大家的是，由于udev服务是按照系统识别硬盘设备的顺序来命名硬盘设备的，当客户端主机同时使用多个远程存储资源时，如果下一次识别远程设备的顺序发生了变化，则客户端挂载目录中的文件也将随之混乱。为了防止发生这样的问题，我们应该在/etc/fstab配置文件中使用设备的UUID唯一标识符进行挂载，这样，不论远程设备资源的识别顺序再怎么变化，系统也能正确找到设备所对应的目录。</p>
+<p>blkid命令用于查看设备的名称、文件系统及UUID。可以使用管道符（详见第3章）进行过滤，只显示与/dev/sdb设备相关的信息：</p>
+<pre><code>[root@linuxprobe ~]# blkid | grep /dev/sdb
+/dev/sdb: UUID=&quot;eb9cbf2f-fce8-413a-b770-8b0f243e8ad6&quot; TYPE=&quot;xfs&quot; </code></pre>
+<p>由于/dev/sdb是一块网络存储设备，而iSCSI协议是基于TCP/IP网络传输数据的，因此必须在/etc/fstab配置文件中添加上_netdev参数，表示当系统联网后再进行挂载操作，以免系统开机时间过长或开机失败：</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/fstab
+/dev/mapper/rhel-swap swap swap defaults 0 0
+/dev/cdrom /media/cdrom iso9660 defaults 0 0 
+**UUID=eb9cbf2f-fce8-413a-b770-8b0f243e8ad6 /iscsi xfs defaults,_netdev 0 0**</code></pre>
+<p>如果我们不再需要使用iSCSI共享设备资源了，可以用iscsiadm命令的-u参数将其设备卸载：</p>
+<pre><code>[root@linuxprobe ~]# iscsiadm -m node -T iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80 -u
 
-<h3 id="4-3-2基于主机域名"><a href="#4-3-2基于主机域名" class="headerlink" title="4.3.2基于主机域名"></a>4.3.2基于主机域名</h3><p>当服务器无法为每个网站都分配一个独立IP地址的时候，可以尝试让Apache自动识别用户请求的域名，从而根据不同的域名请求来传输不同的内容。在这种情况下的配置更加简单，只需要保证位于生产环境中的服务器上有一个可用的IP地址（这里以192.168.10.10为例）就可以了。</p>
-<p>/etc/hosts是Linux系统中用于强制把某个主机域名解析到指定IP地址的配置文件。</p>
-<p>第1步：手工定义IP地址与域名之间对应关系的配置文件，保存并退出后会立即生效。可以通过分别ping这些域名来验证域名是否已经成功解析为IP地址。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/hosts
-127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4
-::1 localhost localhost.localdomain localhost6 localhost6.localdomain6
-192.168.10.10 www.linuxprobe.com bbs.linuxprobe.com tech.linuxprobe.com
-[root@linuxprobe ~]# ping -c 4 www.linuxprobe.com
-PING www.linuxprobe.com (192.168.10.10) 56(84) bytes of data.
-64 bytes from www.linuxprobe.com (192.168.10.10): icmp_seq=1 ttl=64 time=0.070 ms</code></pre>
-<p>第2步：分别在/home/wwwroot中创建用于保存不同网站数据的三个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
-<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/www
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/bbs
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/tech
-[root@linuxprobe ~]# echo &quot;WWW.linuxprobe.com&quot; &gt; /home/wwwroot/www/index.html
-[root@linuxprobe ~]# echo &quot;BBS.linuxprobe.com&quot; &gt; /home/wwwroot/bbs/index.html
-[root@linuxprobe ~]# echo &quot;TECH.linuxprobe.com&quot; &gt; /home/wwwroot/tech/index.html</code></pre>
-<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入三个基于主机名的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
-………………省略部分输出信息………………
-113 &lt;VirtualHost 192.168.10.10&gt;
-114 DocumentRoot &quot;/home/wwwroot/www&quot;
-115 ServerName &quot;www.linuxprobe.com&quot;
-116 &lt;Directory &quot;/home/wwwroot/www&quot;&gt;
-117 AllowOverride None
-118 Require all granted
-119 &lt;/directory&gt; 
-120 &lt;/VirtualHost&gt;
-121 &lt;VirtualHost 192.168.10.10&gt;
-122 DocumentRoot &quot;/home/wwwroot/bbs&quot;
-123 ServerName &quot;bbs.linuxprobe.com&quot;
-124 &lt;Directory &quot;/home/wwwroot/bbs&quot;&gt;
-125 AllowOverride None
-126 Require all granted
-127 &lt;/Directory&gt;
-128 &lt;/VirtualHost&gt;
-129 &lt;VirtualHost 192.168.10.10&gt;
-130 DocumentRoot &quot;/home/wwwroot/tech&quot;
-131 ServerName &quot;tech.linuxprobe.com&quot;
-132 &lt;Directory &quot;/home/wwwroot/tech&quot;&gt;
-133 AllowOverride None
-134 Require all granted
-135 &lt;/directory&gt;
-136 &lt;/VirtualHost&gt;</code></pre>
-<p>第4步：因为当前的网站数据目录还是在/home/wwwroot目录中，因此还是必须要正确设置网站数据目录文件的SELinux安全上下文，使其与网站服务功能相吻合。最后记得用restorecon命令让新配置的SELinux安全上下文立即生效，这样就可以立即访问到虚拟主机网站了。</p>
-<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/www
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/www/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/bbs
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/bbs/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/tech
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/tech/*
-[root@linuxprobe ~]# restorecon -Rv /home/wwwroot</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/4.png" class>
+Logging out of session [sid: 7, target : iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80, portal: 192.168.10.10,3260]
 
-<h3 id="4-3-3基于端口号"><a href="#4-3-3基于端口号" class="headerlink" title="4.3.3基于端口号"></a>4.3.3基于端口号</h3><p>基于端口号的虚拟主机功能可以让用户通过指定的端口号来访问服务器上的网站资源。一般来说，使用80、443、8080等端口号来提供网站访问服务是比较合理的，如果使用其他端口号则会受到SELinux服务的限制。</p>
-<p>在接下来的实验中，我们不但要考虑到目录上应用的SELinux安全上下文的限制，还需要考虑SELinux域对httpd服务程序的管控。</p>
-<p>第1步：分别在/home/wwwroot中创建用于保存不同网站数据的两个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
-<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/6111
-[root@linuxprobe ~]# mkdir -p /home/wwwroot/6222
-[root@linuxprobe ~]# echo &quot;port:6111&quot; &gt; /home/wwwroot/6111/index.html
-[root@linuxprobe ~]# echo &quot;port:6222&quot; &gt; /home/wwwroot/6222/index.html</code></pre>
-<p>第2步：在httpd服务配置文件的第43行和第44行分别添加用于监听6111和6222端口的参数。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf 
-………………省略部分输出信息……………… 
- 33 #
- 34 # Listen: Allows you to bind Apache to specific IP addresses and/or
- 35 # ports, instead of the default. See also the &lt;VirtualHost&gt;
- 36 # directive.
- 37 #
- 38 # Change this to Listen on specific IP addresses as shown below to 
- 39 # prevent Apache from glomming onto all bound IP addresses.
- 40 #
- 41 #Listen 12.34.56.78:80
- 42 Listen 80
- 43 Listen 6111
- 44 Listen 6222
-………………省略部分输出信息……………… </code></pre>
-<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入两个基于端口号的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
-………………省略部分输出信息……………… 
-113 &lt;VirtualHost 192.168.10.10:6111&gt;
-114 DocumentRoot &quot;/home/wwwroot/6111&quot;
-115 ServerName www.linuxprobe.com
-116 &lt;Directory &quot;/home/wwwroot/6111&quot;&gt;
-117 AllowOverride None
-118 Require all granted
-119 &lt;/Directory&gt; 
-120 &lt;/VirtualHost&gt;
-121 &lt;VirtualHost 192.168.10.10:6222&gt;
-122 DocumentRoot &quot;/home/wwwroot/6222&quot;
-123 ServerName bbs.linuxprobe.com
-124 &lt;Directory &quot;/home/wwwroot/6222&quot;&gt;
-125 AllowOverride None
-126 Require all granted
-127 &lt;/Directory&gt;
-128 &lt;/VirtualHost&gt;
-………………省略部分输出信息………………</code></pre>
-<p>第4步：因为我们把网站数据目录存放在/home/wwwroot目录中，因此还是必须要正确设置网站数据目录文件的SELinux安全上下文，使其与网站服务功能相吻合。最后记得用restorecon命令让新配置的SELinux安全上下文立即生效。</p>
-<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6111
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6111/*
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6222
-[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6222/*
-[root@linuxprobe ~]# restorecon -Rv /home/wwwroot/</code></pre>
-<p>第5步：用semanage命令查询并过滤出所有与HTTP协议相关且SELinux服务允许的端口列表。</p>
-<pre><code>[root@linuxprobe ~]# semanage port -l | grep http
-http_cache_port_t tcp 8080, 8118, 8123, 10001-10010
-http_cache_port_t udp 3130
-http_port_t tcp 80, 81, 443, 488, 8008, 8009, 8443, 9000
-pegasus_http_port_t tcp 5988
-pegasus_https_port_t tcp 5989</code></pre>
-<p>第6步：SELinux允许的与HTTP协议相关的端口号中默认没有包含6111和6222，因此需要将这两个端口号手动添加进去。该操作会立即生效，而且在系统重启过后依然有效。设置好后再重启httpd服务程序</p>
-<pre><code>[root@linuxprobe ~]# semanage port -a -t http_port_t -p tcp 6111
-[root@linuxprobe ~]# semanage port -a -t http_port_t -p tcp 6222
-[root@linuxprobe ~]# semanage port -l| grep http
-http_cache_port_t tcp 8080, 8118, 8123, 10001-10010
-http_cache_port_t udp 3130
-http_port_t tcp  6222, 6111, 80, 81, 443, 488, 8008, 8009, 8443, 9000
-pegasus_http_port_t tcp 5988
-pegasus_https_port_t tcp 5989
-[root@linuxprobe ~]# systemctl restart httpd</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/5.png" class>
+Logout of [sid: 7, target: iqn.2003-01.org.linux-iscsi.linuxprobe.x8664:sn.d497c356ad80,portal:192.168.10.10,3260] successful.</code></pre>
+<h1 id="5-配置windows客户端"><a href="#5-配置windows客户端" class="headerlink" title="5.配置windows客户端"></a>5.配置windows客户端</h1><p>使用Windows系统的客户端也可以正常访问iSCSI服务器上的共享存储资源，而且操作原理及步骤与Linux系统的客户端基本相同。在进行下面的实验之前，请先关闭Linux系统客户端，以免这两台客户端主机同时使用iSCSI共享存储资源而产生潜在问题。</p>
+<p>iSCSI服务器和客户端的操作系统以及IP地址：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>iSCSI服务端</td>
+<td>RHEL 7</td>
+<td>192.168.10.10</td>
+</tr>
+<tr>
+<td>windows客户端</td>
+<td>windows 7</td>
+<td>192.168.10.30</td>
+</tr>
+</tbody></table>
+<p>第1步：运行iSCSI发起程序。在Windows 7/10操作系统中已经默认安装了iSCSI客户端程序，我们只需在控制面板中找到“系统和安全”标签，然后单击“管理工具”，进入到“管理工具”页面后即可看到“iSCSI发起程序”图标。双击该图标。在第一次运行iSCSI发起程序时，系统会提示“Microsoft iSCSI服务端未运行”，单击“是”按钮即可自动启动并运行iSCSI发起程序：</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/2.png" class>
 
-<h1 id="5-Apache的访问控制"><a href="#5-Apache的访问控制" class="headerlink" title="5.Apache的访问控制"></a>5.Apache的访问控制</h1><p>Apache通过Allow指令允许某个主机访问服务器上的网站资源，通过Deny指令实现禁止访问。在允许或禁止访问网站资源时，还会用到Order指令，这个指令用来定义Allow或Deny指令起作用的顺序，其匹配原则是按照顺序进行匹配，若匹配成功则执行后面的默认指令。比如“Order Allow, Deny”表示先将源主机与允许规则进行匹配，若匹配成功则允许访问请求，反之则拒绝访问请求。</p>
-<p>第1步：先在服务器上的网站数据目录中新建一个子目录，并在这个子目录中创建一个包含Successful单词的首页文件；</p>
-<pre><code>[root@linuxprobe ~]# mkdir /var/www/html/server
-[root@linuxprobe ~]# echo &quot;Successful&quot; &gt; /var/www/html/server/index.html</code></pre>
-<p>第2步：打开httpd服务的配置文件，在第129行后面添加下述规则来限制源主机的访问。这段规则的含义是允许使用Firefox浏览器的主机访问服务器上的首页文件，除此之外的所有请求都将被拒绝。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
-………………省略部分输出信息………………
-129 &lt;Directory &quot;/var/www/html/server&quot;&gt;
-130 SetEnvIf User-Agent &quot;Firefox&quot; ff=1
-131 Order allow,deny
-132 Allow from env=ff
-133 &lt;/Directory&gt;
-………………省略部分输出信息………………
-[root@linuxprobe ~]# systemctl restart httpd
-[root@linuxprobe ~]# firefox</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/6.png" class>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/3.png" class>
 
-<p>除了匹配源主机的浏览器特征之外，还可以通过匹配源主机的IP地址进行访问控制。例如，我们只允许IP地址为192.168.10.20的主机访问网站资源，那么就可以在httpd服务配置文件的第129行后面添加下述规则。这样在重启httpd服务程序后再用本机（即服务器，其IP地址为192.168.10.10）来访问网站的首页面时就会提示访问被拒绝了。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
-………………省略部分输出信息………………
-129 &lt;Directory &quot;/var/www/html/server&quot;&gt;
-130 Order allow,deny 
-131 Allow from 192.168.10.20
-132 &lt;/Directory&gt;
-………………省略部分输出信息………………
-[root@linuxprobe ~]# systemctl restart httpd
-[root@linuxprobe ~]# firefox</code></pre>
-<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/7.jpg" class>
+<p>第2步：扫描发现iSCSI服务端上可用的存储资源。不论是Windows系统还是Linux系统，要想使用iSCSI共享存储资源都必须先进行扫描发现操作。运行iSCSI发起程序后在“目标”选项卡的“目标”文本框中写入iSCSI服务端的IP地址，然后单击“快速连接”按钮:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/4.png" class>
 
+<p>在弹出的“快速连接”提示框中可看到共享的硬盘存储资源，单击“完成”按钮即可:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/5.png" class>
 
+<p>回到“目标”选项卡页面，可以看到共享存储资源的名称已经出现.</p>
+<p>第3步：准备连接iSCSI服务端的共享存储资源。由于在iSCSI服务端程序上设置了ACL，使得只有客户端名称与ACL策略中的名称保持一致时才能使用远程存储资源，因此需要在“配置”选项卡中单击“更改”按钮，把iSCSI发起程序的名称修改为服务端:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/6.png" class>
 
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/7.png" class>
 
+<p>在确认客户端发起程序的名称修改正确后即可返回到“目标”选项卡页面中，然后单击“连接”按钮进行连接请求，成功连接到远程共享存储资源的页面:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/8.png" class>
 
+<p>第4步：访问iSCSI远程共享存储资源。右键单击桌面上的“计算机”图标，打开计算机管理程序:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/9.png" class>
 
+<p>开始对磁盘进行初始化操作:</p>
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/10.png" class>
 
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/11.png" class>
 
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/12.png" class>
 
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/13.png" class>
 
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/14.png" class>
 
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/15.png" class>
 
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/16.png" class>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<img src="/2021/02/20/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-17%EF%BC%9A%E4%BD%BF%E7%94%A8ISCSI%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E7%BD%91%E7%BB%9C%E5%AD%98%E5%82%A8/17.png" class>
 ]]></content>
       <categories>
         <category>linux就该这么学</category>
       </categories>
       <tags>
-        <tag>第10章节：使用Apache服务部署静态网站</tag>
+        <tag>第17章节：使用ISCSI服务部署网络存储</tag>
       </tags>
   </entry>
   <entry>
@@ -5021,6 +4595,432 @@ i love linux</code></pre>
       </categories>
       <tags>
         <tag>第11章节：使用Vsftpd服务传输文件</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：使用Apache服务部署静态网站</title>
+    <url>/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/</url>
+    <content><![CDATA[<h1 id="1-网站服务程序"><a href="#1-网站服务程序" class="headerlink" title="1.网站服务程序"></a>1.网站服务程序</h1><a id="more"></a>
+
+<p>第1步：把光盘设备中的系统镜像挂载到/media/cdrom目录。</p>
+<pre><code>[root@linuxprobe ~]# mkdir -p /media/cdrom
+[root@linuxprobe ~]# mount /dev/cdrom /media/cdrom
+mount: /dev/sr0 is write-protected, mounting read-only</code></pre>
+<p>第2步：使用Vim文本编辑器创建Yum仓库的配置文件。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/yum.repos.d/rhel7.repo
+[rhel7]
+name=rhel7
+baseurl=file:///media/cdrom
+enabled=1
+gpgcheck=0</code></pre>
+<p>第3步：动手安装Apache服务程序。注意，使用yum命令进行安装时，跟在命令后面的Apache服务的软件包名称为httpd。如果直接执行yum install apache命令，则系统会报错。</p>
+<pre><code>[root@linuxprobe ~]# yum install httpd
+Loaded plugins: langpacks, product-id, subscription-manager
+………………省略部分输出信息………………
+Complete!</code></pre>
+<p>第4步：启用httpd服务程序并将其加入到开机启动项中，使其能够随系统开机而运行，从而持续为用户提供Web服务：</p>
+<pre><code>[root@linuxprobe ~]# systemctl start httpd
+[root@linuxprobe ~]# systemctl enable httpd
+ln -s &#39;/usr/lib/systemd/system/httpd.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/httpd.service&#39;
+
+[root@linuxprobe ~]# firefox</code></pre>
+<h1 id="2-配置服务文件参数"><a href="#2-配置服务文件参数" class="headerlink" title="2.配置服务文件参数"></a>2.配置服务文件参数</h1><table>
+<thead>
+<tr>
+<th>作用</th>
+<th>文件名称</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>服务目录</td>
+<td>/etc/httpd</td>
+</tr>
+<tr>
+<td>主配置文件</td>
+<td>/etc/httpd/conf/httpd.conf</td>
+</tr>
+<tr>
+<td>网站数据目录</td>
+<td>/var/www/html</td>
+</tr>
+<tr>
+<td>访问日志</td>
+<td>/var/log/httpd/access_log</td>
+</tr>
+<tr>
+<td>错误日志</td>
+<td>/var/log/httpd/error_log</td>
+</tr>
+</tbody></table>
+<p>在httpd服务程序的主配置文件中，存在三种类型的信息：注释行信息、全局配置、区域配置；</p>
+<p> 配置httpd服务程序时最常用的参数以及用途描述：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ServerRoot</td>
+<td>服务目录</td>
+</tr>
+<tr>
+<td>ServerAdmin</td>
+<td>管理员邮箱</td>
+</tr>
+<tr>
+<td>User</td>
+<td>运行服务的用户</td>
+</tr>
+<tr>
+<td>Group</td>
+<td>运行服务的用户组</td>
+</tr>
+<tr>
+<td>ServerName</td>
+<td>网站服务器的域名</td>
+</tr>
+<tr>
+<td>DocumentRoot</td>
+<td>网站数据目录</td>
+</tr>
+<tr>
+<td>Listen</td>
+<td>监听的IP地址与端口号</td>
+</tr>
+<tr>
+<td>DirectoryIndex</td>
+<td>默认的索引页页面</td>
+</tr>
+<tr>
+<td>ErrorLog</td>
+<td>错误日志文件</td>
+</tr>
+<tr>
+<td>CustomLog</td>
+<td>访问日志文件</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>网页超时时间，默认为300秒</td>
+</tr>
+</tbody></table>
+<p>在默认情况下，网站数据是保存在/var/www/html目录中，打开httpd服务程序的主配置文件，将约第119行用于定义网站数据保存路径的参数DocumentRoot修改为/home/wwwroot，同时还需要将约第124行用于定义目录权限的参数Directory后面的路径也修改为/home/wwwroot。配置文件修改完毕后即可保存并退出。</p>
+<h1 id="3-SELinux安全子系统"><a href="#3-SELinux安全子系统" class="headerlink" title="3.SELinux安全子系统"></a>3.SELinux安全子系统</h1><p>“SELinux域”和“SELinux安全上下文”称为是Linux系统中的双保险</p>
+<p>SELinux服务有三种配置模式，具体如下：</p>
+<pre><code>enforcing：强制启用安全策略模式，将拦截服务的不合法请求。
+
+permissive：遇到服务越权访问时，只发出警告而不强制拦截。
+
+disabled：对于越权的行为不警告也不拦截。</code></pre>
+<p>SELinux服务主配置文件目录：/etc/selinux/config；</p>
+<p>getenforce：获取当前SELinux服务的运行模式； setenforce[0|1]：修改SELinux当前的运行模式（0为禁用，1为启用）；修改是暂时的，系统重启后失效。</p>
+<p>查看网站数据保存目录的SELinux安全上下文值：</p>
+<pre><code>[root@linuxprobe ~]# setenforce 1
+[root@linuxprobe ~]# ls -Zd /var/www/html
+drwxr-xr-x. root root system_u:object_r:httpd_sys_content_t:s0 /var/www/html
+[root@linuxprobe ~]# ls -Zd /home/wwwroot
+drwxrwxrwx. root root unconfined_u:object_r:home_root_t:s0 /home/wwwroot</code></pre>
+<p>在文件上设置的SELinux安全上下文是由用户段、角色段以及类型段等多个信息项共同组成的。其中，用户段system_u代表系统进程的身份，角色段object_r代表文件目录的角色，类型段httpd_sys_content_t代表网站服务的系统文件。</p>
+<h2 id="3-1-semanage命令"><a href="#3-1-semanage命令" class="headerlink" title="3.1 semanage命令"></a>3.1 semanage命令</h2><p>emanage命令用于管理SELinux的策略，格式为“semanage [选项] [文件]”，经常用到的几个参数及其功能如下所示：</p>
+<pre><code>    -l参数用于查询；    -a参数用于添加；    -m参数用于修改；    -d参数用于删除。</code></pre>
+<p>可以向新的网站数据目录中新添加一条SELinux安全上下文，让这个目录以及里面的所有文件能够被httpd服务程序所访问到：</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/*</code></pre>
+<p>注意，执行上述设置之后，还无法立即访问网站，还需要使用restorecon命令将设置好的SELinux安全上下文立即生效。在使用restorecon命令时，可以加上-Rv参数对指定的目录进行递归操作，以及显示SELinux安全上下文的修改过程。最后，再次刷新页面，就可以正常看到网页内容了：</p>
+<pre><code>[root@linuxprobe ~]# restorecon -Rv /home/wwwroot/
+restorecon reset /home/wwwroot context unconfined_u:object_r:home_root_t:s0-&gt;unconfined_u:object_r:httpd_sys_content_t:s0</code></pre>
+<p>再添加systemctl enable httpd命令，将所需服务添加到开机启动项中。</p>
+<h1 id="4-个人用户主页功能"><a href="#4-个人用户主页功能" class="headerlink" title="4.个人用户主页功能"></a>4.个人用户主页功能</h1><p>第1步：在httpd服务程序中，默认没有开启个人用户主页功能。为此，我们需要编辑下面的配置文件，然后在第17行的UserDir disabled参数前面加上井号（#），表示让httpd服务程序开启个人用户主页功能；同时再把第24行的UserDir public_html参数前面的井号（#）去掉（UserDir参数表示网站数据在用户家目录中的保存目录名称，即public_html目录）。最后，在修改完毕后记得保存。</p>
+<pre><code> 15 # permissions).
+ 16 #
+ 17 # UserDir disabled
+ 18 
+ 19 #
+ 20 # To enable requests to /~user/ to serve the user&#39;s public_html
+ 21 # directory, remove the &quot;UserDir disabled&quot; line above, and uncomment
+ 22 # the following line instead:
+ 23 # 
+ 24   UserDir public_html
+ 25 &lt;/IfModule&gt;
+ …… …… …… ……</code></pre>
+<p>第2步：在用户家目录中建立用于保存网站数据的目录及首页面文件。另外，还需要把家目录的权限修改为755，保证其他人也有权限读取里面的内容。</p>
+<pre><code>[root@linuxprobe home]# su - linuxprobe
+Last login: Fri May 22 13:17:37 CST 2017 on :0
+[linuxprobe@linuxprobe ~]$ mkdir public_html
+[linuxprobe@linuxprobe ~]$ echo &quot;This is linuxprobe&#39;s website&quot; &gt; public_html/index.html
+[linuxprobe@linuxprobe ~]$ chmod -Rf 755 /home/linuxprobe</code></pre>
+<p>第3步：使用getsebool命令查询并过滤出所有与HTTP协议相关的安全策略。其中，off为禁止状态，on为允许状态。</p>
+<pre><code>[root@linuxprobe ~]# getsebool -a | grep http
+httpd_anon_write --&gt; off
+httpd_builtin_scripting --&gt; on
+……
+**httpd_enable_homedirs --&gt; off**
+……</code></pre>
+<p>第4步：用setsebool命令来修改SELinux策略中规则的布尔值，在setsebool命令后面加上-P参数，让修改后的SELinux策略规则永久生效且立即生效，并重新启动httpd服务程序：</p>
+<pre><code>[root@linuxprobe ~]# setsebool -P httpd_enable_homedirs=on
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<p>第5步：在浏览器的地址栏中输入网址，其格式为“网址/<del>用户名”（其中的波浪号是必需的，而且网址、波浪号、用户名之间没有空格）如：127.0.0.1/</del>linuxprobe，就可以看到用户的个人网站了。</p>
+<h2 id="4-1在网页中添加口令功能"><a href="#4-1在网页中添加口令功能" class="headerlink" title="4.1在网页中添加口令功能"></a>4.1在网页中添加口令功能</h2><p>第1步：先使用htpasswd命令生成密码数据库。-c参数表示第一次生成；后面再分别添加密码数据库的存放文件，以及验证要用到的用户名称（该用户不必是系统中已有的本地账户）。</p>
+<pre><code>[root@linuxprobe ~]# htpasswd -c /etc/httpd/passwd linuxprobe
+New password:此处输入用于网页验证的密码
+Re-type new password:再输入一遍进行确认
+Adding password for user linuxprobe</code></pre>
+<p>第2步：编辑个人用户主页功能的配置文件。把第31～35行的参数信息修改成下列内容，其中井号（#）开头的内容为刘遄老师添加的注释信息，可将其忽略。随后保存并退出配置文件，重启httpd服务程序即可生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf.d/userdir.conf
+31 &lt;Directory &quot;/home/*/public_html&quot;&gt;
+32 AllowOverride all
+#刚刚生成出来的密码验证文件保存路径
+33 authuserfile &quot;/etc/httpd/passwd&quot;
+#当用户尝试访问个人用户网站时的提示信息
+34 authname &quot;My privately website&quot;
+35 authtype basic
+#用户进行账户密码登录时需要验证的用户名称
+36 require user linuxprobe
+37 &lt;/Directory&gt;
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<p>此后，当用户再想访问某个用户的个人网站时，就必须要输入账户和密码才能正常访问了。另外，验证时使用的账户和密码是用htpasswd命令生成的专门用于网站登录的口令密码，而不是系统中的用户密码，请不要搞错了。</p>
+<h2 id="4-3虚拟网站主机功能"><a href="#4-3虚拟网站主机功能" class="headerlink" title="4.3虚拟网站主机功能"></a>4.3虚拟网站主机功能</h2><p>利用虚拟主机功能，可以把一台处于运行状态的物理服务器分割成多个“虚拟的服务器”。但是，该技术无法实现目前云主机技术的硬件资源隔离，让这些虚拟的服务器共同使用物理服务器的硬件资源，供应商只能限制硬盘的使用空间大小。</p>
+<p>Apache的虚拟主机功能是服务器基于用户请求的不同IP地址、主机域名或端口号，实现提供多个网站同时为外部提供访问服务的技术，用户请求的资源不同，最终获取到的网页内容也各不相同。</p>
+<h3 id="4-3-1基于IP地址"><a href="#4-3-1基于IP地址" class="headerlink" title="4.3.1基于IP地址"></a>4.3.1基于IP地址</h3><p>第1步：使用nmtui命令，创建三个IP地址，如：192.168.10.10、192.168.10.20、192.168.10.30；</p>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/1.png" class>
+
+<p>第2步：分别在/home/wwwroot中创建用于保存不同网站数据的3个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/2.png" class>
+
+<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/10
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/20
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/30
+[root@linuxprobe ~]# echo &quot;IP:192.168.10.10&quot; &gt; /home/wwwroot/10/index.html
+[root@linuxprobe ~]# echo &quot;IP:192.168.10.20&quot; &gt; /home/wwwroot/20/index.html
+[root@linuxprobe ~]# echo &quot;IP:192.168.10.30&quot; &gt; /home/wwwroot/30/index.html</code></pre>
+<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入三个基于IP地址的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+113 &lt;VirtualHost 192.168.10.10&gt;
+114 DocumentRoot /home/wwwroot/10
+115 ServerName www.linuxprobe.com
+116 &lt;Directory /home/wwwroot/10 &gt;
+117 AllowOverride None
+118 Require all granted
+119 &lt;/Directory&gt;
+120 &lt;/VirtualHost&gt;
+121 &lt;VirtualHost 192.168.10.20&gt;
+122 DocumentRoot /home/wwwroot/20
+123 ServerName bbs.linuxprobe.com
+124 &lt;Directory /home/wwwroot/20 &gt;
+125 AllowOverride None
+126 Require all granted
+127 &lt;/Directory&gt;
+128 &lt;/VirtualHost&gt;
+129 &lt;VirtualHost 192.168.10.30&gt;
+130 DocumentRoot /home/wwwroot/30
+131 ServerName tech.linuxprobe.com
+132 &lt;Directory /home/wwwroot/30 &gt;
+133 AllowOverride None
+134 Require all granted
+135 &lt;/Directory&gt;
+136 &lt;/VirtualHost&gt;
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<p>第3步：手动把新的网站数据目录的SELinux安全上下文设置正确，并使用restorecon命令让新设置的SELinux安全上下文立即生效;</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/10
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/10/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/20
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/20/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/30
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/30/*
+[root@linuxprobe ~]# restorecon -Rv /home/wwwroot</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/3.png" class>
+
+<h3 id="4-3-2基于主机域名"><a href="#4-3-2基于主机域名" class="headerlink" title="4.3.2基于主机域名"></a>4.3.2基于主机域名</h3><p>当服务器无法为每个网站都分配一个独立IP地址的时候，可以尝试让Apache自动识别用户请求的域名，从而根据不同的域名请求来传输不同的内容。在这种情况下的配置更加简单，只需要保证位于生产环境中的服务器上有一个可用的IP地址（这里以192.168.10.10为例）就可以了。</p>
+<p>/etc/hosts是Linux系统中用于强制把某个主机域名解析到指定IP地址的配置文件。</p>
+<p>第1步：手工定义IP地址与域名之间对应关系的配置文件，保存并退出后会立即生效。可以通过分别ping这些域名来验证域名是否已经成功解析为IP地址。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/hosts
+127.0.0.1 localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1 localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.10.10 www.linuxprobe.com bbs.linuxprobe.com tech.linuxprobe.com
+[root@linuxprobe ~]# ping -c 4 www.linuxprobe.com
+PING www.linuxprobe.com (192.168.10.10) 56(84) bytes of data.
+64 bytes from www.linuxprobe.com (192.168.10.10): icmp_seq=1 ttl=64 time=0.070 ms</code></pre>
+<p>第2步：分别在/home/wwwroot中创建用于保存不同网站数据的三个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
+<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/www
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/bbs
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/tech
+[root@linuxprobe ~]# echo &quot;WWW.linuxprobe.com&quot; &gt; /home/wwwroot/www/index.html
+[root@linuxprobe ~]# echo &quot;BBS.linuxprobe.com&quot; &gt; /home/wwwroot/bbs/index.html
+[root@linuxprobe ~]# echo &quot;TECH.linuxprobe.com&quot; &gt; /home/wwwroot/tech/index.html</code></pre>
+<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入三个基于主机名的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+113 &lt;VirtualHost 192.168.10.10&gt;
+114 DocumentRoot &quot;/home/wwwroot/www&quot;
+115 ServerName &quot;www.linuxprobe.com&quot;
+116 &lt;Directory &quot;/home/wwwroot/www&quot;&gt;
+117 AllowOverride None
+118 Require all granted
+119 &lt;/directory&gt; 
+120 &lt;/VirtualHost&gt;
+121 &lt;VirtualHost 192.168.10.10&gt;
+122 DocumentRoot &quot;/home/wwwroot/bbs&quot;
+123 ServerName &quot;bbs.linuxprobe.com&quot;
+124 &lt;Directory &quot;/home/wwwroot/bbs&quot;&gt;
+125 AllowOverride None
+126 Require all granted
+127 &lt;/Directory&gt;
+128 &lt;/VirtualHost&gt;
+129 &lt;VirtualHost 192.168.10.10&gt;
+130 DocumentRoot &quot;/home/wwwroot/tech&quot;
+131 ServerName &quot;tech.linuxprobe.com&quot;
+132 &lt;Directory &quot;/home/wwwroot/tech&quot;&gt;
+133 AllowOverride None
+134 Require all granted
+135 &lt;/directory&gt;
+136 &lt;/VirtualHost&gt;</code></pre>
+<p>第4步：因为当前的网站数据目录还是在/home/wwwroot目录中，因此还是必须要正确设置网站数据目录文件的SELinux安全上下文，使其与网站服务功能相吻合。最后记得用restorecon命令让新配置的SELinux安全上下文立即生效，这样就可以立即访问到虚拟主机网站了。</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/www
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/www/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/bbs
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/bbs/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/tech
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/tech/*
+[root@linuxprobe ~]# restorecon -Rv /home/wwwroot</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/4.png" class>
+
+<h3 id="4-3-3基于端口号"><a href="#4-3-3基于端口号" class="headerlink" title="4.3.3基于端口号"></a>4.3.3基于端口号</h3><p>基于端口号的虚拟主机功能可以让用户通过指定的端口号来访问服务器上的网站资源。一般来说，使用80、443、8080等端口号来提供网站访问服务是比较合理的，如果使用其他端口号则会受到SELinux服务的限制。</p>
+<p>在接下来的实验中，我们不但要考虑到目录上应用的SELinux安全上下文的限制，还需要考虑SELinux域对httpd服务程序的管控。</p>
+<p>第1步：分别在/home/wwwroot中创建用于保存不同网站数据的两个目录，并向其中分别写入网站的首页文件。每个首页文件中应有明确区分不同网站内容的信息，方便我们稍后能更直观地检查效果。</p>
+<pre><code>[root@linuxprobe ~]# mkdir -p /home/wwwroot/6111
+[root@linuxprobe ~]# mkdir -p /home/wwwroot/6222
+[root@linuxprobe ~]# echo &quot;port:6111&quot; &gt; /home/wwwroot/6111/index.html
+[root@linuxprobe ~]# echo &quot;port:6222&quot; &gt; /home/wwwroot/6222/index.html</code></pre>
+<p>第2步：在httpd服务配置文件的第43行和第44行分别添加用于监听6111和6222端口的参数。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf 
+………………省略部分输出信息……………… 
+ 33 #
+ 34 # Listen: Allows you to bind Apache to specific IP addresses and/or
+ 35 # ports, instead of the default. See also the &lt;VirtualHost&gt;
+ 36 # directive.
+ 37 #
+ 38 # Change this to Listen on specific IP addresses as shown below to 
+ 39 # prevent Apache from glomming onto all bound IP addresses.
+ 40 #
+ 41 #Listen 12.34.56.78:80
+ 42 Listen 80
+ 43 Listen 6111
+ 44 Listen 6222
+………………省略部分输出信息……………… </code></pre>
+<p>第3步：在httpd服务的配置文件中大约113行处开始，分别追加写入两个基于端口号的虚拟主机网站参数，然后保存并退出。记得需要重启httpd服务，这些配置才生效。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息……………… 
+113 &lt;VirtualHost 192.168.10.10:6111&gt;
+114 DocumentRoot &quot;/home/wwwroot/6111&quot;
+115 ServerName www.linuxprobe.com
+116 &lt;Directory &quot;/home/wwwroot/6111&quot;&gt;
+117 AllowOverride None
+118 Require all granted
+119 &lt;/Directory&gt; 
+120 &lt;/VirtualHost&gt;
+121 &lt;VirtualHost 192.168.10.10:6222&gt;
+122 DocumentRoot &quot;/home/wwwroot/6222&quot;
+123 ServerName bbs.linuxprobe.com
+124 &lt;Directory &quot;/home/wwwroot/6222&quot;&gt;
+125 AllowOverride None
+126 Require all granted
+127 &lt;/Directory&gt;
+128 &lt;/VirtualHost&gt;
+………………省略部分输出信息………………</code></pre>
+<p>第4步：因为我们把网站数据目录存放在/home/wwwroot目录中，因此还是必须要正确设置网站数据目录文件的SELinux安全上下文，使其与网站服务功能相吻合。最后记得用restorecon命令让新配置的SELinux安全上下文立即生效。</p>
+<pre><code>[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6111
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6111/*
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6222
+[root@linuxprobe ~]# semanage fcontext -a -t httpd_sys_content_t /home/wwwroot/6222/*
+[root@linuxprobe ~]# restorecon -Rv /home/wwwroot/</code></pre>
+<p>第5步：用semanage命令查询并过滤出所有与HTTP协议相关且SELinux服务允许的端口列表。</p>
+<pre><code>[root@linuxprobe ~]# semanage port -l | grep http
+http_cache_port_t tcp 8080, 8118, 8123, 10001-10010
+http_cache_port_t udp 3130
+http_port_t tcp 80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t tcp 5988
+pegasus_https_port_t tcp 5989</code></pre>
+<p>第6步：SELinux允许的与HTTP协议相关的端口号中默认没有包含6111和6222，因此需要将这两个端口号手动添加进去。该操作会立即生效，而且在系统重启过后依然有效。设置好后再重启httpd服务程序</p>
+<pre><code>[root@linuxprobe ~]# semanage port -a -t http_port_t -p tcp 6111
+[root@linuxprobe ~]# semanage port -a -t http_port_t -p tcp 6222
+[root@linuxprobe ~]# semanage port -l| grep http
+http_cache_port_t tcp 8080, 8118, 8123, 10001-10010
+http_cache_port_t udp 3130
+http_port_t tcp  6222, 6111, 80, 81, 443, 488, 8008, 8009, 8443, 9000
+pegasus_http_port_t tcp 5988
+pegasus_https_port_t tcp 5989
+[root@linuxprobe ~]# systemctl restart httpd</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/5.png" class>
+
+<h1 id="5-Apache的访问控制"><a href="#5-Apache的访问控制" class="headerlink" title="5.Apache的访问控制"></a>5.Apache的访问控制</h1><p>Apache通过Allow指令允许某个主机访问服务器上的网站资源，通过Deny指令实现禁止访问。在允许或禁止访问网站资源时，还会用到Order指令，这个指令用来定义Allow或Deny指令起作用的顺序，其匹配原则是按照顺序进行匹配，若匹配成功则执行后面的默认指令。比如“Order Allow, Deny”表示先将源主机与允许规则进行匹配，若匹配成功则允许访问请求，反之则拒绝访问请求。</p>
+<p>第1步：先在服务器上的网站数据目录中新建一个子目录，并在这个子目录中创建一个包含Successful单词的首页文件；</p>
+<pre><code>[root@linuxprobe ~]# mkdir /var/www/html/server
+[root@linuxprobe ~]# echo &quot;Successful&quot; &gt; /var/www/html/server/index.html</code></pre>
+<p>第2步：打开httpd服务的配置文件，在第129行后面添加下述规则来限制源主机的访问。这段规则的含义是允许使用Firefox浏览器的主机访问服务器上的首页文件，除此之外的所有请求都将被拒绝。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+129 &lt;Directory &quot;/var/www/html/server&quot;&gt;
+130 SetEnvIf User-Agent &quot;Firefox&quot; ff=1
+131 Order allow,deny
+132 Allow from env=ff
+133 &lt;/Directory&gt;
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart httpd
+[root@linuxprobe ~]# firefox</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/6.png" class>
+
+<p>除了匹配源主机的浏览器特征之外，还可以通过匹配源主机的IP地址进行访问控制。例如，我们只允许IP地址为192.168.10.20的主机访问网站资源，那么就可以在httpd服务配置文件的第129行后面添加下述规则。这样在重启httpd服务程序后再用本机（即服务器，其IP地址为192.168.10.10）来访问网站的首页面时就会提示访问被拒绝了。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/httpd/conf/httpd.conf
+………………省略部分输出信息………………
+129 &lt;Directory &quot;/var/www/html/server&quot;&gt;
+130 Order allow,deny 
+131 Allow from 192.168.10.20
+132 &lt;/Directory&gt;
+………………省略部分输出信息………………
+[root@linuxprobe ~]# systemctl restart httpd
+[root@linuxprobe ~]# firefox</code></pre>
+<img src="/2021/02/07/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8Apache%E6%9C%8D%E5%8A%A1%E9%83%A8%E7%BD%B2%E9%9D%99%E6%80%81%E7%BD%91%E7%AB%99/7.jpg" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第10章节：使用Apache服务部署静态网站</tag>
       </tags>
   </entry>
   <entry>
