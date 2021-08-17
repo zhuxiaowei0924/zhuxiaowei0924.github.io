@@ -1,294 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>linux内核升级到rhel7.9版本</title>
-    <url>/2021/03/08/linux%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E5%88%B0rhel7.9%E7%89%88%E6%9C%AC/</url>
-    <content><![CDATA[<p>当前的系统版本为rhel7.0，内核版本为“Linux 3.10.0-123.el7.x86_64”</p>
-<a id="more"></a>
-
-<pre><code>[root@rhel7_0 ~]# hostnamectl
-    ……
-    Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
-    Kernel: Linux 3.10.0-123.el7.x86_64
-    ……
-[root@rhel0 ~]# uname -rs
-    Linux 3.10.0-123.el7.x86_64</code></pre>
-<p>1、从网上下载RHEL7.9版本的系统镜像文件，然后在 RHEL7.0 服务器上进行挂载，并配置在本地YUM源：</p>
-<pre><code>[root@rhel7_0 ~]# mount /dev/cdrom /mnt/
-[root@rhel7_0 ~]# cat /etc/yum.repos.d/rhel_local.repo 
-    [mnt]
-    name=mnt
-    baseurl=file:///mnt
-    enable=1
-    gpgcheck=0</code></pre>
-<p>2、在RHEL7.0服务器上先执行yum clean all，再使用yum list kernel命令查看当前服务器上已安装的内核以及可更新的高版本内核。</p>
-<pre><code>[root@rhel7_0 ~]# yum list kernel
-Loaded plugins: product-id, search-disabled-repos, subscription-manager
-This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
-Installed Packages
-kernel.x86_64                                                    3.10.0-123.el7                                                    @anaconda/7.2
-Available Packages
-kernel.x86_64                                                    3.10.0-1160.el7                                                    mnt          </code></pre>
-<p>3、安装新内核.</p>
-<pre><code>[root@rhel7_0 ~]# yum install -y kernel   
-[root@rhel7_0 ~]# uname -rs</code></pre>
-<p>　　    Linux 3.10.0-123.el7.x86_64</p>
-<p>安装完成之后，再查看内核，发现没有变化，还是跟之前的一样。</p>
-<p>查看/boot/grub2/grub.cfg 配置文件，可以看到新内核3.10.0-1160.el7.x86_64已经是排在最前边了，RHEL7 可以不用调整内核启动顺序，默认会从新内核启动。</p>
-<p>这是进行系统重启reboot，系统会从新内核3.10.0-1160.el7.x86_64启动，但在登录界面显示一片黑屏或其他报错，因此在系统升级完后，不要着急重启，需要在终端输入：<strong>yum update</strong>进行更新，之后再重启，一切正常！</p>
-<p>正常情况下，是不需要修改内核启动顺序的，如果发现内核启动顺序不对，可以按下面的方式来修改：</p>
-<pre><code>[root@rhel7_0 ~]# grub2-editenv list  --查看系统默认内核版本
-saved_entry=Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)
-[root@rhel7_0 ~]# grep &quot;menuentry &quot; /boot/grub2/grub.cfg  --查看配置文件里的内核顺序；这个菜单条目对应上图中的三条选项。
-menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-123.el7.x86_64) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-menuentry &#39;Red Hat Enterprise Linux Server (0-rescue-1fbd678500124daea255a3b7a98e320c) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-0-rescue-1fbd678500124daea255a3b7a98e320c-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
-[root@rhel7_0 ~]# grub2-set-default &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39;   --配置默认内核
-[root@rhel7_0 ~]# grub2-mkconfig -o /boot/grub2/grub.cfg    --将修改的内容写入到grub.cfg配置文件。
-Generating grub configuration file ...
-Found linux image: /boot/vmlinuz-3.10.0-1160.el7.x86_64
-Found initrd image: /boot/initramfs-3.10.0-1160.el7.x86_64.img
-Found linux image: /boot/vmlinuz-3.10.0-123.el7.x86_64
-Found initrd image: /boot/initramfs-3.10.0-123.el7.x86_64.img
-Found linux image: /boot/vmlinuz-0-rescue-1fbd678500124daea255a3b7a98e320c
-Found initrd image: /boot/initramfs-0-rescue-1fbd678500124daea255a3b7a98e320c.img
-done</code></pre>
-<p>系统内核更新成功！</p>
-]]></content>
-      <categories>
-        <category>linux系统</category>
-      </categories>
-      <tags>
-        <tag>linux内核升级</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学-14：使用DHCP动态管理主机地址</title>
-    <url>/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/</url>
-    <content><![CDATA[<h1 id="1-动态主机地址管理协议"><a href="#1-动态主机地址管理协议" class="headerlink" title="1.动态主机地址管理协议"></a>1.动态主机地址管理协议</h1><p>DHCP：Dynamic Host Configuration Protocol，动态主机配置协议；该协议用于自动管理局域网内主机的IP地址、子网掩码、网关地址及DNS地址等参数，可以有效地提升IP地址的利用率，提高配置效率，并降低管理与维护成本。</p>
-<a id="more"></a>
-
-<pre><code>作用域：一个完整的IP地址段，DHCP协议根据作用域来管理网络的分布、分配IP地址及其他配置参数。
-
-超级作用域：用于管理处于同一个物理网络中的多个逻辑子网段。超级作用域中包含了可以统一管理的作用域列表。
-
-排除范围：把作用域中的某些IP地址排除，确保这些IP地址不会分配给DHCP客户端。
-
-地址池：在定义了DHCP的作用域并应用了排除范围后，剩余的用来动态分配给DHCP客户端的IP地址范围。
-
-租约：DHCP客户端能够使用动态分配的IP地址的时间。
-
-预约：保证网络中的特定设备总是获取到相同的IP地址。</code></pre>
-<h1 id="2-部署dhcpd服务程序"><a href="#2-部署dhcpd服务程序" class="headerlink" title="2.部署dhcpd服务程序"></a>2.部署dhcpd服务程序</h1><pre><code>[root@linuxprobe ~]# yum install dhcp</code></pre>
-<p>查看dhcpd服务程序的配置文件内容：</p>
-<pre><code>[root@linuxprobe ~]# cat /etc/dhcp/dhcpd.conf</code></pre>
-<p>dhcp的服务程序的配置文件中只有3行注释语句，这意味着我们需要自行编写这个文件。如果读者不知道怎么编写，可以看一下配置文件中第2行的参考示例文件，其组成架构如图：</p>
-<img src="/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/1.png" class>
-
-<p>一个标准的配置文件应该包括全局配置参数、子网网段声明、地址配置选项以及地址配置参数。其中，全局配置参数用于定义dhcpd服务程序的整体运行参数；子网网段声明用于配置整个子网段的地址属性。</p>
-<p>dhcpd服务程序配置文件中使用的常见参数以及作用:</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>ddns-update-style 类型</td>
-<td>定义DNS服务动态更新的类型，类型包括：none（不支持动态更新）、interim（互动更新模式）与ad-hoc（特殊更新模式）</td>
-</tr>
-<tr>
-<td>allow/ignore client-updates</td>
-<td>允许/忽略客户端更新DNS记录</td>
-</tr>
-<tr>
-<td>default-lease-time 21600</td>
-<td>默认超时时间</td>
-</tr>
-<tr>
-<td>max-lease-time 43200</td>
-<td>最大超时时间</td>
-</tr>
-<tr>
-<td>option domain-name-servers 8.8.8.8</td>
-<td>定义DNS服务器地址</td>
-</tr>
-<tr>
-<td>option domain-name “domain.org”</td>
-<td>定义DNS域名</td>
-</tr>
-<tr>
-<td>range</td>
-<td>定义用于分配的IP地址池</td>
-</tr>
-<tr>
-<td>option subnet-mask</td>
-<td>定义客户端的子网掩码</td>
-</tr>
-<tr>
-<td>option routers</td>
-<td>定义客户端的网关地址</td>
-</tr>
-<tr>
-<td>broadcast-address 广播地址</td>
-<td>定义客户端的广播地址</td>
-</tr>
-<tr>
-<td>ntp-server IP地址</td>
-<td>定义客户端的网络时间服务器（NTP）</td>
-</tr>
-<tr>
-<td>nis-servers IP地址</td>
-<td>定义客户端的NIS域服务器的地址</td>
-</tr>
-<tr>
-<td>hardware 硬件类型 MAC地址</td>
-<td>指定网卡接口的类型与MAC地址</td>
-</tr>
-<tr>
-<td>server-name 主机名</td>
-<td>向DHCP客户端通知DHCP服务器的主机名</td>
-</tr>
-<tr>
-<td>fixed-address IP地址</td>
-<td>将某个固定的IP地址分配给指定主机</td>
-</tr>
-<tr>
-<td>time-offset 偏移差</td>
-<td>指定客户端与格林尼治时间的偏移差</td>
-</tr>
-</tbody></table>
-<h1 id="3-自动管理IP地址"><a href="#3-自动管理IP地址" class="headerlink" title="3.自动管理IP地址"></a>3.自动管理IP地址</h1><p>DHCP协议的设计初衷是为了更高效地集中管理局域网内的IP地址资源。DHCP服务器会自动把IP地址、子网掩码、网关、DNS地址等网络信息分配给有需要的客户端，而且当客户端的租约时间到期后还可以自动回收所分配的IP地址，以便交给新加入的客户端。</p>
-<p>DHCP服务器以及客户端的配置信息：</p>
-<table>
-<thead>
-<tr>
-<th>主机类型</th>
-<th>操作系统</th>
-<th>IP地址</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>DHCP服务器</td>
-<td>RHEL 7</td>
-<td>192.168.10.1</td>
-</tr>
-<tr>
-<td>DHCP客户机</td>
-<td>RHEL 7</td>
-<td>DHCP自动获取地址</td>
-</tr>
-</tbody></table>
-<p>作用域一般是个完整的IP地址段，而地址池中的IP地址才是真正供客户端使用的，因此地址池应该小于或等于作用域的IP地址范围。另外，由于VMware Workstation虚拟机软件自带DHCP服务，为了避免与自己配置的dhcpd服务程序产生冲突，应该将虚拟机软件（包括服务器和客户端）自带的DHCP功能关闭。</p>
-<img src="/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/2.png" class>
-
-<img src="/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/3.jpg" class>
-
-<p>此外还要注意，DHCP客户端与服务器需要处于同一种网络模式—仅主机模式（Hostonly），否则就会产生物理隔离，从而无法获取IP地址。</p>
-<p>在确认DHCP服务器的IP地址等网络信息配置妥当后就可以配置dhcpd服务程序了。请注意，在配置dhcpd服务程序时，配置文件中的每行参数后面都需要以分号（;）结尾，这是规定。</p>
-<pre><code>[root@linuxprobe ~]# vim /etc/dhcp/dhcpd.conf
-ddns-update-style none;
-ignore client-updates;
-subnet 192.168.10.0 netmask 255.255.255.0 &#123;
-range 192.168.10.50 192.168.10.150;
-option subnet-mask 255.255.255.0;
-option routers 192.168.10.1;
-option domain-name &quot;linuxprobe.com&quot;;
-option domain-name-servers 192.168.10.1;
-default-lease-time 21600;
-max-lease-time 43200;
-&#125;</code></pre>
-<p>dhcpd服务程序配置文件中使用的参数以及作用：</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>ddns-update-style none;</td>
-<td>设置DNS服务不自动进行动态更新</td>
-</tr>
-<tr>
-<td>ignore client-updates;</td>
-<td>忽略客户端更新DNS记录</td>
-</tr>
-<tr>
-<td>subnet 192.168.10.0 netmask 255.255.255.0 {</td>
-<td>作用域为192.168.10.0/24网段</td>
-</tr>
-<tr>
-<td>range 192.168.10.50 192.168.10.150;</td>
-<td>IP地址池为192.168.10.50-150（约100个IP地址）</td>
-</tr>
-<tr>
-<td>option subnet-mask 255.255.255.0;</td>
-<td>定义客户端默认的子网掩码</td>
-</tr>
-<tr>
-<td>option routers 192.168.10.1;</td>
-<td>定义客户端的网关地址</td>
-</tr>
-<tr>
-<td>option domain-name “linuxprobe.com”;</td>
-<td>定义默认的搜索域</td>
-</tr>
-<tr>
-<td>option domain-name-servers 192.168.10.1;</td>
-<td>定义客户端的DNS地址</td>
-</tr>
-<tr>
-<td>default-lease-time 21600;</td>
-<td>定义默认租约时间（单位：秒）</td>
-</tr>
-<tr>
-<td>max-lease-time 43200;</td>
-<td>定义最大预约时间（单位：秒）</td>
-</tr>
-<tr>
-<td>}</td>
-<td>结束符</td>
-</tr>
-</tbody></table>
-<p>把配置过的dhcpd服务加入到开机启动项中，以确保当服务器下次开机后dhcpd服务依然能自动启动，并顺利地为客户端分配IP地址等信息：</p>
-<pre><code>[root@linuxprobe ~]# systemctl start dhcpd
-[root@linuxprobe ~]# systemctl enable dhcpd
- ln -s &#39;/usr/lib/systemd/system/dhcpd.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/dhcpd.service&#39;</code></pre>
-<p>把dhcpd服务程序配置妥当之后就可以开启客户端来检验IP分配效果了。重启客户端的网卡服务后即可看到自动分配到的IP地址：</p>
-<img src="/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/4.jpg" class>
-
-<h1 id="4-分配固定IP地址"><a href="#4-分配固定IP地址" class="headerlink" title="4.分配固定IP地址"></a>4.分配固定IP地址</h1><p>在DHCP协议中有个术语是“预约”，它用来确保局域网中特定的设备总是获取到固定的IP地址。换句话说，就是dhcpd服务程序会把某个IP地址私藏下来，只将其用于相匹配的特定设备。</p>
-<p>要想把某个IP地址与某台主机进行绑定，就需要用到这台主机的MAC地址。</p>
-<img src="/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/5.jpg" class>
-
-<p>也可以启动dhcpd服务程序，为主机分配一个IP地址，这样就会在DHCP服务器本地的日志文件中保存这次的IP地址分配记录，然后通过查看日志文件，获悉主机的MAC地址：</p>
-<pre><code>[root@linuxprobe ~]# tail -f /var/log/messages 
-Mar 30 05:33:17 localhost dhcpd: Copyright 2004-2013 Internet Systems Consortium.
-Mar 30 05:33:17 localhost dhcpd: All rights reserved.
-Mar 30 05:33:17 localhost dhcpd: For info, please visit https://www.isc.org/software/dhcp/
-Mar 30 05:33:17 localhost dhcpd: Not searching LDAP since ldap-server, ldap-port and ldap-base-dn were not specified in the config file
-Mar 30 05:33:17 localhost dhcpd: Wrote 0 leases to leases file.
-Mar 30 05:33:17 localhost dhcpd: Listening on LPF/eno16777728/00:0c:29:c4:a4:09/192.168.10.0/24
-Mar 30 05:33:17 localhost dhcpd: Sending on LPF/eno16777728/00:0c:29:c4:a4:09/192.168.10.0/24
-Mar 30 05:33:17 localhost dhcpd: Sending on Socket/fallback/fallback-net
-Mar 30 05:33:26 localhost dhcpd: DHCPDISCOVER from **00:0c:29:27:c6:12** via eno16777728</code></pre>
-<p>在dhcpd服务程序的配置文件中，按照如下格式将IP地址与MAC地址进行绑定（MAC地址的间隔符为冒号（:））：</p>
-<img src="/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/6.png" class>
-
-<p>确认参数填写正确后就可以保存退出配置文件，然后就可以重启dhcpd服务程序了：</p>
-<pre><code>[root@linuxprobe ~]# systemctl restart dhcpd</code></pre>
-<p>需要说明的是，如果刚刚为这台主机分配了IP地址，则它的IP地址租约时间还没有到期，因此不会立即换成新绑定的IP地址。要想立即查看绑定效果，则需要重启一下客户端的网络服务：</p>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第14章节：使用DHCP动态管理主机地址</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux就该这么学-12:使用Samba或NFS实现文件共享</title>
     <url>/2021/02/11/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-12-%E4%BD%BF%E7%94%A8Samba%E6%88%96NFS%E5%AE%9E%E7%8E%B0%E6%96%87%E4%BB%B6%E5%85%B1%E4%BA%AB/</url>
     <content><![CDATA[<h1 id="1-SAMBA文件共享服务"><a href="#1-SAMBA文件共享服务" class="headerlink" title="1.SAMBA文件共享服务"></a>1.SAMBA文件共享服务</h1><p>Samba服务程序现在已经成为在Linux系统与Windows系统之间共享文件的最佳选择。</p>
@@ -629,6 +341,294 @@ Filesystem Size Used Avail Use% Mounted on
       </tags>
   </entry>
   <entry>
+    <title>linux内核升级到rhel7.9版本</title>
+    <url>/2021/03/08/linux%E5%86%85%E6%A0%B8%E5%8D%87%E7%BA%A7%E5%88%B0rhel7.9%E7%89%88%E6%9C%AC/</url>
+    <content><![CDATA[<p>当前的系统版本为rhel7.0，内核版本为“Linux 3.10.0-123.el7.x86_64”</p>
+<a id="more"></a>
+
+<pre><code>[root@rhel7_0 ~]# hostnamectl
+    ……
+    Operating System: Red Hat Enterprise Linux Server 7.0 (Maipo)
+    Kernel: Linux 3.10.0-123.el7.x86_64
+    ……
+[root@rhel0 ~]# uname -rs
+    Linux 3.10.0-123.el7.x86_64</code></pre>
+<p>1、从网上下载RHEL7.9版本的系统镜像文件，然后在 RHEL7.0 服务器上进行挂载，并配置在本地YUM源：</p>
+<pre><code>[root@rhel7_0 ~]# mount /dev/cdrom /mnt/
+[root@rhel7_0 ~]# cat /etc/yum.repos.d/rhel_local.repo 
+    [mnt]
+    name=mnt
+    baseurl=file:///mnt
+    enable=1
+    gpgcheck=0</code></pre>
+<p>2、在RHEL7.0服务器上先执行yum clean all，再使用yum list kernel命令查看当前服务器上已安装的内核以及可更新的高版本内核。</p>
+<pre><code>[root@rhel7_0 ~]# yum list kernel
+Loaded plugins: product-id, search-disabled-repos, subscription-manager
+This system is not registered to Red Hat Subscription Management. You can use subscription-manager to register.
+Installed Packages
+kernel.x86_64                                                    3.10.0-123.el7                                                    @anaconda/7.2
+Available Packages
+kernel.x86_64                                                    3.10.0-1160.el7                                                    mnt          </code></pre>
+<p>3、安装新内核.</p>
+<pre><code>[root@rhel7_0 ~]# yum install -y kernel   
+[root@rhel7_0 ~]# uname -rs</code></pre>
+<p>　　    Linux 3.10.0-123.el7.x86_64</p>
+<p>安装完成之后，再查看内核，发现没有变化，还是跟之前的一样。</p>
+<p>查看/boot/grub2/grub.cfg 配置文件，可以看到新内核3.10.0-1160.el7.x86_64已经是排在最前边了，RHEL7 可以不用调整内核启动顺序，默认会从新内核启动。</p>
+<p>这是进行系统重启reboot，系统会从新内核3.10.0-1160.el7.x86_64启动，但在登录界面显示一片黑屏或其他报错，因此在系统升级完后，不要着急重启，需要在终端输入：<strong>yum update</strong>进行更新，之后再重启，一切正常！</p>
+<p>正常情况下，是不需要修改内核启动顺序的，如果发现内核启动顺序不对，可以按下面的方式来修改：</p>
+<pre><code>[root@rhel7_0 ~]# grub2-editenv list  --查看系统默认内核版本
+saved_entry=Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)
+[root@rhel7_0 ~]# grep &quot;menuentry &quot; /boot/grub2/grub.cfg  --查看配置文件里的内核顺序；这个菜单条目对应上图中的三条选项。
+menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+menuentry &#39;Red Hat Enterprise Linux Server (3.10.0-123.el7.x86_64) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-3.10.0-123.el7.x86_64-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+menuentry &#39;Red Hat Enterprise Linux Server (0-rescue-1fbd678500124daea255a3b7a98e320c) 7.0 (Maipo)&#39; --class red --class gnu-linux --class gnu --class os --unrestricted $menuentry_id_option &#39;gnulinux-0-rescue-1fbd678500124daea255a3b7a98e320c-advanced-e2de1cc9-e059-4306-a1a5-2389e3f83c70&#39; &#123;
+[root@rhel7_0 ~]# grub2-set-default &#39;Red Hat Enterprise Linux Server (3.10.0-1160.el7.x86_64) 7.9 (Maipo)&#39;   --配置默认内核
+[root@rhel7_0 ~]# grub2-mkconfig -o /boot/grub2/grub.cfg    --将修改的内容写入到grub.cfg配置文件。
+Generating grub configuration file ...
+Found linux image: /boot/vmlinuz-3.10.0-1160.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-1160.el7.x86_64.img
+Found linux image: /boot/vmlinuz-3.10.0-123.el7.x86_64
+Found initrd image: /boot/initramfs-3.10.0-123.el7.x86_64.img
+Found linux image: /boot/vmlinuz-0-rescue-1fbd678500124daea255a3b7a98e320c
+Found initrd image: /boot/initramfs-0-rescue-1fbd678500124daea255a3b7a98e320c.img
+done</code></pre>
+<p>系统内核更新成功！</p>
+]]></content>
+      <categories>
+        <category>linux系统</category>
+      </categories>
+      <tags>
+        <tag>linux内核升级</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学-14：使用DHCP动态管理主机地址</title>
+    <url>/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/</url>
+    <content><![CDATA[<h1 id="1-动态主机地址管理协议"><a href="#1-动态主机地址管理协议" class="headerlink" title="1.动态主机地址管理协议"></a>1.动态主机地址管理协议</h1><p>DHCP：Dynamic Host Configuration Protocol，动态主机配置协议；该协议用于自动管理局域网内主机的IP地址、子网掩码、网关地址及DNS地址等参数，可以有效地提升IP地址的利用率，提高配置效率，并降低管理与维护成本。</p>
+<a id="more"></a>
+
+<pre><code>作用域：一个完整的IP地址段，DHCP协议根据作用域来管理网络的分布、分配IP地址及其他配置参数。
+
+超级作用域：用于管理处于同一个物理网络中的多个逻辑子网段。超级作用域中包含了可以统一管理的作用域列表。
+
+排除范围：把作用域中的某些IP地址排除，确保这些IP地址不会分配给DHCP客户端。
+
+地址池：在定义了DHCP的作用域并应用了排除范围后，剩余的用来动态分配给DHCP客户端的IP地址范围。
+
+租约：DHCP客户端能够使用动态分配的IP地址的时间。
+
+预约：保证网络中的特定设备总是获取到相同的IP地址。</code></pre>
+<h1 id="2-部署dhcpd服务程序"><a href="#2-部署dhcpd服务程序" class="headerlink" title="2.部署dhcpd服务程序"></a>2.部署dhcpd服务程序</h1><pre><code>[root@linuxprobe ~]# yum install dhcp</code></pre>
+<p>查看dhcpd服务程序的配置文件内容：</p>
+<pre><code>[root@linuxprobe ~]# cat /etc/dhcp/dhcpd.conf</code></pre>
+<p>dhcp的服务程序的配置文件中只有3行注释语句，这意味着我们需要自行编写这个文件。如果读者不知道怎么编写，可以看一下配置文件中第2行的参考示例文件，其组成架构如图：</p>
+<img src="/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/1.png" class>
+
+<p>一个标准的配置文件应该包括全局配置参数、子网网段声明、地址配置选项以及地址配置参数。其中，全局配置参数用于定义dhcpd服务程序的整体运行参数；子网网段声明用于配置整个子网段的地址属性。</p>
+<p>dhcpd服务程序配置文件中使用的常见参数以及作用:</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ddns-update-style 类型</td>
+<td>定义DNS服务动态更新的类型，类型包括：none（不支持动态更新）、interim（互动更新模式）与ad-hoc（特殊更新模式）</td>
+</tr>
+<tr>
+<td>allow/ignore client-updates</td>
+<td>允许/忽略客户端更新DNS记录</td>
+</tr>
+<tr>
+<td>default-lease-time 21600</td>
+<td>默认超时时间</td>
+</tr>
+<tr>
+<td>max-lease-time 43200</td>
+<td>最大超时时间</td>
+</tr>
+<tr>
+<td>option domain-name-servers 8.8.8.8</td>
+<td>定义DNS服务器地址</td>
+</tr>
+<tr>
+<td>option domain-name “domain.org”</td>
+<td>定义DNS域名</td>
+</tr>
+<tr>
+<td>range</td>
+<td>定义用于分配的IP地址池</td>
+</tr>
+<tr>
+<td>option subnet-mask</td>
+<td>定义客户端的子网掩码</td>
+</tr>
+<tr>
+<td>option routers</td>
+<td>定义客户端的网关地址</td>
+</tr>
+<tr>
+<td>broadcast-address 广播地址</td>
+<td>定义客户端的广播地址</td>
+</tr>
+<tr>
+<td>ntp-server IP地址</td>
+<td>定义客户端的网络时间服务器（NTP）</td>
+</tr>
+<tr>
+<td>nis-servers IP地址</td>
+<td>定义客户端的NIS域服务器的地址</td>
+</tr>
+<tr>
+<td>hardware 硬件类型 MAC地址</td>
+<td>指定网卡接口的类型与MAC地址</td>
+</tr>
+<tr>
+<td>server-name 主机名</td>
+<td>向DHCP客户端通知DHCP服务器的主机名</td>
+</tr>
+<tr>
+<td>fixed-address IP地址</td>
+<td>将某个固定的IP地址分配给指定主机</td>
+</tr>
+<tr>
+<td>time-offset 偏移差</td>
+<td>指定客户端与格林尼治时间的偏移差</td>
+</tr>
+</tbody></table>
+<h1 id="3-自动管理IP地址"><a href="#3-自动管理IP地址" class="headerlink" title="3.自动管理IP地址"></a>3.自动管理IP地址</h1><p>DHCP协议的设计初衷是为了更高效地集中管理局域网内的IP地址资源。DHCP服务器会自动把IP地址、子网掩码、网关、DNS地址等网络信息分配给有需要的客户端，而且当客户端的租约时间到期后还可以自动回收所分配的IP地址，以便交给新加入的客户端。</p>
+<p>DHCP服务器以及客户端的配置信息：</p>
+<table>
+<thead>
+<tr>
+<th>主机类型</th>
+<th>操作系统</th>
+<th>IP地址</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DHCP服务器</td>
+<td>RHEL 7</td>
+<td>192.168.10.1</td>
+</tr>
+<tr>
+<td>DHCP客户机</td>
+<td>RHEL 7</td>
+<td>DHCP自动获取地址</td>
+</tr>
+</tbody></table>
+<p>作用域一般是个完整的IP地址段，而地址池中的IP地址才是真正供客户端使用的，因此地址池应该小于或等于作用域的IP地址范围。另外，由于VMware Workstation虚拟机软件自带DHCP服务，为了避免与自己配置的dhcpd服务程序产生冲突，应该将虚拟机软件（包括服务器和客户端）自带的DHCP功能关闭。</p>
+<img src="/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/2.png" class>
+
+<img src="/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/3.jpg" class>
+
+<p>此外还要注意，DHCP客户端与服务器需要处于同一种网络模式—仅主机模式（Hostonly），否则就会产生物理隔离，从而无法获取IP地址。</p>
+<p>在确认DHCP服务器的IP地址等网络信息配置妥当后就可以配置dhcpd服务程序了。请注意，在配置dhcpd服务程序时，配置文件中的每行参数后面都需要以分号（;）结尾，这是规定。</p>
+<pre><code>[root@linuxprobe ~]# vim /etc/dhcp/dhcpd.conf
+ddns-update-style none;
+ignore client-updates;
+subnet 192.168.10.0 netmask 255.255.255.0 &#123;
+range 192.168.10.50 192.168.10.150;
+option subnet-mask 255.255.255.0;
+option routers 192.168.10.1;
+option domain-name &quot;linuxprobe.com&quot;;
+option domain-name-servers 192.168.10.1;
+default-lease-time 21600;
+max-lease-time 43200;
+&#125;</code></pre>
+<p>dhcpd服务程序配置文件中使用的参数以及作用：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ddns-update-style none;</td>
+<td>设置DNS服务不自动进行动态更新</td>
+</tr>
+<tr>
+<td>ignore client-updates;</td>
+<td>忽略客户端更新DNS记录</td>
+</tr>
+<tr>
+<td>subnet 192.168.10.0 netmask 255.255.255.0 {</td>
+<td>作用域为192.168.10.0/24网段</td>
+</tr>
+<tr>
+<td>range 192.168.10.50 192.168.10.150;</td>
+<td>IP地址池为192.168.10.50-150（约100个IP地址）</td>
+</tr>
+<tr>
+<td>option subnet-mask 255.255.255.0;</td>
+<td>定义客户端默认的子网掩码</td>
+</tr>
+<tr>
+<td>option routers 192.168.10.1;</td>
+<td>定义客户端的网关地址</td>
+</tr>
+<tr>
+<td>option domain-name “linuxprobe.com”;</td>
+<td>定义默认的搜索域</td>
+</tr>
+<tr>
+<td>option domain-name-servers 192.168.10.1;</td>
+<td>定义客户端的DNS地址</td>
+</tr>
+<tr>
+<td>default-lease-time 21600;</td>
+<td>定义默认租约时间（单位：秒）</td>
+</tr>
+<tr>
+<td>max-lease-time 43200;</td>
+<td>定义最大预约时间（单位：秒）</td>
+</tr>
+<tr>
+<td>}</td>
+<td>结束符</td>
+</tr>
+</tbody></table>
+<p>把配置过的dhcpd服务加入到开机启动项中，以确保当服务器下次开机后dhcpd服务依然能自动启动，并顺利地为客户端分配IP地址等信息：</p>
+<pre><code>[root@linuxprobe ~]# systemctl start dhcpd
+[root@linuxprobe ~]# systemctl enable dhcpd
+ ln -s &#39;/usr/lib/systemd/system/dhcpd.service&#39; &#39;/etc/systemd/system/multi-user.target.wants/dhcpd.service&#39;</code></pre>
+<p>把dhcpd服务程序配置妥当之后就可以开启客户端来检验IP分配效果了。重启客户端的网卡服务后即可看到自动分配到的IP地址：</p>
+<img src="/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/4.jpg" class>
+
+<h1 id="4-分配固定IP地址"><a href="#4-分配固定IP地址" class="headerlink" title="4.分配固定IP地址"></a>4.分配固定IP地址</h1><p>在DHCP协议中有个术语是“预约”，它用来确保局域网中特定的设备总是获取到固定的IP地址。换句话说，就是dhcpd服务程序会把某个IP地址私藏下来，只将其用于相匹配的特定设备。</p>
+<p>要想把某个IP地址与某台主机进行绑定，就需要用到这台主机的MAC地址。</p>
+<img src="/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/5.jpg" class>
+
+<p>也可以启动dhcpd服务程序，为主机分配一个IP地址，这样就会在DHCP服务器本地的日志文件中保存这次的IP地址分配记录，然后通过查看日志文件，获悉主机的MAC地址：</p>
+<pre><code>[root@linuxprobe ~]# tail -f /var/log/messages 
+Mar 30 05:33:17 localhost dhcpd: Copyright 2004-2013 Internet Systems Consortium.
+Mar 30 05:33:17 localhost dhcpd: All rights reserved.
+Mar 30 05:33:17 localhost dhcpd: For info, please visit https://www.isc.org/software/dhcp/
+Mar 30 05:33:17 localhost dhcpd: Not searching LDAP since ldap-server, ldap-port and ldap-base-dn were not specified in the config file
+Mar 30 05:33:17 localhost dhcpd: Wrote 0 leases to leases file.
+Mar 30 05:33:17 localhost dhcpd: Listening on LPF/eno16777728/00:0c:29:c4:a4:09/192.168.10.0/24
+Mar 30 05:33:17 localhost dhcpd: Sending on LPF/eno16777728/00:0c:29:c4:a4:09/192.168.10.0/24
+Mar 30 05:33:17 localhost dhcpd: Sending on Socket/fallback/fallback-net
+Mar 30 05:33:26 localhost dhcpd: DHCPDISCOVER from **00:0c:29:27:c6:12** via eno16777728</code></pre>
+<p>在dhcpd服务程序的配置文件中，按照如下格式将IP地址与MAC地址进行绑定（MAC地址的间隔符为冒号（:））：</p>
+<img src="/2021/02/15/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-14%EF%BC%9A%E4%BD%BF%E7%94%A8DHCP%E5%8A%A8%E6%80%81%E7%AE%A1%E7%90%86%E4%B8%BB%E6%9C%BA%E5%9C%B0%E5%9D%80/6.png" class>
+
+<p>确认参数填写正确后就可以保存退出配置文件，然后就可以重启dhcpd服务程序了：</p>
+<pre><code>[root@linuxprobe ~]# systemctl restart dhcpd</code></pre>
+<p>需要说明的是，如果刚刚为这台主机分配了IP地址，则它的IP地址租约时间还没有到期，因此不会立即换成新绑定的IP地址。要想立即查看绑定效果，则需要重启一下客户端的网络服务：</p>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第14章节：使用DHCP动态管理主机地址</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux就该这么学-15:使用Postfix与Dovecot部署邮件系统</title>
     <url>/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/</url>
     <content><![CDATA[<h1 id="1-电子邮件系统"><a href="#1-电子邮件系统" class="headerlink" title="1.电子邮件系统"></a>1.电子邮件系统</h1><p>电子邮件系统基于邮件协议来完成电子邮件的传输，常见的邮件协议有下面这些：</p>
@@ -845,7 +845,7 @@ ln -s &#39;/usr/lib/systemd/system/dovecot.service&#39; &#39;/etc/systemd/system
 </tbody></table>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/5.png" class>
 
-<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#x6c;&#x69;&#110;&#x75;&#120;&#112;&#114;&#111;&#x62;&#101;&#x40;&#x6c;&#105;&#110;&#x75;&#120;&#x70;&#114;&#x6f;&#98;&#101;&#46;&#x63;&#x6f;&#109;">&#x6c;&#x69;&#110;&#x75;&#120;&#112;&#114;&#111;&#x62;&#101;&#x40;&#x6c;&#105;&#110;&#x75;&#120;&#x70;&#114;&#x6f;&#98;&#101;&#46;&#x63;&#x6f;&#109;</a>,linuxprobe是linux用户名）和用户密码：</p>
+<p>第1步：在win10系统中安装foxmail软件；安装后在软件账号管理-账号处新建账号，输入E-mail地址（如<a href="mailto:&#108;&#x69;&#110;&#117;&#120;&#x70;&#x72;&#x6f;&#98;&#101;&#x40;&#108;&#x69;&#110;&#117;&#x78;&#112;&#x72;&#x6f;&#98;&#x65;&#x2e;&#x63;&#111;&#x6d;">&#108;&#x69;&#110;&#117;&#120;&#x70;&#x72;&#x6f;&#98;&#101;&#x40;&#108;&#x69;&#110;&#117;&#x78;&#112;&#x72;&#x6f;&#98;&#x65;&#x2e;&#x63;&#111;&#x6d;</a>,linuxprobe是linux用户名）和用户密码：</p>
 <img src="/2021/02/16/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6-15-%E4%BD%BF%E7%94%A8Postfix%E4%B8%8EDovecot%E9%83%A8%E7%BD%B2%E9%82%AE%E4%BB%B6%E7%B3%BB%E7%BB%9F/6.png" class>
 
 <p>第2步：设置接收服务器类型为POP3，输入邮件帐号和密码，设置POP服务器和SMTP服务器地址，两个为同一地址，如192.168.10.10，SSL端口处不勾选，之后创建成功！</p>
@@ -1316,104 +1316,6 @@ success
       </tags>
   </entry>
   <entry>
-    <title>linux就该这么学：使用RAID与LVM磁盘阵列技术</title>
-    <url>/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/</url>
-    <content><![CDATA[<p>RAID：Redundant Array of Independent Disks，独立冗余磁盘阵列；<br>LVM：Logical Volume Manager，逻辑卷管理器；</p>
-<a id="more"></a>
-
-<h1 id="1-RAID-0"><a href="#1-RAID-0" class="headerlink" title="1.RAID 0"></a>1.RAID 0</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/1.png" class>
-
-<h1 id="2-RAID-1"><a href="#2-RAID-1" class="headerlink" title="2.RAID 1"></a>2.RAID 1</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/2.jpg" class>
-
-<h1 id="3-RAID-5"><a href="#3-RAID-5" class="headerlink" title="3.RAID 5"></a>3.RAID 5</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/3.png" class>
-
-<h1 id="4-RAID-10"><a href="#4-RAID-10" class="headerlink" title="4.RAID 10"></a>4.RAID 10</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/4.png" class>
-
-<p>mdadm命令用于管理Linux系统中的软件RAID硬盘阵列，格式为“mdadm [模式] &lt;RAID设备名称&gt; [选项] [成员设备名称]”.</p>
-<table>
-<thead>
-<tr>
-<th>参数</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-a</td>
-<td>检测设备名称</td>
-</tr>
-<tr>
-<td>-n</td>
-<td>指定设备数量</td>
-</tr>
-<tr>
-<td>-l</td>
-<td>指定RAID级别</td>
-</tr>
-<tr>
-<td>-C</td>
-<td>创建</td>
-</tr>
-<tr>
-<td>-v</td>
-<td>显示过程</td>
-</tr>
-<tr>
-<td>-D</td>
-<td>查看详细信息</td>
-</tr>
-<tr>
-<td>-r</td>
-<td>移除设备</td>
-</tr>
-<tr>
-<td>-S</td>
-<td>停止RAID磁盘阵列</td>
-</tr>
-</tbody></table>
-<p>-C参数代表创建一个RAID阵列卡；-v参数显示创建的过程，同时在后面追加一个设备名称/dev/md0，这样/dev/md0就是创建后的RAID磁盘阵列的名称；-a yes参数代表自动创建设备文件；-n 4参数代表使用4块硬盘来部署这个RAID磁盘阵列；而-l 10参数则代表RAID 10方案；最后再加上4块硬盘设备的名称就搞定了。</p>
-<pre><code>[root@linuxprobe ~]# mdadm -Cv /dev/md0 -a yes -n 4 -l 10 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
-<p>之后格式化mkfs.ext4，创建挂载点mkdir /RAID，查看详细信息mdadm -D /dev/md0，并把挂载信息写入配置文件。</p>
-<h1 id="5-磁盘阵列-备份盘"><a href="#5-磁盘阵列-备份盘" class="headerlink" title="5.磁盘阵列+备份盘"></a>5.磁盘阵列+备份盘</h1><p>在下面的命令中，参数-n 3代表创建这个RAID 5磁盘阵列所需的硬盘数，参数-l 5代表RAID的级别，而参数-x 1则代表有一块备份盘。当查看/dev/md0（即RAID 5磁盘阵列的名称）磁盘阵列的时候就能看到有一块备份盘在等待中了：</p>
-<pre><code>mdadm -Cv /dev/md0 -n 3 -l 5 -x 1 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
-<h1 id="6-部署逻辑卷"><a href="#6-部署逻辑卷" class="headerlink" title="6.部署逻辑卷"></a>6.部署逻辑卷</h1>
-
-<pre><code>[root@linuxprobe ~]# pvcreate /dev/sdb /dev/sdc
-[root@linuxprobe ~]# vgcreate storage /dev/sdb /dev/sdc
-[root@linuxprobe ~]# lvcreate -n vo -l 37 storage（在对逻辑卷进行切割时有两种计量单位。第一种是以容量为单位，所使用的参数为-L。例如，使用-L 150M生成一个大小为150MB的逻辑卷。另外一种是以基本单元的个数为单位，所使用的参数为-l。每个基本单元的大小默认为4MB。例如，使用-l 37可以生成一个大小为37×4MB=148MB的逻辑卷。）</code></pre>
-<p>之后再格式化，挂载，写入配置文件中即可！</p>
-<h1 id="7-扩容逻辑卷"><a href="#7-扩容逻辑卷" class="headerlink" title="7.扩容逻辑卷"></a>7.扩容逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
-<pre><code>[root@linuxprobe ~]# lvextend -L 290M /dev/storage/vo （逻辑卷vo扩展至290MB）
-[root@linuxprobe ~]# e2fsck -f /dev/storage/vo （检查硬盘完整性）
-[root@linuxprobe ~]# resize2fs /dev/storage/vo （重置硬盘容量）</code></pre>
-<p>之后mount -a挂载硬盘设备即可！</p>
-<h1 id="8-缩小逻辑卷"><a href="#8-缩小逻辑卷" class="headerlink" title="8.缩小逻辑卷"></a>8.缩小逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
-<pre><code>[root@linuxprobe ~]# e2fsck -f /dev/storage/vo
-[root@linuxprobe ~]# resize2fs /dev/storage/vo 120M
-[root@linuxprobe ~]# lvreduce -L 120M /dev/storage/vo</code></pre>
-<p>之后mount -a挂载硬盘设备即可！</p>
-<h1 id="9-逻辑卷快照"><a href="#9-逻辑卷快照" class="headerlink" title="9.逻辑卷快照"></a>9.逻辑卷快照</h1><p>LVM的快照卷功能有两个特点：</p>
-<pre><code>快照卷的容量必须等同于逻辑卷的容量；
-
-快照卷仅一次有效，一旦执行还原操作后则会被立即自动删除。
-
-[root@linuxprobe ~]#  lvcreate -L 120M -s -n SNAP /dev/storage/vo （使用-s参数生成一个快照卷，使用-L参数指定切割的大小。另外，还需要在命令后面写上是针对哪个逻辑卷执行的快照操作。）
-[root@linuxprobe ~]# umount /linuxprobe （记得先卸载掉逻辑卷设备与目录的挂载。）
-[root@linuxprobe ~]# lvconvert --merge /dev/storage/SNAP
-[root@linuxprobe ~]# mount -a</code></pre>
-<h1 id="10-删除逻辑卷"><a href="#10-删除逻辑卷" class="headerlink" title="10.删除逻辑卷"></a>10.删除逻辑卷</h1><pre><code>[root@linuxprobe ~]# umount /linuxprobe （取消逻辑卷与目录的挂载关联）
-[root@linuxprobe ~]# vim /etc/fstab （删除配置文件中永久生效的设备参数）
-[root@linuxprobe ~]# lvremove /dev/storage/vo （删除逻辑卷设备，需要输入y来确认操作）
-[root@linuxprobe ~]# vgremove storage （删除卷组，此处只写卷组名称即可，不需要设备的绝对路径）
-[root@linuxprobe ~]# pvremove /dev/sdb /dev/sdc （删除物理卷设备）</code></pre>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第7章节：使用RAID与LVM磁盘阵列技术</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux就该这么学：iptables与firewalld防火墙</title>
     <url>/2021/02/03/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Aiptables%E4%B8%8Efirewalld%E9%98%B2%E7%81%AB%E5%A2%99/</url>
     <content><![CDATA[<h1 id="1-Iptables"><a href="#1-Iptables" class="headerlink" title="1.Iptables"></a>1.Iptables</h1><h2 id="（1）策略与规则链"><a href="#（1）策略与规则链" class="headerlink" title="（1）策略与规则链"></a>（1）策略与规则链</h2><p>iptables服务把用于处理或过滤流量的策略条目称之为规则，多条规则可以组成一个规则链，而规则链则依据数据包处理位置的不同进行分类，具体如下：</p>
@@ -1570,6 +1472,104 @@ iptables: Saving firewall rules to /etc/sysconfig/iptables: [ OK ]</code></pre>
       </categories>
       <tags>
         <tag>第8章节：iptables与firewalld防火墙</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：使用RAID与LVM磁盘阵列技术</title>
+    <url>/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/</url>
+    <content><![CDATA[<p>RAID：Redundant Array of Independent Disks，独立冗余磁盘阵列；<br>LVM：Logical Volume Manager，逻辑卷管理器；</p>
+<a id="more"></a>
+
+<h1 id="1-RAID-0"><a href="#1-RAID-0" class="headerlink" title="1.RAID 0"></a>1.RAID 0</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/1.png" class>
+
+<h1 id="2-RAID-1"><a href="#2-RAID-1" class="headerlink" title="2.RAID 1"></a>2.RAID 1</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/2.jpg" class>
+
+<h1 id="3-RAID-5"><a href="#3-RAID-5" class="headerlink" title="3.RAID 5"></a>3.RAID 5</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/3.png" class>
+
+<h1 id="4-RAID-10"><a href="#4-RAID-10" class="headerlink" title="4.RAID 10"></a>4.RAID 10</h1><img src="/2021/02/02/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8RAID%E4%B8%8ELVM%E7%A3%81%E7%9B%98%E9%98%B5%E5%88%97%E6%8A%80%E6%9C%AF/4.png" class>
+
+<p>mdadm命令用于管理Linux系统中的软件RAID硬盘阵列，格式为“mdadm [模式] &lt;RAID设备名称&gt; [选项] [成员设备名称]”.</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>检测设备名称</td>
+</tr>
+<tr>
+<td>-n</td>
+<td>指定设备数量</td>
+</tr>
+<tr>
+<td>-l</td>
+<td>指定RAID级别</td>
+</tr>
+<tr>
+<td>-C</td>
+<td>创建</td>
+</tr>
+<tr>
+<td>-v</td>
+<td>显示过程</td>
+</tr>
+<tr>
+<td>-D</td>
+<td>查看详细信息</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>移除设备</td>
+</tr>
+<tr>
+<td>-S</td>
+<td>停止RAID磁盘阵列</td>
+</tr>
+</tbody></table>
+<p>-C参数代表创建一个RAID阵列卡；-v参数显示创建的过程，同时在后面追加一个设备名称/dev/md0，这样/dev/md0就是创建后的RAID磁盘阵列的名称；-a yes参数代表自动创建设备文件；-n 4参数代表使用4块硬盘来部署这个RAID磁盘阵列；而-l 10参数则代表RAID 10方案；最后再加上4块硬盘设备的名称就搞定了。</p>
+<pre><code>[root@linuxprobe ~]# mdadm -Cv /dev/md0 -a yes -n 4 -l 10 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
+<p>之后格式化mkfs.ext4，创建挂载点mkdir /RAID，查看详细信息mdadm -D /dev/md0，并把挂载信息写入配置文件。</p>
+<h1 id="5-磁盘阵列-备份盘"><a href="#5-磁盘阵列-备份盘" class="headerlink" title="5.磁盘阵列+备份盘"></a>5.磁盘阵列+备份盘</h1><p>在下面的命令中，参数-n 3代表创建这个RAID 5磁盘阵列所需的硬盘数，参数-l 5代表RAID的级别，而参数-x 1则代表有一块备份盘。当查看/dev/md0（即RAID 5磁盘阵列的名称）磁盘阵列的时候就能看到有一块备份盘在等待中了：</p>
+<pre><code>mdadm -Cv /dev/md0 -n 3 -l 5 -x 1 /dev/sdb /dev/sdc /dev/sdd /dev/sde</code></pre>
+<h1 id="6-部署逻辑卷"><a href="#6-部署逻辑卷" class="headerlink" title="6.部署逻辑卷"></a>6.部署逻辑卷</h1>
+
+<pre><code>[root@linuxprobe ~]# pvcreate /dev/sdb /dev/sdc
+[root@linuxprobe ~]# vgcreate storage /dev/sdb /dev/sdc
+[root@linuxprobe ~]# lvcreate -n vo -l 37 storage（在对逻辑卷进行切割时有两种计量单位。第一种是以容量为单位，所使用的参数为-L。例如，使用-L 150M生成一个大小为150MB的逻辑卷。另外一种是以基本单元的个数为单位，所使用的参数为-l。每个基本单元的大小默认为4MB。例如，使用-l 37可以生成一个大小为37×4MB=148MB的逻辑卷。）</code></pre>
+<p>之后再格式化，挂载，写入配置文件中即可！</p>
+<h1 id="7-扩容逻辑卷"><a href="#7-扩容逻辑卷" class="headerlink" title="7.扩容逻辑卷"></a>7.扩容逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
+<pre><code>[root@linuxprobe ~]# lvextend -L 290M /dev/storage/vo （逻辑卷vo扩展至290MB）
+[root@linuxprobe ~]# e2fsck -f /dev/storage/vo （检查硬盘完整性）
+[root@linuxprobe ~]# resize2fs /dev/storage/vo （重置硬盘容量）</code></pre>
+<p>之后mount -a挂载硬盘设备即可！</p>
+<h1 id="8-缩小逻辑卷"><a href="#8-缩小逻辑卷" class="headerlink" title="8.缩小逻辑卷"></a>8.缩小逻辑卷</h1><p>扩展前请一定要记得卸载设备和挂载点的关联。</p>
+<pre><code>[root@linuxprobe ~]# e2fsck -f /dev/storage/vo
+[root@linuxprobe ~]# resize2fs /dev/storage/vo 120M
+[root@linuxprobe ~]# lvreduce -L 120M /dev/storage/vo</code></pre>
+<p>之后mount -a挂载硬盘设备即可！</p>
+<h1 id="9-逻辑卷快照"><a href="#9-逻辑卷快照" class="headerlink" title="9.逻辑卷快照"></a>9.逻辑卷快照</h1><p>LVM的快照卷功能有两个特点：</p>
+<pre><code>快照卷的容量必须等同于逻辑卷的容量；
+
+快照卷仅一次有效，一旦执行还原操作后则会被立即自动删除。
+
+[root@linuxprobe ~]#  lvcreate -L 120M -s -n SNAP /dev/storage/vo （使用-s参数生成一个快照卷，使用-L参数指定切割的大小。另外，还需要在命令后面写上是针对哪个逻辑卷执行的快照操作。）
+[root@linuxprobe ~]# umount /linuxprobe （记得先卸载掉逻辑卷设备与目录的挂载。）
+[root@linuxprobe ~]# lvconvert --merge /dev/storage/SNAP
+[root@linuxprobe ~]# mount -a</code></pre>
+<h1 id="10-删除逻辑卷"><a href="#10-删除逻辑卷" class="headerlink" title="10.删除逻辑卷"></a>10.删除逻辑卷</h1><pre><code>[root@linuxprobe ~]# umount /linuxprobe （取消逻辑卷与目录的挂载关联）
+[root@linuxprobe ~]# vim /etc/fstab （删除配置文件中永久生效的设备参数）
+[root@linuxprobe ~]# lvremove /dev/storage/vo （删除逻辑卷设备，需要输入y来确认操作）
+[root@linuxprobe ~]# vgremove storage （删除卷组，此处只写卷组名称即可，不需要设备的绝对路径）
+[root@linuxprobe ~]# pvremove /dev/sdb /dev/sdc （删除物理卷设备）</code></pre>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第7章节：使用RAID与LVM磁盘阵列技术</tag>
       </tags>
   </entry>
   <entry>
@@ -1874,6 +1874,58 @@ Red Hat Enterprise Linux Server release 7.0 (Maipo)</code></pre>
       </tags>
   </entry>
   <entry>
+    <title>linux就该这么学：使用win10主机ping通虚拟机</title>
+    <url>/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
+    <content><![CDATA[<p>在win10系统中安装了vm12版本，Linux我选用的是redhat 7版本；成功安装redhat 7后，将linux虚拟机的IP地址固定：</p>
+<a id="more"></a>
+
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/1.png" class>
+
+<p>linux虚拟机的外部连接方式为NAT模式，在linux虚拟机中能够ping通自己的IP，但无法ping通win10系统的IP，win10系统也无法ping通linux虚拟机IP。</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/2.png" class>
+
+<p>解决方法如下：</p>
+<p>1.首先确认了本机的网络有无VMware Network Adapter VMnet8这两个网络：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/3.png" class>
+
+<p>有以上两个网络的话，跳过此步骤；没有的话，则将VM虚拟机卸载，之后清理完之后再重新安装VM虚拟机软件。</p>
+<p>2.安装好虚拟机后，打开终端，输入：vim /etc/sysconfig/network-scripts/ifcfg-eno16777728（网卡名称），编辑下网卡文件，将BOOTPROTO的值修改为static，并添加参数：IPADDR，GATEWAR，NETMASK，NM_CONTROLLED。IPADDR，GATEWAR这两个设置注意网段要与VMware Network Adapter VMnet8 的一致：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/4.png" class>
+
+<p>3.设置好之后，保存退出；之后重启系统，用linux虚拟机ping下win10系统IP地址，测试是否能够ping通，如果可以，那就ok了。</p>
+<p>linux虚拟机ping win10系统：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/5.png" class>
+
+<p>win10系统ping linux虚拟机：</p>
+<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/6.png" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>使用win10主机ping通虚拟机</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>linux就该这么学：存储结构与磁盘划分</title>
     <url>/2021/02/01/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AD%98%E5%82%A8%E7%BB%93%E6%9E%84%E4%B8%8E%E7%A3%81%E7%9B%98%E5%88%92%E5%88%86/</url>
     <content><![CDATA[<h1 id="1-一切从“-”开始"><a href="#1-一切从“-”开始" class="headerlink" title="1.一切从“/”开始"></a>1.一切从“/”开始</h1><p>Linux系统中的一切文件都是从“根（/）”目录开始的，并按照文件系统层次化标准（FHS）采用树形结构来存放文件，以及定义了常见目录的用途。另外，Linux系统中的文件和目录名称是严格区分大小写的。  </p>
@@ -2023,242 +2075,6 @@ Red Hat Enterprise Linux Server release 7.0 (Maipo)</code></pre>
       </tags>
   </entry>
   <entry>
-    <title>linux就该这么学：管道符、重定向与环境变量</title>
-    <url>/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
-    <content><![CDATA[<h1 id="1-输入输出重定向"><a href="#1-输入输出重定向" class="headerlink" title="1.输入输出重定向"></a>1.输入输出重定向</h1><p>输入重定向：是指把文件导入到命令中； 输出重定向：是指把原本要输出到屏幕的数据写入到指定文件中。输出重定向又分为标准输出重定向和错误输出重定向。<br>输入重定向中用到的符号及其作用：</p>
-<a id="more"></a>
-
-
-<table>
-<thead>
-<tr>
-<th>符号</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>命令 &lt; 文件</td>
-<td>将文件作为命令的标准输入</td>
-</tr>
-<tr>
-<td>命令 &lt;&lt; 分界符（tag）</td>
-<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
-</tr>
-</tbody></table>
-<p>输入重定向中用到的符号及其作用：</p>
-<table>
-<thead>
-<tr>
-<th>符号</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>命令 &gt; 文件</td>
-<td>将输出重定向到文件（会清空原有数据）</td>
-</tr>
-<tr>
-<td>命令 &gt;&gt; 文件</td>
-<td>将输出以追加的方式重定向到文件</td>
-</tr>
-<tr>
-<td>n &gt; 文件</td>
-<td>将文件描述符为 n 的文件重定向到文件</td>
-</tr>
-<tr>
-<td>n &gt;&gt; 文件</td>
-<td>将文件描述符为 n 的文件以追加的方式重定向到文件</td>
-</tr>
-<tr>
-<td>n &gt;&amp; m</td>
-<td>将输出文件 m 和 n 合并</td>
-</tr>
-<tr>
-<td>n &lt;&amp; m</td>
-<td>将输入文件 m 和 n 合并</td>
-</tr>
-<tr>
-<td>&lt;&lt; tag</td>
-<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
-</tr>
-</tbody></table>
-<p>注意：文件描述符 0 通常是标准输入（STDIN），1 是标准输出（STDOUT），2 是标准错误输出（STDERR）。</p>
-<h1 id="2-管道命令符"><a href="#2-管道命令符" class="headerlink" title="2. 管道命令符"></a>2. 管道命令符</h1><p>命令符：可以把前一个命令原本要输出到屏幕的数据当作是后一个命令的标准输入；</p>
-<h1 id="3-命令行的通配符"><a href="#3-命令行的通配符" class="headerlink" title="3.命令行的通配符"></a>3.命令行的通配符</h1><p>星号（*）：代表匹配零个或多个字符； 问号（？）：代表匹配单个字符； [0-9]:代表匹配0-9之间的单个数字； [abc]:代表匹配a、b、c三个字符中的任意一个；<br>[^…]和[!…]表示匹配不在方括号里面的字符（不包括空字符）；这两种写法是等价的。</p>
-<h1 id="4-转义字符"><a href="#4-转义字符" class="headerlink" title="4.转义字符"></a>4.转义字符</h1><p>反斜杠（\）：使反斜杠后面变量称为单纯的字符串；<br>单引号（’’）：转义其中所有的变量为单纯的字符串；<br>双引号（””）:保留其中的变量属性，不尽兴转义处理；<br>反引号（``）:把其中的命令执行后返回结果。</p>
-<h1 id="5-环境变量"><a href="#5-环境变量" class="headerlink" title="5.环境变量"></a>5.环境变量</h1><p>变量是计算机系统用于保存可变值得数据类型，变量名称一般都是大写的；环境变量是用来定义系统运行环境的一些参数，比如每个用户不同的家目录、邮件存放位置等。</p>
-<p>前面讲过，在 Linux 系统中“一切皆文件”，Linux 命令也不例外。那么，当编辑完成 Linux 命令并回车后，系统底层到底发生了什么事情呢？</p>
-<p>简单来说，Linux 命令的执行过程分为如下 4 个步骤。</p>
-<pre><code>1) 判断路径
-    判断用户是否以绝对路径或相对路径的方式输入命令（如 /bin/ls），如果是的话直接执行。
-
-2) 检查别名
-    Linux 系统会检查用户输入的命令是否为“别名命令”。要知道，通过 alias 命令是可以给现有命令自定义别名的，即用一个自定义的命令名称来替换原本的命令名称。
-
-    例如，我们经常使用的 rm 命令，其实就是 rm -i 这个整体的别名：
-    [root@localhost ~]# alias rm
-    alias rm=&#39;rm -i&#39;
-
-    这使得当使用 rm 命令删除指定文件时，Linux 系统会要求我们再次确认是否执行删除操作。例如：
-    [root@localhost ~]# rm a.txt &lt;-- 假定当前目录中已经存在 a.txt 文件
-    rm: remove regular file &#39;a.txt&#39;? y  &lt;-- 手动输入 y，即确定删除
-    [root@localhost ~]#
-
-    这里可以使用 unalias 命令，将 Linux 系统设置的 rm 别名删除掉，执行命令如下：
-    [root@localhost ~]# alias rm
-    alias rm=&#39;rm -i&#39;
-    [root@localhost ~]# unalias rm
-    [root@localhost ~]# rm a.txt
-    [root@localhost ~]#  &lt;--直接删除，不再询问
-
-
-    注意，这里仅是为了演示 unalisa 的用法，建议读者删除 rm 别名之后，再手动添加到系统中，执行如下命令即可再次成功添加：
-    [root@localhost ~]# alias rm=&#39;rm -i&#39;
-
-3) 判断是内部命令还是外部命令
-    Linux命令行解释器（又称为 Shell）会判断用户输入的命令是内部命令还是外部命令。其中，内部命令指的是解释器内部的命令，会被直接执行；而用户通常输入的命令都是外部命令，这些命令交给步骤四继续处理。
-    内部命令由 Shell 自带，会随着系统启动，可以直接从内存中读取；而外部命令仅是在系统中有对应的可执行文件，执行时需要读取该文件。
-
-    判断一个命令属于内部命令还是外部命令，可以使用 type 命令实现。例如：
-    [root@localhost ~]# type pwd
-    pwd is a shell builtin  &lt;-- pwd是内部命令
-    [root@localhost ~]# type top
-    top is /usr/bin/top  &lt;-- top是外部命令
-
-4) 查找外部命令对应的可执行文件
-    当用户执行的是外部命令时，系统会在指定的多个路径中查找该命令的可执行文件，而定义这些路径的变量，就称为 PATH 环境变量，其作用就是告诉 Shell 待执行命令的可执行文件可能存放的位置，也就是说，Shell 会在 PATH 变量包含的多个路径中逐个查找，直到找到为止（如果找不到，Shell 会提供用户“找不到此命令”）</code></pre>
-<p>自己创建的变量不具有全局性，作用范围有限，默认情况下不能被其他用户使用，因此，可通过export命令（如：export WORKDIR）将其提升为全局变量，这样其他用户也可以使用了！</p>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第3章节：管道符、重定向与环境变量</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux就该这么学：使用win10主机ping通虚拟机</title>
-    <url>/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/</url>
-    <content><![CDATA[<p>在win10系统中安装了vm12版本，Linux我选用的是redhat 7版本；成功安装redhat 7后，将linux虚拟机的IP地址固定：</p>
-<a id="more"></a>
-
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/1.png" class>
-
-<p>linux虚拟机的外部连接方式为NAT模式，在linux虚拟机中能够ping通自己的IP，但无法ping通win10系统的IP，win10系统也无法ping通linux虚拟机IP。</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/2.png" class>
-
-<p>解决方法如下：</p>
-<p>1.首先确认了本机的网络有无VMware Network Adapter VMnet8这两个网络：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/3.png" class>
-
-<p>有以上两个网络的话，跳过此步骤；没有的话，则将VM虚拟机卸载，之后清理完之后再重新安装VM虚拟机软件。</p>
-<p>2.安装好虚拟机后，打开终端，输入：vim /etc/sysconfig/network-scripts/ifcfg-eno16777728（网卡名称），编辑下网卡文件，将BOOTPROTO的值修改为static，并添加参数：IPADDR，GATEWAR，NETMASK，NM_CONTROLLED。IPADDR，GATEWAR这两个设置注意网段要与VMware Network Adapter VMnet8 的一致：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/4.png" class>
-
-<p>3.设置好之后，保存退出；之后重启系统，用linux虚拟机ping下win10系统IP地址，测试是否能够ping通，如果可以，那就ok了。</p>
-<p>linux虚拟机ping win10系统：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/5.png" class>
-
-<p>win10系统ping linux虚拟机：</p>
-<img src="/2021/02/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E4%BD%BF%E7%94%A8win10%E4%B8%BB%E6%9C%BAping%E9%80%9A%E8%99%9A%E6%8B%9F%E6%9C%BA/6.png" class>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>使用win10主机ping通虚拟机</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>linux虚拟机外网网络访问设置指南</title>
-    <url>/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/</url>
-    <content><![CDATA[<p>要达到的效果就是在Linux虚拟机中可以上网：ping <a href="http://www.baidu.com/">http://www.baidu.com</a></p>
-<p>VMware中安装完 redhat7 后， 默认初始配置如下：</p>
-<a id="more"></a>
-
-<h1 id="1-VMware-网络配置"><a href="#1-VMware-网络配置" class="headerlink" title="1.VMware 网络配置"></a>1.VMware 网络配置</h1><p>（编辑 –&gt; 虚拟网络编辑器）查看</p>
-<p>默认配置为： (这些配置都不需要发生变更， 看看就好)</p>
-<pre><code>子网IP：192.168.154.0
-
-子网掩码 : 255.255.255.0
-
-可设置的IP网段为： 192.168.154.128 ~ 254
-
-&#123;% asset_img 1.jpg %&#125;
-
-点开 NAT设置可以看到 GATEWAY : 192.168.154.2:</code></pre>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/2.jpg" class>
-
-<p>下面介绍 redhat 本身配置m修改配置参数如下：</p>
-<p>注意各个参数与第一步 VMware 中的默认配置的联系 :</p>
-<pre><code>BOOTPROTO ： dhcp --&gt; static （静态IP）
-
-ONBOOT : no --&gt; YES (开机自动连接网络)
-
-IPADDR : 192.168.154.128 ~ 254 之间即可
-
-NETMASK : 子网， 与 VMware 默认一致
-
-GATEWAY : 网关， 与VMware 默认一致
-
-DNS1 : 首选 DNS, 不配置会出现外网不通， 只能与内网互通的问题.
-
-这里DNS要说一下的是，其他资料上有说要跟本机上网的DNS一致，还有说跟网关一致，或者改成8.8.8.8，都试过，ping www.baidu.com 都可以，不同的机器可能有不同，希望可以共同探讨。
-
-NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进行设置，而不是通过网络管理器进行管理。“ONBOOT=yes”告诉我们，系统将在启动时开启该接口。</code></pre>
-<p>编辑/etc/sysconfig/network-scipts/网卡名称：</p>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/3.jpg" class>
-
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/4.jpg" class>
-
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/5.jpg" class>
-
-<p>重启网络服务命令： systemctl restart network；</p>
-<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/6.jpg" class>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>linux虚拟机外网网络访问设置指南</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>linux就该这么学：安装samba服务时packagekit报错解决方法</title>
     <url>/2021/02/12/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E5%AE%89%E8%A3%85samba%E6%9C%8D%E5%8A%A1%E6%97%B6packagekit%E6%8A%A5%E9%94%99%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/</url>
     <content><![CDATA[<p>在linux虚拟机Redhat7.0版本系统终端中输入命令：yum install samba，安装samba服务时，在安装过程中，出现以下报错信息：</p>
@@ -2341,292 +2157,6 @@ Permissive</code></pre>
       <tags>
         <tag>安装samba服务时packagekit报错解决方法</tag>
       </tags>
-  </entry>
-  <entry>
-    <title>liunx就该这么学：vim编辑器与Shell命令脚本</title>
-    <url>/2021/01/09/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Avim%E7%BC%96%E8%BE%91%E5%99%A8%E4%B8%8EShell%E5%91%BD%E4%BB%A4%E8%84%9A%E6%9C%AC/</url>
-    <content><![CDATA[<h1 id="1-Vim文本编辑器"><a href="#1-Vim文本编辑器" class="headerlink" title="1.Vim文本编辑器"></a>1.Vim文本编辑器</h1><p>注意：在linux系统中一切都是文件，而配置一个服务就是在修改其配置文件的参数；</p>
-<p>Vim编辑器有三种模式：</p>
-<pre><code>（1）命令模式：控制光标移动，可对文本进行复制、粘贴、删除和查找等操作（开机后默认进入命令模式）；
-（2）输入模式：正常的文本录入（按a、i、o从命令模式进入输入模式，按Esc键退出输入模式）；
-             a键和i键分别是在光标后一位和光标当前位置切换到输入模式，而o键则是在光标的下面再新建一个空行。
-（3）末行模式：保存或退出文档，以及设置编辑环境（按：键进入末行模式，按Esc键退出输入模式）；</code></pre>
-<a id="more"></a>
-<p>命令模式中常用的命令：</p>
-<table>
-<thead>
-<tr>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>dd</td>
-<td>删除（剪切）光标所在整行</td>
-</tr>
-<tr>
-<td>5dd</td>
-<td>删除（剪切）从光标处开始的5行</td>
-</tr>
-<tr>
-<td>yy</td>
-<td>复制光标所在整行</td>
-</tr>
-<tr>
-<td>5yy</td>
-<td>复制从光标处开始的5行</td>
-</tr>
-<tr>
-<td>n</td>
-<td>显示搜索命令定位到的下一个字符串</td>
-</tr>
-<tr>
-<td>N</td>
-<td>显示搜索命令定位到的上一个字符串</td>
-</tr>
-<tr>
-<td>u</td>
-<td>撤销上一步的操作</td>
-</tr>
-<tr>
-<td>p</td>
-<td>将之前删除（dd）或复制（yy）过的数据粘贴到光标后面</td>
-</tr>
-</tbody></table>
-<p>末行模式中常用的命令：</p>
-<table>
-<thead>
-<tr>
-<th>命令</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>:w</td>
-<td>保存</td>
-</tr>
-<tr>
-<td>:q</td>
-<td>退出</td>
-</tr>
-<tr>
-<td>:q!</td>
-<td>强制退出（放弃对文档的修改内容）</td>
-</tr>
-<tr>
-<td>:wq!</td>
-<td>强制保存退出</td>
-</tr>
-<tr>
-<td>:set nu</td>
-<td>显示行号</td>
-</tr>
-<tr>
-<td>:set nonu</td>
-<td>不显示行号</td>
-</tr>
-<tr>
-<td>:命令</td>
-<td>执行该命令</td>
-</tr>
-<tr>
-<td>:整数</td>
-<td>跳转到该行</td>
-</tr>
-<tr>
-<td>:s/one/two</td>
-<td>将当前光标所在行的第一个one替换成two</td>
-</tr>
-<tr>
-<td>:s/one/two/g</td>
-<td>将当前光标所在行的所有one替换成two</td>
-</tr>
-<tr>
-<td>:%s/one/two/g</td>
-<td>将全文中的所有one替换成two</td>
-</tr>
-<tr>
-<td>?字符串</td>
-<td>在文本中从下至上搜索该字符串</td>
-</tr>
-<tr>
-<td>/字符串</td>
-<td>在文本中从上至下搜索该字符串</td>
-</tr>
-</tbody></table>
-<h1 id="2-配置主机名称"><a href="#2-配置主机名称" class="headerlink" title="2.配置主机名称"></a>2.配置主机名称</h1><p>1.使用Vim编辑器修改“/etc/hostname”中的主机名称，将原始主机名称删除后追加“想加入的主机名称”，修改完毕后记得在末行模式下输入：wq！命令保存文档；<br>2.使用hostname命令检查是否修改成功；  </p>
-<p>注意：修改完毕后，有时主机名称不会立即同步到系统中，可重启虚拟机；  </p>
-<h1 id="3-配置网卡信息"><a href="#3-配置网卡信息" class="headerlink" title="3.配置网卡信息"></a>3.配置网卡信息</h1><p>网卡IP地址配置的是否正确是两台服务器是否可以相互通信的前提；  </p>
-<p>网卡信息配置步骤：  </p>
-<pre><code>1.cd /etc/sysconfig/network-scripts （存放着网卡的配置文件)；
-2.用Vim编辑器修改网卡文件ifcfg-eno16777728（每台仪器的网卡名称不一样，需要用ifconfig命令进行查询）；  
-
-    -设备类型：TYPE=Ethernet
-    -地址分配模式：BOOTPROTO=static
-    -网卡名称：NAME=eno16777728
-    -设备名称：DEVICE=eno1677728（不输入设备名称，在重启网卡时有报错，不太清楚原因）
-    -是否启动：ONBOOT=yes
-    -IP地址：IPADDR=192.168.10.10
-    -子网掩码：NETMASK=255.255.255.0
-    -网关地址：GATEWAY=192.168.10.1
-    -DNS地址：DNS1=192.168.10.1
-
-3.重启网络服务并测试网络是否联通：systemctl restart network     ping 192.168.10.10</code></pre>
-<h1 id="4-配置Yum软件仓库"><a href="#4-配置Yum软件仓库" class="headerlink" title="4.配置Yum软件仓库"></a>4.配置Yum软件仓库</h1><p>配置YUM软件仓库的步骤如下：</p>
-<pre><code>1.cd /etc/yum.repos.d/ （存放Yum软件仓库的配置文件）；
-2.vim rhel7.repo的配置文件（文件名称随意，但后缀必须为.repo），在配置文件中写入下方的配置参数：
-    [rhel7] （Yum软件仓库唯一标识符，避免与其他仓库冲突）
-    name=rhel7 （Yum软件仓库的名称描述，易于识别仓库用处）
-    baseurl=file:///media/cdrom （提供的方式包括FTP（ftp://..）、HTTP（http://..）、本地（file:///..））
-    enabled=1 （设置此源是否可用；1为可用，0为禁用）
-    gpgcheck=0 （设置此源是否校验文件；1为校验，0为不校验）
-3.挂载光盘，并把光盘挂载信息写入到/etc/fstab文件中；
-4.使用“yum install httpd -y”检查Yum软件仓库是否可用</code></pre>
-<h1 id="5-编写Shell脚本"><a href="#5-编写Shell脚本" class="headerlink" title="5.编写Shell脚本"></a>5.编写Shell脚本</h1><p>Shell脚本内容可分为三部分：</p>
-<pre><code>1.第一行的#！/bin/bash：用于告诉系统用哪种Shell解释器来执行该脚本；
-2.第二行的#：是注释信息，用于对脚本功能和某些命令的介绍信息；
-3.第三行之后的内容是可执行语句。</code></pre>
-<h2 id="5-1-接受用户参数"><a href="#5-1-接受用户参数" class="headerlink" title="5.1 接受用户参数"></a>5.1 接受用户参数</h2><p>Shell脚本语言内置了用于接收参数的变量，变量之间使用空格间隔；如：$0对应当前Shell脚本名称，$#对应总共几个参数，$*对应所有位置的参数值，$？对应显示上一次命令的执行返回值，而$1、$2、$3…分别对应第N个位置的参数值。</p>
-<h2 id="5-2-判断用户的参数"><a href="#5-2-判断用户的参数" class="headerlink" title="5.2 判断用户的参数"></a>5.2 判断用户的参数</h2><p>条件测试语句格式： [ 条件表达式 ]  两边各有一个空格</p>
-<p>条件测试语句分为4种：文件测试语句、逻辑测试语句、整数值比较语句、字符串比较语句。</p>
-<p>文件测试所用参数：</p>
-<table>
-<thead>
-<tr>
-<th>操作符</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-d</td>
-<td>文件是否为目录</td>
-</tr>
-<tr>
-<td>-e</td>
-<td>文件是否存在</td>
-</tr>
-<tr>
-<td>-f</td>
-<td>文件是否为一般文件</td>
-</tr>
-<tr>
-<td>-r</td>
-<td>当前用户是否有权限读取</td>
-</tr>
-<tr>
-<td>-w</td>
-<td>当前用户是否有权限写入</td>
-</tr>
-<tr>
-<td>-x</td>
-<td>当前用户是否有权限执行</td>
-</tr>
-</tbody></table>
-<pre><code>[root@linuxprobe ~]# [ -d /etc/fstab ]
-[root@linuxprobe ~]# echo $?
-1（返回值如果为0，表示目录存在；为非零值，则表示目录不存在）</code></pre>
-<p>逻辑语句运算符号：与（&amp;&amp;）、或（||）、非（！）；</p>
-<p>&amp;&amp;：表示当前面的命令执行成功后才能执行后面的命令；<br>||：表示当前面的命令执行失败后才能执行后面的命令；<br>！：表示把条件测试中的判断结果取相反值。</p>
-<p>整数比较运算符仅是对数字的操作，不能将数字与字符串、文件等内容一起操作，而且不能想当然地使用日常生活中的等号、大于号、小于号等来判断。</p>
-<table>
-<thead>
-<tr>
-<th>操作符</th>
-<th>作用</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>-eq</td>
-<td>是否等于</td>
-</tr>
-<tr>
-<td>-ne</td>
-<td>是否不等于</td>
-</tr>
-<tr>
-<td>-gt</td>
-<td>是否大于</td>
-</tr>
-<tr>
-<td>-lt</td>
-<td>是否小于</td>
-</tr>
-<tr>
-<td>-le</td>
-<td>是否等于或小于</td>
-</tr>
-<tr>
-<td>-ge</td>
-<td>是否大于或等于</td>
-</tr>
-</tbody></table>
-<pre><code>[root@linuxprobe ~]# [ 10 -gt 10 ]
-[root@linuxprobe ~]# echo $?
-1
-[root@linuxprobe ~]# [ 10 -eq 10 ]
-[root@linuxprobe ~]# echo $?
-0</code></pre>
-<p>字符串比较语句用于判断测试字符串是否为空值，或两个字符串是否相同。</p>
-<p>| 操作符 | 作用 |<br>| = | 比较字符串内容是否相同 |<br>| ！= | 比较字符串内容是否不同 |<br>| -z |  判断字符串内容是否为空 |</p>
-<h2 id="5-3-流程控制语句"><a href="#5-3-流程控制语句" class="headerlink" title="5.3 流程控制语句"></a>5.3 流程控制语句</h2><p>1.if条件测试语句：可以让脚本根据实际情况自动执行相应的命令。从技术角度来讲，if语句分为单分支结构、双分支结构、多分支结构；</p>
-<pre><code>（1）
-if 条件测试操作
-then 命令序列
-fi
-
-（2）
-if 条件测试操作
-then 命令序列1
-else 命令序列2
-fi
-
-（2）
-if 条件测试操作
-then 命令序列1
-elif 条件测试操作2
-    then 命令序列2
-else 命令序列2
-fi</code></pre>
-<p>2.for条件循环语句：允许脚本一次性读取多个信息，然后逐一对信息进行操作处理，当要处理的数据有范围时，使用for循环语句再适合不过了。</p>
-<pre><code>for 变量名 in 取值列表
-do
-命令序列
-done</code></pre>
-<p>3.while条件循环语句：通过判断条件测试的真假来决定是否继续执行命令，若条件为真就继续执行，为假就结束循环。</p>
-<pre><code>while 条件测试操作
-do
-    命令序列
-done</code></pre>
-<p>4.case条件测试语句：case语句是在多个范围内匹配数据，若匹配成功则执行相关命令并结束整个条件测试；而如果数据不在所列出的范围内，则会去执行星号（*）中所定义的默认命令。</p>
-<pre><code>case 变量值 in
-模式1）
-    命令序列1
-    ;;
-模式2）
-    命令序列2
-    ;;
-    ……
-*）
-    默认命令序列
-esac</code></pre>
-<p>5.计划任务服务程序</p>
-<p>分为一次性计划任务和长期性计划任务；</p>
-<p>一次性计划任务：写成“ at 时间 ”的形式，如果想要查看已设置好但还未执行的一次性计划任务，可以使用“at -l”命令；要想将其删除，可以用“atrm 任务序号”。</p>
-<p>长期性计划任务：默认启用crond服务；创建、编辑计划任务的命令为“crontab -e”，查看当前计划任务的命令为“crontab -l”，删除某条计划任务的命令为“crontab -r”。口诀：“分、时、日、月、星期 命令”</p>
-<p>注意：<br>（1）在crond服务的计划任务参数中，所有命令一定要用绝对路径的方式来写，如果不知道绝对路径，请用whereis命令进行查询。<br>（2）计划任务中的“分”字段必须有数值，绝对不能为空或是*号，而“日”和“星期”字段不能同时使用，否则就会发生冲突。</p>
-]]></content>
-      <categories>
-        <category>linux就该这么学</category>
-      </categories>
-      <tags>
-        <tag>第4章节：vim编辑器与Shell命令脚本</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>图片加载命令</title>
-    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
-    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
-]]></content>
   </entry>
   <entry>
     <title>linux就该这么学：用户身份与文件权限</title>
@@ -2915,6 +2445,476 @@ anaconda-ks.cfg Downloads Pictures Public
       <tags>
         <tag>第5章节：用户身份与文件权限</tag>
       </tags>
+  </entry>
+  <entry>
+    <title>linux就该这么学：管道符、重定向与环境变量</title>
+    <url>/2021/01/09/linux%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9A%E7%AE%A1%E9%81%93%E7%AC%A6%E3%80%81%E9%87%8D%E5%AE%9A%E5%90%91%E4%B8%8E%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F/</url>
+    <content><![CDATA[<h1 id="1-输入输出重定向"><a href="#1-输入输出重定向" class="headerlink" title="1.输入输出重定向"></a>1.输入输出重定向</h1><p>输入重定向：是指把文件导入到命令中； 输出重定向：是指把原本要输出到屏幕的数据写入到指定文件中。输出重定向又分为标准输出重定向和错误输出重定向。<br>输入重定向中用到的符号及其作用：</p>
+<a id="more"></a>
+
+
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>命令 &lt; 文件</td>
+<td>将文件作为命令的标准输入</td>
+</tr>
+<tr>
+<td>命令 &lt;&lt; 分界符（tag）</td>
+<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
+</tr>
+</tbody></table>
+<p>输入重定向中用到的符号及其作用：</p>
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>命令 &gt; 文件</td>
+<td>将输出重定向到文件（会清空原有数据）</td>
+</tr>
+<tr>
+<td>命令 &gt;&gt; 文件</td>
+<td>将输出以追加的方式重定向到文件</td>
+</tr>
+<tr>
+<td>n &gt; 文件</td>
+<td>将文件描述符为 n 的文件重定向到文件</td>
+</tr>
+<tr>
+<td>n &gt;&gt; 文件</td>
+<td>将文件描述符为 n 的文件以追加的方式重定向到文件</td>
+</tr>
+<tr>
+<td>n &gt;&amp; m</td>
+<td>将输出文件 m 和 n 合并</td>
+</tr>
+<tr>
+<td>n &lt;&amp; m</td>
+<td>将输入文件 m 和 n 合并</td>
+</tr>
+<tr>
+<td>&lt;&lt; tag</td>
+<td>将开始标记 tag 和结束标记 tag 之间的内容作为输入</td>
+</tr>
+</tbody></table>
+<p>注意：文件描述符 0 通常是标准输入（STDIN），1 是标准输出（STDOUT），2 是标准错误输出（STDERR）。</p>
+<h1 id="2-管道命令符"><a href="#2-管道命令符" class="headerlink" title="2. 管道命令符"></a>2. 管道命令符</h1><p>命令符：可以把前一个命令原本要输出到屏幕的数据当作是后一个命令的标准输入；</p>
+<h1 id="3-命令行的通配符"><a href="#3-命令行的通配符" class="headerlink" title="3.命令行的通配符"></a>3.命令行的通配符</h1><p>星号（*）：代表匹配零个或多个字符； 问号（？）：代表匹配单个字符； [0-9]:代表匹配0-9之间的单个数字； [abc]:代表匹配a、b、c三个字符中的任意一个；<br>[^…]和[!…]表示匹配不在方括号里面的字符（不包括空字符）；这两种写法是等价的。</p>
+<h1 id="4-转义字符"><a href="#4-转义字符" class="headerlink" title="4.转义字符"></a>4.转义字符</h1><p>反斜杠（\）：使反斜杠后面变量称为单纯的字符串；<br>单引号（’’）：转义其中所有的变量为单纯的字符串；<br>双引号（””）:保留其中的变量属性，不尽兴转义处理；<br>反引号（``）:把其中的命令执行后返回结果。</p>
+<h1 id="5-环境变量"><a href="#5-环境变量" class="headerlink" title="5.环境变量"></a>5.环境变量</h1><p>变量是计算机系统用于保存可变值得数据类型，变量名称一般都是大写的；环境变量是用来定义系统运行环境的一些参数，比如每个用户不同的家目录、邮件存放位置等。</p>
+<p>前面讲过，在 Linux 系统中“一切皆文件”，Linux 命令也不例外。那么，当编辑完成 Linux 命令并回车后，系统底层到底发生了什么事情呢？</p>
+<p>简单来说，Linux 命令的执行过程分为如下 4 个步骤。</p>
+<pre><code>1) 判断路径
+    判断用户是否以绝对路径或相对路径的方式输入命令（如 /bin/ls），如果是的话直接执行。
+
+2) 检查别名
+    Linux 系统会检查用户输入的命令是否为“别名命令”。要知道，通过 alias 命令是可以给现有命令自定义别名的，即用一个自定义的命令名称来替换原本的命令名称。
+
+    例如，我们经常使用的 rm 命令，其实就是 rm -i 这个整体的别名：
+    [root@localhost ~]# alias rm
+    alias rm=&#39;rm -i&#39;
+
+    这使得当使用 rm 命令删除指定文件时，Linux 系统会要求我们再次确认是否执行删除操作。例如：
+    [root@localhost ~]# rm a.txt &lt;-- 假定当前目录中已经存在 a.txt 文件
+    rm: remove regular file &#39;a.txt&#39;? y  &lt;-- 手动输入 y，即确定删除
+    [root@localhost ~]#
+
+    这里可以使用 unalias 命令，将 Linux 系统设置的 rm 别名删除掉，执行命令如下：
+    [root@localhost ~]# alias rm
+    alias rm=&#39;rm -i&#39;
+    [root@localhost ~]# unalias rm
+    [root@localhost ~]# rm a.txt
+    [root@localhost ~]#  &lt;--直接删除，不再询问
+
+
+    注意，这里仅是为了演示 unalisa 的用法，建议读者删除 rm 别名之后，再手动添加到系统中，执行如下命令即可再次成功添加：
+    [root@localhost ~]# alias rm=&#39;rm -i&#39;
+
+3) 判断是内部命令还是外部命令
+    Linux命令行解释器（又称为 Shell）会判断用户输入的命令是内部命令还是外部命令。其中，内部命令指的是解释器内部的命令，会被直接执行；而用户通常输入的命令都是外部命令，这些命令交给步骤四继续处理。
+    内部命令由 Shell 自带，会随着系统启动，可以直接从内存中读取；而外部命令仅是在系统中有对应的可执行文件，执行时需要读取该文件。
+
+    判断一个命令属于内部命令还是外部命令，可以使用 type 命令实现。例如：
+    [root@localhost ~]# type pwd
+    pwd is a shell builtin  &lt;-- pwd是内部命令
+    [root@localhost ~]# type top
+    top is /usr/bin/top  &lt;-- top是外部命令
+
+4) 查找外部命令对应的可执行文件
+    当用户执行的是外部命令时，系统会在指定的多个路径中查找该命令的可执行文件，而定义这些路径的变量，就称为 PATH 环境变量，其作用就是告诉 Shell 待执行命令的可执行文件可能存放的位置，也就是说，Shell 会在 PATH 变量包含的多个路径中逐个查找，直到找到为止（如果找不到，Shell 会提供用户“找不到此命令”）</code></pre>
+<p>自己创建的变量不具有全局性，作用范围有限，默认情况下不能被其他用户使用，因此，可通过export命令（如：export WORKDIR）将其提升为全局变量，这样其他用户也可以使用了！</p>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第3章节：管道符、重定向与环境变量</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux虚拟机外网网络访问设置指南</title>
+    <url>/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/</url>
+    <content><![CDATA[<p>要达到的效果就是在Linux虚拟机中可以上网：ping <a href="http://www.baidu.com/">http://www.baidu.com</a></p>
+<p>VMware中安装完 redhat7 后， 默认初始配置如下：</p>
+<a id="more"></a>
+
+<h1 id="1-VMware-网络配置"><a href="#1-VMware-网络配置" class="headerlink" title="1.VMware 网络配置"></a>1.VMware 网络配置</h1><p>（编辑 –&gt; 虚拟网络编辑器）查看</p>
+<p>默认配置为： (这些配置都不需要发生变更， 看看就好)</p>
+<pre><code>子网IP：192.168.154.0
+
+子网掩码 : 255.255.255.0
+
+可设置的IP网段为： 192.168.154.128 ~ 254
+
+&#123;% asset_img 1.jpg %&#125;
+
+点开 NAT设置可以看到 GATEWAY : 192.168.154.2:</code></pre>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/2.jpg" class>
+
+<p>下面介绍 redhat 本身配置m修改配置参数如下：</p>
+<p>注意各个参数与第一步 VMware 中的默认配置的联系 :</p>
+<pre><code>BOOTPROTO ： dhcp --&gt; static （静态IP）
+
+ONBOOT : no --&gt; YES (开机自动连接网络)
+
+IPADDR : 192.168.154.128 ~ 254 之间即可
+
+NETMASK : 子网， 与 VMware 默认一致
+
+GATEWAY : 网关， 与VMware 默认一致
+
+DNS1 : 首选 DNS, 不配置会出现外网不通， 只能与内网互通的问题.
+
+这里DNS要说一下的是，其他资料上有说要跟本机上网的DNS一致，还有说跟网关一致，或者改成8.8.8.8，都试过，ping www.baidu.com 都可以，不同的机器可能有不同，希望可以共同探讨。
+
+NM_CONTROLLED : “NM_CONTROLLED=no”表示该接口将通过该配置文件进行设置，而不是通过网络管理器进行管理。“ONBOOT=yes”告诉我们，系统将在启动时开启该接口。</code></pre>
+<p>编辑/etc/sysconfig/network-scipts/网卡名称：</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/3.jpg" class>
+
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/4.jpg" class>
+
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/5.jpg" class>
+
+<p>重启网络服务命令： systemctl restart network；</p>
+<img src="/2021/02/07/linux%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%A4%96%E7%BD%91%E7%BD%91%E7%BB%9C%E8%AE%BF%E9%97%AE%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97/6.jpg" class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>linux虚拟机外网网络访问设置指南</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>liunx就该这么学：vim编辑器与Shell命令脚本</title>
+    <url>/2021/01/09/liunx%E5%B0%B1%E8%AF%A5%E8%BF%99%E4%B9%88%E5%AD%A6%EF%BC%9Avim%E7%BC%96%E8%BE%91%E5%99%A8%E4%B8%8EShell%E5%91%BD%E4%BB%A4%E8%84%9A%E6%9C%AC/</url>
+    <content><![CDATA[<h1 id="1-Vim文本编辑器"><a href="#1-Vim文本编辑器" class="headerlink" title="1.Vim文本编辑器"></a>1.Vim文本编辑器</h1><p>注意：在linux系统中一切都是文件，而配置一个服务就是在修改其配置文件的参数；</p>
+<p>Vim编辑器有三种模式：</p>
+<pre><code>（1）命令模式：控制光标移动，可对文本进行复制、粘贴、删除和查找等操作（开机后默认进入命令模式）；
+（2）输入模式：正常的文本录入（按a、i、o从命令模式进入输入模式，按Esc键退出输入模式）；
+             a键和i键分别是在光标后一位和光标当前位置切换到输入模式，而o键则是在光标的下面再新建一个空行。
+（3）末行模式：保存或退出文档，以及设置编辑环境（按：键进入末行模式，按Esc键退出输入模式）；</code></pre>
+<a id="more"></a>
+<p>命令模式中常用的命令：</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>dd</td>
+<td>删除（剪切）光标所在整行</td>
+</tr>
+<tr>
+<td>5dd</td>
+<td>删除（剪切）从光标处开始的5行</td>
+</tr>
+<tr>
+<td>yy</td>
+<td>复制光标所在整行</td>
+</tr>
+<tr>
+<td>5yy</td>
+<td>复制从光标处开始的5行</td>
+</tr>
+<tr>
+<td>n</td>
+<td>显示搜索命令定位到的下一个字符串</td>
+</tr>
+<tr>
+<td>N</td>
+<td>显示搜索命令定位到的上一个字符串</td>
+</tr>
+<tr>
+<td>u</td>
+<td>撤销上一步的操作</td>
+</tr>
+<tr>
+<td>p</td>
+<td>将之前删除（dd）或复制（yy）过的数据粘贴到光标后面</td>
+</tr>
+</tbody></table>
+<p>末行模式中常用的命令：</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>:w</td>
+<td>保存</td>
+</tr>
+<tr>
+<td>:q</td>
+<td>退出</td>
+</tr>
+<tr>
+<td>:q!</td>
+<td>强制退出（放弃对文档的修改内容）</td>
+</tr>
+<tr>
+<td>:wq!</td>
+<td>强制保存退出</td>
+</tr>
+<tr>
+<td>:set nu</td>
+<td>显示行号</td>
+</tr>
+<tr>
+<td>:set nonu</td>
+<td>不显示行号</td>
+</tr>
+<tr>
+<td>:命令</td>
+<td>执行该命令</td>
+</tr>
+<tr>
+<td>:整数</td>
+<td>跳转到该行</td>
+</tr>
+<tr>
+<td>:s/one/two</td>
+<td>将当前光标所在行的第一个one替换成two</td>
+</tr>
+<tr>
+<td>:s/one/two/g</td>
+<td>将当前光标所在行的所有one替换成two</td>
+</tr>
+<tr>
+<td>:%s/one/two/g</td>
+<td>将全文中的所有one替换成two</td>
+</tr>
+<tr>
+<td>?字符串</td>
+<td>在文本中从下至上搜索该字符串</td>
+</tr>
+<tr>
+<td>/字符串</td>
+<td>在文本中从上至下搜索该字符串</td>
+</tr>
+</tbody></table>
+<h1 id="2-配置主机名称"><a href="#2-配置主机名称" class="headerlink" title="2.配置主机名称"></a>2.配置主机名称</h1><p>1.使用Vim编辑器修改“/etc/hostname”中的主机名称，将原始主机名称删除后追加“想加入的主机名称”，修改完毕后记得在末行模式下输入：wq！命令保存文档；<br>2.使用hostname命令检查是否修改成功；  </p>
+<p>注意：修改完毕后，有时主机名称不会立即同步到系统中，可重启虚拟机；  </p>
+<h1 id="3-配置网卡信息"><a href="#3-配置网卡信息" class="headerlink" title="3.配置网卡信息"></a>3.配置网卡信息</h1><p>网卡IP地址配置的是否正确是两台服务器是否可以相互通信的前提；  </p>
+<p>网卡信息配置步骤：  </p>
+<pre><code>1.cd /etc/sysconfig/network-scripts （存放着网卡的配置文件)；
+2.用Vim编辑器修改网卡文件ifcfg-eno16777728（每台仪器的网卡名称不一样，需要用ifconfig命令进行查询）；  
+
+    -设备类型：TYPE=Ethernet
+    -地址分配模式：BOOTPROTO=static
+    -网卡名称：NAME=eno16777728
+    -设备名称：DEVICE=eno1677728（不输入设备名称，在重启网卡时有报错，不太清楚原因）
+    -是否启动：ONBOOT=yes
+    -IP地址：IPADDR=192.168.10.10
+    -子网掩码：NETMASK=255.255.255.0
+    -网关地址：GATEWAY=192.168.10.1
+    -DNS地址：DNS1=192.168.10.1
+
+3.重启网络服务并测试网络是否联通：systemctl restart network     ping 192.168.10.10</code></pre>
+<h1 id="4-配置Yum软件仓库"><a href="#4-配置Yum软件仓库" class="headerlink" title="4.配置Yum软件仓库"></a>4.配置Yum软件仓库</h1><p>配置YUM软件仓库的步骤如下：</p>
+<pre><code>1.cd /etc/yum.repos.d/ （存放Yum软件仓库的配置文件）；
+2.vim rhel7.repo的配置文件（文件名称随意，但后缀必须为.repo），在配置文件中写入下方的配置参数：
+    [rhel7] （Yum软件仓库唯一标识符，避免与其他仓库冲突）
+    name=rhel7 （Yum软件仓库的名称描述，易于识别仓库用处）
+    baseurl=file:///media/cdrom （提供的方式包括FTP（ftp://..）、HTTP（http://..）、本地（file:///..））
+    enabled=1 （设置此源是否可用；1为可用，0为禁用）
+    gpgcheck=0 （设置此源是否校验文件；1为校验，0为不校验）
+3.挂载光盘，并把光盘挂载信息写入到/etc/fstab文件中；
+4.使用“yum install httpd -y”检查Yum软件仓库是否可用</code></pre>
+<h1 id="5-编写Shell脚本"><a href="#5-编写Shell脚本" class="headerlink" title="5.编写Shell脚本"></a>5.编写Shell脚本</h1><p>Shell脚本内容可分为三部分：</p>
+<pre><code>1.第一行的#！/bin/bash：用于告诉系统用哪种Shell解释器来执行该脚本；
+2.第二行的#：是注释信息，用于对脚本功能和某些命令的介绍信息；
+3.第三行之后的内容是可执行语句。</code></pre>
+<h2 id="5-1-接受用户参数"><a href="#5-1-接受用户参数" class="headerlink" title="5.1 接受用户参数"></a>5.1 接受用户参数</h2><p>Shell脚本语言内置了用于接收参数的变量，变量之间使用空格间隔；如：$0对应当前Shell脚本名称，$#对应总共几个参数，$*对应所有位置的参数值，$？对应显示上一次命令的执行返回值，而$1、$2、$3…分别对应第N个位置的参数值。</p>
+<h2 id="5-2-判断用户的参数"><a href="#5-2-判断用户的参数" class="headerlink" title="5.2 判断用户的参数"></a>5.2 判断用户的参数</h2><p>条件测试语句格式： [ 条件表达式 ]  两边各有一个空格</p>
+<p>条件测试语句分为4种：文件测试语句、逻辑测试语句、整数值比较语句、字符串比较语句。</p>
+<p>文件测试所用参数：</p>
+<table>
+<thead>
+<tr>
+<th>操作符</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-d</td>
+<td>文件是否为目录</td>
+</tr>
+<tr>
+<td>-e</td>
+<td>文件是否存在</td>
+</tr>
+<tr>
+<td>-f</td>
+<td>文件是否为一般文件</td>
+</tr>
+<tr>
+<td>-r</td>
+<td>当前用户是否有权限读取</td>
+</tr>
+<tr>
+<td>-w</td>
+<td>当前用户是否有权限写入</td>
+</tr>
+<tr>
+<td>-x</td>
+<td>当前用户是否有权限执行</td>
+</tr>
+</tbody></table>
+<pre><code>[root@linuxprobe ~]# [ -d /etc/fstab ]
+[root@linuxprobe ~]# echo $?
+1（返回值如果为0，表示目录存在；为非零值，则表示目录不存在）</code></pre>
+<p>逻辑语句运算符号：与（&amp;&amp;）、或（||）、非（！）；</p>
+<p>&amp;&amp;：表示当前面的命令执行成功后才能执行后面的命令；<br>||：表示当前面的命令执行失败后才能执行后面的命令；<br>！：表示把条件测试中的判断结果取相反值。</p>
+<p>整数比较运算符仅是对数字的操作，不能将数字与字符串、文件等内容一起操作，而且不能想当然地使用日常生活中的等号、大于号、小于号等来判断。</p>
+<table>
+<thead>
+<tr>
+<th>操作符</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-eq</td>
+<td>是否等于</td>
+</tr>
+<tr>
+<td>-ne</td>
+<td>是否不等于</td>
+</tr>
+<tr>
+<td>-gt</td>
+<td>是否大于</td>
+</tr>
+<tr>
+<td>-lt</td>
+<td>是否小于</td>
+</tr>
+<tr>
+<td>-le</td>
+<td>是否等于或小于</td>
+</tr>
+<tr>
+<td>-ge</td>
+<td>是否大于或等于</td>
+</tr>
+</tbody></table>
+<pre><code>[root@linuxprobe ~]# [ 10 -gt 10 ]
+[root@linuxprobe ~]# echo $?
+1
+[root@linuxprobe ~]# [ 10 -eq 10 ]
+[root@linuxprobe ~]# echo $?
+0</code></pre>
+<p>字符串比较语句用于判断测试字符串是否为空值，或两个字符串是否相同。</p>
+<p>| 操作符 | 作用 |<br>| = | 比较字符串内容是否相同 |<br>| ！= | 比较字符串内容是否不同 |<br>| -z |  判断字符串内容是否为空 |</p>
+<h2 id="5-3-流程控制语句"><a href="#5-3-流程控制语句" class="headerlink" title="5.3 流程控制语句"></a>5.3 流程控制语句</h2><p>1.if条件测试语句：可以让脚本根据实际情况自动执行相应的命令。从技术角度来讲，if语句分为单分支结构、双分支结构、多分支结构；</p>
+<pre><code>（1）
+if 条件测试操作
+then 命令序列
+fi
+
+（2）
+if 条件测试操作
+then 命令序列1
+else 命令序列2
+fi
+
+（2）
+if 条件测试操作
+then 命令序列1
+elif 条件测试操作2
+    then 命令序列2
+else 命令序列2
+fi</code></pre>
+<p>2.for条件循环语句：允许脚本一次性读取多个信息，然后逐一对信息进行操作处理，当要处理的数据有范围时，使用for循环语句再适合不过了。</p>
+<pre><code>for 变量名 in 取值列表
+do
+命令序列
+done</code></pre>
+<p>3.while条件循环语句：通过判断条件测试的真假来决定是否继续执行命令，若条件为真就继续执行，为假就结束循环。</p>
+<pre><code>while 条件测试操作
+do
+    命令序列
+done</code></pre>
+<p>4.case条件测试语句：case语句是在多个范围内匹配数据，若匹配成功则执行相关命令并结束整个条件测试；而如果数据不在所列出的范围内，则会去执行星号（*）中所定义的默认命令。</p>
+<pre><code>case 变量值 in
+模式1）
+    命令序列1
+    ;;
+模式2）
+    命令序列2
+    ;;
+    ……
+*）
+    默认命令序列
+esac</code></pre>
+<p>5.计划任务服务程序</p>
+<p>分为一次性计划任务和长期性计划任务；</p>
+<p>一次性计划任务：写成“ at 时间 ”的形式，如果想要查看已设置好但还未执行的一次性计划任务，可以使用“at -l”命令；要想将其删除，可以用“atrm 任务序号”。</p>
+<p>长期性计划任务：默认启用crond服务；创建、编辑计划任务的命令为“crontab -e”，查看当前计划任务的命令为“crontab -l”，删除某条计划任务的命令为“crontab -r”。口诀：“分、时、日、月、星期 命令”</p>
+<p>注意：<br>（1）在crond服务的计划任务参数中，所有命令一定要用绝对路径的方式来写，如果不知道绝对路径，请用whereis命令进行查询。<br>（2）计划任务中的“分”字段必须有数值，绝对不能为空或是*号，而“日”和“星期”字段不能同时使用，否则就会发生冲突。</p>
+]]></content>
+      <categories>
+        <category>linux就该这么学</category>
+      </categories>
+      <tags>
+        <tag>第4章节：vim编辑器与Shell命令脚本</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>图片加载命令</title>
+    <url>/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/</url>
+    <content><![CDATA[<img src="/2020/12/07/%E5%9B%BE%E7%89%87%E5%8A%A0%E8%BD%BD%E5%91%BD%E4%BB%A4/114.jpg" class>
+]]></content>
   </entry>
   <entry>
     <title>用hexo和github免费创建自己的博客</title>
