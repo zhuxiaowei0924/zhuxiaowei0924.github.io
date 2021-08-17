@@ -1169,7 +1169,7 @@ pre .javascript .function {
 }
 .links-of-author a::before,
 .links-of-author span.exturl::before {
-  background: #0bff04;
+  background: #4bff88;
   border-radius: 50%;
   content: ' ';
   display: inline-block;
@@ -2693,7 +2693,7 @@ body {
   opacity: 1;
 }
 .header {
-  width: 90%;
+  width: 80%;
 }
 @media (min-width: 768px) and (max-width: 991px) {
   .header {
@@ -2706,7 +2706,7 @@ body {
   }
 }
 .container .main-inner {
-  width: 100%;
+  width: 80%;
 }
 @media (min-width: 768px) and (max-width: 991px) {
   .container .main-inner {
